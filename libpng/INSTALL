@@ -1,0 +1,87 @@
+
+Installing libpng version 1.2.8 - December 3, 2004
+
+Before installing libpng, you must first install zlib.  zlib
+can usually be found wherever you got libpng.  zlib can be
+placed in another directory, at the same level as libpng.
+Note that your system might already have a preinstalled
+zlib, but you will still need to have access to the
+zlib.h and zconf.h include files that correspond to the
+version of zlib that's installed.
+
+You can rename the directories that you downloaded (they
+might be called "libpng-1.2.8" or "lpng109" and "zlib-1.2.1"
+or "zlib121") so that you have directories called "zlib" and "libpng".
+
+Your directory structure should look like this:
+
+   ..       (the parent directory)
+      libpng  (this directory)
+          INSTALL (this file)
+          README
+          *.h
+          *.c
+          pngtest.png
+          etc...
+      zlib
+          README
+          *.h
+          *.c
+          contrib
+          etc.
+
+If the line endings in the files look funny, you may wish to get the other
+distribution of libpng.  It is available in both tar.gz (UNIX style line
+endings) and zip (DOS style line endings) formats.
+
+
+If you are building libpng with MSVC, you can enter the
+libpng projects\visualc6 directory and follow the instructions in
+projects\visualc6\README.txt.
+
+You can build libpng for WindowsCE by downloading and installing
+the projects\wince directory as instructed in the projects\wince.txt file, and
+then following the instructions in the README* files.  Similarly, you can
+build libpng for Netware or Beos as instructed in projects\netware.txt
+or projects\beos.
+
+Else enter the zlib directory and follow the instructions in zlib/README,
+then come back here and choose the appropriate makefile.sys in the scripts
+directory.
+
+
+Read the makefile to see if you need to change any source or
+target directories to match your preferences.
+
+Then read pngconf.h to see if you want to make any configuration
+changes.
+
+Then just run "make" which will create the libpng library in
+this directory and "make test" which will run a quick test that reads
+the "pngtest.png" file and writes a "pngout.png" file that should be
+identical to it.  Look for "9782 zero samples" in the output of the
+test.  For more confidence, you can run another test by typing
+"pngtest pngnow.png" and looking for "289 zero samples" in the output.
+Also, you can run "pngtest -m contrib/pngsuite/*.png" and compare
+your output with the result shown in contrib/pngsuite/README.
+
+Most of the makefiles will allow you to run "make install" to
+put the library in its final resting place (if you want to
+do that, run "make install" in the zlib directory first if necessary).
+Some also allow you to run "make test-installed" after you have
+run "make install".
+
+If you encounter a compiler error message complaining about the
+lines
+      __png.h__ already includes setjmp.h;
+      __dont__ include it again.;
+This means you have compiled another module that includes setjmp.h,
+which is hazardous because the two modules might not include exactly
+the same setjmp.h.  If you are sure that you know what you are doing
+and that they are exactly the same, then you can comment out or
+delete the two lines.  Better yet, use the cexcept interface
+instead, as demonstrated in contrib/visupng of the libpng distribution.
+
+Further information can be found in the README and libpng.txt
+files, in the individual makefiles, in png.h, and the manual pages
+libpng.3 and png.5.

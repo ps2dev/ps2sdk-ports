@@ -1,0 +1,32 @@
+#
+#
+# Portable Network Graphics (PNG) Reference Library PS2 port
+#--------------------------------------------------------------------
+# ported by "evilo" <evilo13@gmail.com>
+# Review README & LICENSE files for further details.
+#--------------------------------------------------------------------
+# Need ZLIB to compile (see INSTALL)
+#-------------------------------------------------------------------- 
+#
+# Quick port for the PNG library
+# Compiled using last public PS2SDK 1.2
+#
+# you can test the lib by running pngtest. It reads in a PNG image, 
+# writes it out again, and then compares the two files. If the files 
+# are identical, this shows that the basic chunk handling, filtering, 
+# and (de)compression code is working properly. It does not currently 
+# test all of the transforms, although it probably should.
+#
+#
+# History :
+# ---------
+#
+# v1.0:
+#  - First release.
+#
+#
+# thanks to weltall for testing.
+#
+#
+# Enjoy,
+# Evilo
