@@ -10,6 +10,8 @@ EE_LIBS = -lc -L$(GSKIT)/lib -L../lib -lsdl -lgskit -ldmakit -lpad -lcdvd
 
 all: $(BINS)
 
+install:
+
 %.elf : %.o $(PS2SDK)/ee/startup/crt0.o
 	$(EE_CC) -mno-crt0 -T$(PS2SDK)/ee/startup/linkfile $(EE_LDFLAGS) \
 		-o $@ $(PS2SDK)/ee/startup/crt0.o $< $(EE_LIBS)
