@@ -35,7 +35,7 @@
 
 #include <string.h>
 #include <gsKit.h>
-#include <dmakit.h>
+#include <dmaKit.h>
 
 #ifdef SAVE_RCSID
 static char rcsid =
