@@ -1,0 +1,204 @@
+/*
+    showimage:  A test application for the SDL image loading library.
+    Copyright (C) 1999-2004 Sam Lantinga
+
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+    License as published by the Free Software Foundation; either
+    version 2 of the License, or (at your option) any later version.
+
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    Library General Public License for more details.
+
+    You should have received a copy of the GNU Library General Public
+    License along with this library; if not, write to the Free
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+    Sam Lantinga
+    slouken@libsdl.org
+*/
+
+/* $Id$ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "SDL.h"
+#include "SDL_image.h"
+
+/* #define XPM_INCLUDED and supply picture.xpm to test the XPM inclusion
+   feature */
+
+#ifdef XPM_INCLUDED
+#include "picture.xpm"
+#endif
+
+/* Draw a Gimpish background pattern to show transparency in the image */
+void draw_background(SDL_Surface *screen)
+{
+    Uint8 *dst = screen->pixels;
+    int x, y;
+    int bpp = screen->format->BytesPerPixel;
+    Uint32 col[2];
+    col[0] = SDL_MapRGB(screen->format, 0x66, 0x66, 0x66);
+    col[1] = SDL_MapRGB(screen->format, 0x99, 0x99, 0x99);
+    for(y = 0; y < screen->h; y++) {
+	for(x = 0; x < screen->w; x++) {
+	    /* use an 8x8 checkerboard pattern */
+	    Uint32 c = col[((x ^ y) >> 3) & 1];
+	    switch(bpp) {
+	    case 1:
+		dst[x] = c;
+		break;
+	    case 2:
+		((Uint16 *)dst)[x] = c;
+		break;
+	    case 3:
+		if(SDL_BYTEORDER == SDL_LIL_ENDIAN) {
+		    dst[x * 3] = c;
+		    dst[x * 3 + 1] = c >> 8;
+		    dst[x * 3 + 2] = c >> 16;
+		} else {
+		    dst[x * 3] = c >> 16;
+		    dst[x * 3 + 1] = c >> 8;
+		    dst[x * 3 + 2] = c;
+		}
+		break;
+	    case 4:
+		((Uint32 *)dst)[x] = c;
+		break;
+	    }
+	}
+	dst += screen->pitch;
+    }
+}
+
+int main(int argc, char *argv[])
+{
+	Uint32 flags;
+	SDL_Surface *screen, *image;
+	int i, depth, done;
+	SDL_Event event;
+
+	/* Check command line usage */
+	if ( ! argv[1] ) {
+		fprintf(stderr, "Usage: %s <image_file>\n", argv[0]);
+		return(1);
+	}
+
+	/* Initialize the SDL library */
+	if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
+		fprintf(stderr, "Couldn't initialize SDL: %s\n",SDL_GetError());
+		return(255);
+	}
+
+	flags = SDL_SWSURFACE;
+	for ( i=1; argv[i]; ++i ) {
+		if ( strcmp(argv[i], "-fullscreen") == 0 ) {
+			SDL_ShowCursor(0);
+			flags |= SDL_FULLSCREEN;
+			continue;
+		}
+		/* Open the image file */
+#ifdef XPM_INCLUDED
+		image = IMG_ReadXPMFromArray(picture_xpm);
+#else
+		image = IMG_Load(argv[i]);
+#endif
+		if ( image == NULL ) {
+			fprintf(stderr, "Couldn't load %s: %s\n",
+			        argv[i], SDL_GetError());
+			continue;
+		}
+		SDL_WM_SetCaption(argv[i], "showimage");
+
+		/* Create a display for the image */
+		depth = SDL_VideoModeOK(image->w, image->h, 32, flags);
+		/* Use the deepest native mode, except that we emulate 32bpp
+		   for viewing non-indexed images on 8bpp screens */
+		if ( depth == 0 ) {
+			if ( image->format->BytesPerPixel > 1 ) {
+				depth = 32;
+			} else {
+				depth = 8;
+			}
+		} else
+		if ( (image->format->BytesPerPixel > 1) && (depth == 8) ) {
+	    		depth = 32;
+		}
+		if(depth == 8)
+			flags |= SDL_HWPALETTE;
+		screen = SDL_SetVideoMode(image->w, image->h, depth, flags);
+		if ( screen == NULL ) {
+			fprintf(stderr,"Couldn't set %dx%dx%d video mode: %s\n",
+				image->w, image->h, depth, SDL_GetError());
+			continue;
+		}
+
+		/* Set the palette, if one exists */
+		if ( image->format->palette ) {
+			SDL_SetColors(screen, image->format->palette->colors,
+			              0, image->format->palette->ncolors);
+		}
+
+		/* Draw a background pattern if the surface has transparency */
+		if(image->flags & (SDL_SRCALPHA | SDL_SRCCOLORKEY))
+	    		draw_background(screen);
+
+		/* Display the image */
+		SDL_BlitSurface(image, NULL, screen, NULL);
+		SDL_UpdateRect(screen, 0, 0, 0, 0);
+
+		done = 0;
+		while ( ! done ) {
+			if ( SDL_PollEvent(&event) ) {
+				switch (event.type) {
+				    case SDL_KEYUP:
+					switch (event.key.keysym.sym) {
+					    case SDLK_LEFT:
+						if ( i > 1 ) {
+							i -= 2;
+							done = 1;
+						}
+						break;
+					    case SDLK_RIGHT:
+						if ( argv[i+1] ) {
+							done = 1;
+						}
+						break;
+					    case SDLK_ESCAPE:
+					    case SDLK_q:
+						argv[i+1] = NULL;
+						/* Drop through to done */
+					    case SDLK_SPACE:
+					    case SDLK_TAB:
+						done = 1;
+						break;
+					    default:
+						break;
+					}
+					break;
+				    case SDL_MOUSEBUTTONDOWN:
+					done = 1;
+					break;
+                                    case SDL_QUIT:
+					argv[i+1] = NULL;
+					done = 1;
+					break;
+				    default:
+					break;
+				}
+			} else {
+				SDL_Delay(10);
+			}
+		}
+		SDL_FreeSurface(image);
+	}
+
+	/* We're done! */
+	SDL_Quit();
+	return(0);
+}
