@@ -17,7 +17,7 @@ ZLIBINC=../zlib/include
 
 
 EE_LDFLAGS   += -L. -L$(ZLIBLIB) -L./lib
-EE_INCS      += -I$(ZLIBINC)
+EE_INCS      += -I./include -I$(ZLIBINC)
 EE_LIBS      += -lpng -lz -lc -lm -lmc
 
 
@@ -37,25 +37,6 @@ pngtest: $(EE_BIN)
 clean:
 	/bin/rm -f $(EE_OBJS_LIB) $(EE_OBJS) $(EE_BIN) $(EE_LIB)
 
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
-png.o png.pic.o: png.h pngconf.h
-pngerror.o pngerror.pic.o: png.h pngconf.h
-pngrio.o pngrio.pic.o: png.h pngconf.h
-pngwio.o pngwio.pic.o: png.h pngconf.h
-pngmem.o pngmem.pic.o: png.h pngconf.h
-pngset.o pngset.pic.o: png.h pngconf.h
-pngget.o pngget.pic.o: png.h pngconf.h
-pngread.o pngread.pic.o: png.h pngconf.h
-pngrtran.o pngrtran.pic.o: png.h pngconf.h
-pngrutil.o pngrutil.pic.o: png.h pngconf.h
-pngtrans.o pngtrans.pic.o: png.h pngconf.h
-pngwrite.o pngwrite.pic.o: png.h pngconf.h
-pngwtran.o pngwtran.pic.o: png.h pngconf.h
-pngwutil.o pngwutil.pic.o: png.h pngconf.h
-pngpread.o pngpread.pic.o: png.h pngconf.h
-
-pngtest.o: png.h pngconf.h
 
 include Makefile.pref
 include Makefile.eeglobal 
