@@ -62,6 +62,7 @@ static char userThreadStack[16*1024] __attribute__((aligned(16)));
 
 volatile int mainPid __attribute__((aligned(16))) = 0; // pid of this thread
 volatile int outputPid __attribute__((aligned(16))) = 0; // pid of output thread
+int handlerId __attribute__((aligned (16))); // vsync interrupt handler
 
 int loadModules()
 {
@@ -87,6 +88,24 @@ void EnableVSyncCallbacks(void)
 
 		ei
 	");
+}
+
+// taken from gslib
+void RemoveVSyncCallback(unsigned int RemoveID)
+{
+	asm __volatile__ ("
+		di
+
+		addu  $5, $0, %0	# RemoveID will have already been passed into this func in $4
+		addiu $4, $0, 2		# 2 = vsync_start
+		addiu $3, $0, 17	# RemoveIntcHandler
+		syscall
+		nop
+
+		ei"
+		: 
+		: "g" (RemoveID)
+		);
 }
 
 // taken from gslib
@@ -201,7 +220,7 @@ int init(struct audio_init *init)
 	current_buffer = 0;
 
 	/* vsync interrupt handler */
-	AddVSyncCallback((functionPointer)&vsync_func);
+	handlerId = AddVSyncCallback((functionPointer)&vsync_func);
 
 	/* thread to output func */
 	thread.func = (void *)output;
@@ -404,6 +423,9 @@ int finish(struct audio_finish *finish)
 {
 	while (buffered > current_buffer)  // let buffer finish first
 		SuspendThread(mainPid);
+
+	DeleteThread(outputPid);
+	RemoveVSyncCallback(handlerId);
 
 	SjPCM_Pause();
 
