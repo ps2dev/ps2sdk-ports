@@ -64,12 +64,18 @@ volatile int mainPid __attribute__((aligned(16))) = 0; // pid of this thread
 volatile int outputPid __attribute__((aligned(16))) = 0; // pid of output thread
 int handlerId __attribute__((aligned (16))); // vsync interrupt handler
 
+extern char *elfPath;
+
 int loadModules()
 {
 	int ret = 0;
+	char modulePath[256];
+
 
 	ret |= SifLoadModule("rom0:LIBSD", 0, NULL);
-	ret |= SifLoadModule("host:irx/sjpcm.irx", 0, NULL); 
+
+	sprintf(modulePath, "%sirx/sjpcm.irx", elfPath);
+	ret |= SifLoadModule(modulePath, 0, NULL); 
 	
 	return ret;
 }

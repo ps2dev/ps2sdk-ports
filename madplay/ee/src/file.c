@@ -41,7 +41,48 @@
 
 /*Store the current media being used, either Hard drive (MODE_HDD) or 
   CD drive (MODE_CD.)  Important in our directory functions.*/
-int mediaMode = 4; // = MODE_HOST, believe me
+
+int mediaMode = MODE_HOST; 
+char elfPath[256];
+
+void
+setPathInfo(int argc, char **argv)
+{
+	char *ptr;
+	char *bootPath;
+
+    // argc == 0 usually means naplink..
+    if (argc == 0) {
+        bootPath = "host:";
+    }
+    // reload1 usually gives an argc > 60000 (yea, this is kinda a hack..)
+    else if (argc > 60000) {
+        bootPath = "mc0:/BWLINUX/";
+    }
+    else {
+        bootPath = argv[0];
+    }
+
+    strncpy(elfPath, bootPath, 255);
+    elfPath[255] = '\0';
+
+    ptr = strrchr(elfPath, '/');
+    if (ptr == NULL) {
+        ptr = strrchr(elfPath, '\\');
+        if (ptr == NULL) {
+            ptr = strrchr(elfPath, ':');
+            if (ptr == NULL) {
+                scr_printf("Did not find path (%s)!\n", bootPath);
+                SleepThread();
+            }
+        }
+    }
+    
+	ptr++;
+	*ptr = '\0';
+
+    printf("path is %s\n", elfPath);
+}
 
 
 /****************************************************************************

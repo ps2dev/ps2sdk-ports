@@ -10,6 +10,7 @@ extern "C" {
 #define MODE_MASS 5
 
 int CheckHDD();
+void setPathInfo(int argc, char **argv);
 int OpenPartition(char *part);
 int ClosePartition();
 void closeShop(int handle);
