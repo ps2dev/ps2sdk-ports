@@ -598,12 +598,12 @@ do {							\
 	unsigned n = (length);						\
 	Uint16 *src = (Uint16 *)(from);					\
 	Uint16 *dst = (Uint16 *)(to);					\
-	if(((unsigned long)src ^ (unsigned long)dst) & 3) {		\
+	if(((unsigned int)src ^ (unsigned int)dst) & 3) {		\
 	    /* source and destination not in phase, blit one by one */	\
 	    while(n--)							\
 		BLEND16_50(dst, src, mask);				\
 	} else {							\
-	    if((unsigned long)src & 3) {				\
+	    if((unsigned int)src & 3) {					\
 		/* first odd pixel */					\
 		BLEND16_50(dst, src, mask);				\
 		n--;							\
@@ -1066,7 +1066,7 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *dst,
 	    } while(ofs < w);						  \
 	    /* skip padding if necessary */				  \
 	    if(sizeof(Ptype) == 2)					  \
-		srcbuf += (unsigned long)srcbuf & 2;			  \
+		srcbuf += (unsigned int)srcbuf & 2;			  \
 	    /* blit translucent pixels on the same line */		  \
 	    ofs = 0;							  \
 	    do {							  \
@@ -1158,7 +1158,7 @@ int SDL_RLEAlphaBlit(SDL_Surface *src, SDL_Rect *srcrect,
 		    } while(ofs < w);
 
 		    /* skip padding */
-		    srcbuf += (unsigned long)srcbuf & 2;
+		    srcbuf += (unsigned int)srcbuf & 2;
 
 		    /* skip translucent line */
 		    ofs = 0;
@@ -1222,7 +1222,7 @@ int SDL_RLEAlphaBlit(SDL_Surface *src, SDL_Rect *srcrect,
 		} while(ofs < w);					 \
 		/* skip padding if necessary */				 \
 		if(sizeof(Ptype) == 2)					 \
-		    srcbuf += (unsigned long)srcbuf & 2;		 \
+		    srcbuf += (unsigned int)srcbuf & 2;			 \
 		/* blit translucent pixels on the same line */		 \
 		ofs = 0;						 \
 		do {							 \
@@ -1558,7 +1558,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
 	    } while(x < w);
 
 	    /* Make sure the next output address is 32-bit aligned */
-	    dst += (unsigned long)dst & 2;
+	    dst += (unsigned int)dst & 2;
 
 	    /* Next, encode all translucent pixels of the same scan line */
 	    x = 0;
@@ -1884,7 +1884,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
 
 	/* skip padding if needed */
 	if(bpp == 2)
-	    srcbuf += (unsigned long)srcbuf & 2;
+	    srcbuf += (unsigned int)srcbuf & 2;
 	
 	/* copy translucent pixels */
 	ofs = 0;
