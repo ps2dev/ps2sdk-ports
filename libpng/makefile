@@ -12,13 +12,13 @@ PNGVER = $(PNGMAJ).$(PNGMIN)
 EE_BIN = pngtest.elf
 
 # Where the zlib library and include files are located.
-ZLIBLIB=../zlib
-ZLIBINC=../zlib
+ZLIBLIB=../zlib/lib
+ZLIBINC=../zlib/include
 
 
 EE_LDFLAGS   += -L. -L$(ZLIBLIB) -L./lib
 EE_INCS      += -I$(ZLIBINC)
-EE_LIBS      += -lpng -lzlib -lc -lm -lmc
+EE_LIBS      += -lpng -lz -lc -lm -lmc
 
 
 # library files
