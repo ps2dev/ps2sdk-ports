@@ -17,5 +17,5 @@ the ports are licensed GPL style, some others BSD style, etc.
 
   Here is a quick list of hints about the various licenses contained here:
   
-libid3tag, libmad, madplay: GPL2
+libid3tag, libmad, madplay, ucl: GPL2
 sdl, sdlmixer: LGPL
