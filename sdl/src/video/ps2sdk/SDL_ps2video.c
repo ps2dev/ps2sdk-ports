@@ -33,6 +33,10 @@
 
 #include "SDL_ps2video.h"
 
+#include "SDL_ps2kbdevents.h"
+#include "SDL_ps2USBevents.h"
+#include "SDL_ps2mouseevents.h"
+
 #include <string.h>
 #include <gsKit.h>
 #include <dmaKit.h>
@@ -41,6 +45,9 @@
 static char rcsid =
  "@(#) $Id$";
 #endif
+
+#define REG_VIDEO_MODE   (* (u8 *)0x1fc80000)
+#define MODE_PAL                        0xf3
 
 static int clut_xlut[256] =
 {
@@ -87,14 +94,17 @@ static GSTEXTURE gsTexture;
 
 static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 {
-	vformat->BitsPerPixel = 24;
-	vformat->BytesPerPixel = 3;
-	vformat->Rmask = 0xff << 0;
-	vformat->Gmask = 0xff << 8;
-	vformat->Bmask = 0xff << 16;
-	vformat->Amask = 0xff << 24;
+	int pal;
 
-	gsGlobal = gsKit_init_global(GS_MODE_PAL);
+	vformat->BitsPerPixel = 16;
+	vformat->BytesPerPixel = 2;
+	vformat->Rmask = 0x0000001f;
+	vformat->Gmask = 0x000003e0;
+	vformat->Bmask = 0x00007c00;
+	vformat->Amask = 0x00008000;
+
+	pal = 1; //(REG_VIDEO_MODE == MODE_PAL);
+	gsGlobal = gsKit_init_global(pal ? GS_MODE_PAL : GS_MODE_NTSC);
 
 	if (gsGlobal == NULL)
 	{
@@ -109,6 +119,26 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	/* reduce zbuffer requirements, so we'll get more memory for texture
 	gsGlobal->PSMZ = GS_PSMZ_16;
 	*/
+
+	/* initialize keyboard and mouse */
+	if (PS2_InitUSB(device) >= 0) 
+	{
+    		if (PS2_InitKeyboard(device) < 0) 
+		{
+	   		SDL_SetError("Unable to open keyboard");
+	    	}
+
+		if (PS2_InitMouse(device) < 0) 
+		{
+    			SDL_SetError("Unable to open mouse");
+		}
+    	}       
+	else
+	{
+		/* no mouse, or keyboard */
+    		SDL_SetError("Unable to open USB Driver");	
+	}
+
 	return 0;
 }
 
@@ -134,6 +164,7 @@ static SDL_Rect rect_320x200 = {0, 0, 320, 200};
 static SDL_Rect rect_320x240 = {0, 0, 320, 240};
 static SDL_Rect rect_320x256 = {0, 0, 320, 256};
 static SDL_Rect rect_512x448 = {0, 0, 512, 448};
+static SDL_Rect rect_640x448 = {0, 0, 640, 448};
 static SDL_Rect rect_640x480 = {0, 0, 640, 480};
 static SDL_Rect rect_800x600 = {0, 0, 800, 600};
 static SDL_Rect rect_1024x768 = {0, 0, 1024, 768};
@@ -145,6 +176,7 @@ static SDL_Rect *vesa_modes[] = {
 	&rect_320x240,
 	&rect_320x256,
 	&rect_512x448,
+	&rect_640x448,
 	&rect_640x480,
 	&rect_800x600,
 	&rect_1024x768,
@@ -292,11 +324,15 @@ static void PS2_FreeHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 
 static void PS2_PumpEvents(SDL_VideoDevice *device)
 {
+	PS2_PumpKeyboardEvents(device);
+	PS2_PumpMouseEvents(device);       
 }
 
+/*
 static void PS2_InitOSKeymap(SDL_VideoDevice *device)
 {
 }
+*/
 
 static int PS2_SetColors(SDL_VideoDevice *device, int firstcolor, int ncolors, SDL_Color *colors)
 {
@@ -392,6 +428,7 @@ static SDL_VideoDevice *PS2_CreateDevice(int devindex)
 	device->UnlockHWSurface = PS2_UnlockHWSurface;
 	device->FreeHWSurface = PS2_FreeHWSurface;
 	device->InitOSKeymap = PS2_InitOSKeymap;
+	device->UpdateMouse = PS2_UpdateMouse;	
 	device->PumpEvents = PS2_PumpEvents;
 	device->UpdateRects = PS2_UpdateRects;
 	device->free = PS2_DeleteDevice;
