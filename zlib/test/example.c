@@ -15,11 +15,7 @@
    extern void exit  OF((int));
 #endif
 
-#if defined(VMS) || defined(RISCOS)
-#  define TESTFILE "foo-gz"
-#else
-#  define TESTFILE "foo.gz"
-#endif
+#define TESTFILE "host:foo.gz"
 
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) { \
