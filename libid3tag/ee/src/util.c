@@ -101,22 +101,22 @@ id3_byte_t *id3_util_compress(id3_byte_t const *data, id3_length_t length,
   *newlength  = length + 12;
   *newlength += *newlength / 1000;
 
-//  compressed = malloc(*newlength);
-//  if (compressed) {
-//    if (compress2(compressed, newlength, data, length,
-//		  Z_BEST_COMPRESSION) != Z_OK ||
-//	*newlength >= length) {
-//      free(compressed);
-//      compressed = 0;
-//    }
-//    else {
-//      id3_byte_t *resized;
-//
-//      resized = realloc(compressed, *newlength ? *newlength : 1);
-//      if (resized)
-//	compressed = resized;
-//    }
-//  }
+  compressed = malloc(*newlength);
+  if (compressed) {
+    if (compress2(compressed, newlength, data, length,
+		  Z_BEST_COMPRESSION) != Z_OK ||
+	*newlength >= length) {
+      free(compressed);
+      compressed = 0;
+    }
+    else {
+      id3_byte_t *resized;
+
+      resized = realloc(compressed, *newlength ? *newlength : 1);
+      if (resized)
+	compressed = resized;
+    }
+  }
 
   return compressed;
 }
@@ -136,7 +136,7 @@ id3_byte_t *id3_util_decompress(id3_byte_t const *data, id3_length_t length,
 
     size = newlength;
 
-    if (Decompress(decompressed, &size, data, length) != Z_OK ||
+    if (uncompress(decompressed, &size, data, length) != Z_OK ||
 	size != newlength) {
       free(decompressed);
       decompressed = 0;
