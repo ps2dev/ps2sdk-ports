@@ -2444,7 +2444,7 @@ static void ReconPMBlock( VidStream* vid_stream, int bnum,
 #ifdef LOOSE_MPEG
   int maxx, maxy, cc;
   int illegalBlock = 0;
-  int row_start, row_end, rfirst, rlast, col_start, col_end, cfirst, clast;
+  int row_start, row_end, rfirst, rlast = 0, col_start, col_end, cfirst, clast = 0;
 #endif
 
   /* Calculate macroblock row and column from address. */
@@ -2929,7 +2929,7 @@ static void ReconBMBlock( VidStream* vid_stream, int bnum,
 #ifdef LOOSE_MPEG
   int illegalBlock = 0;
   int maxx, maxy, cc;
-  int row_start, row_end, rlast, rfirst, col_start, col_end, clast, cfirst;
+  int row_start, row_end, rlast = 0, rfirst, col_start, col_end, clast = 0, cfirst;
 #endif
 
   /* Calculate macroblock row and column from address. */

@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #ifndef __BEOS__
-#include <sys/select.h>
+// #include <sys/select.h>
 #endif
 #endif
 
@@ -954,7 +954,7 @@ double MPEGsystem::TotalTime()
 {
   off_t size, pos;
   off_t file_ptr;
-  Uint8 * buffer, * p;
+  Uint8 * buffer, * p = NULL;
   double time;
 
   /* Lock to avoid concurrent access to the stream */
@@ -1093,7 +1093,7 @@ double MPEGsystem::TimeElapsedAudio(int atByte)
 {
   off_t size, pos;
   off_t file_ptr;
-  Uint8 * buffer, * p;
+  Uint8 * buffer, * p = NULL;
   double time;
   
   if (atByte < 0)

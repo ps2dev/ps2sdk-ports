@@ -155,7 +155,7 @@ static void *Mix_DoEffects(int chan, void *snd, int len)
 static void mix_channels(void *udata, Uint8 *stream, int len)
 {
 	Uint8 *mix_input;
-	int i, mixable, volume;
+	int i, mixable, volume = 0;
 	Uint32 sdl_ticks;
 
 	/* Mix the music (must be done before the channels are added) */
@@ -256,8 +256,7 @@ static void mix_channels(void *udata, Uint8 *stream, int len)
 	}
 }
 
-static void PrintFormat(char *title, SDL_AudioSpec *fmt)
-{
+void PrintFormat(char *title, SDL_AudioSpec *fmt) {
 	printf("%s: %d bit %s audio (%s) at %u Hz\n", title, (fmt->format&0xFF),
 			(fmt->format&0x8000) ? "signed" : "unsigned",
 			(fmt->channels > 2) ? "surround" :
