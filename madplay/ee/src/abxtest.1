@@ -1,0 +1,127 @@
+.\"
+.\" abxtest - simple ABX double-blind testing script
+.\" Copyright (C) 2000-2004 Robert Leslie
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.\"
+.\" $Id$
+.\"
+.TH ABXTEST 1 "16 November 2000" "MAD" "MPEG Audio Decoder"
+.SH NAME
+abxtest \- double-blind ABX comparison testing script
+.SH SYNOPSIS
+.B abxtest
+.RB [ -n
+.IR min ]
+.RB [ -m
+.IR max ]
+.RB [ -g
+.IR goal ]
+.I A-cmd B-cmd
+.SH DESCRIPTION
+.B abxtest
+is a tool for conducting listening (or other subjective) tests to determine
+whether a listener can discern a difference between two subjects under test,
+denoted
+.B A
+and
+.BR B .
+.PP
+The listener conducts several trials in which an unknown subject,
+.BR X ,
+is randomly chosen to be either
+.B A
+or
+.BR B .
+The probability that
+.B X
+is
+.B A
+or
+.B B
+is the same. The listener must decide whether
+.B X
+sounds the same as
+.B A
+or the same as
+.BR B .
+The listener may repeat
+.BR A ,
+.BR B ,
+and
+.B X
+as many times as necessary before reaching a verdict.
+.PP
+In order to prove the hypothesis that a difference can be discerned between
+.B A
+and
+.BR B ,
+the listener must disprove the null hypothesis that
+.B A
+sounds the same as
+.BR B .
+This is accomplished by correctly identifying
+.B X
+often enough that randomly guessing correctly the same number of times would
+be statistically improbable.
+.PP
+The
+.B A
+and
+.B B
+subjects for
+.B abxtest
+are actually arbitrary shell commands. The normal mode of use would be to give
+commands which play two slightly different sounds. The standard output and
+standard error from each command are suppressed so as not to reveal the
+identity of
+.BR X .
+The listener may interrupt an executing command (usually by pressing
+.BR ^C )
+without terminating the test.
+.SH OPTIONS
+.TP
+\fB\-n\fR \fImin\fR
+Set the minimum number of trials. Trials will continue after this number if
+the statistical probability goal has not yet been met. The default is 10.
+.TP
+\fB\-m\fR \fImax\fR
+Set the maximum number of trials. Trials will end after this number even if
+the statistical probability goal has not been met. The default is 20.
+.TP
+\fB\-g\fR \fIgoal\fR
+Set the minimum statistical probability goal. This is the probability that the
+number of correct identifications is the same as random guesses. In order to
+disprove the null hypothesis, the result of the test must be a probability
+less than or equal to this goal. The default is 0.05.
+.SH FILES
+.TP
+.I /dev/random
+By default this file is read to generate a random sequence of
+.BR X .
+.SH ENVIRONMENT
+.TP
+RANDOM_FILE
+If set, the file named by this variable will be read instead of
+.I /dev/random
+to generate a sequence of
+.BR X .
+.SH NOTES
+.B
+abxtest
+uses the binomial distribution to accurately calculate the probability that
+the result is the same as random guesses.
+.SH AUTHOR
+Robert Leslie <rob@mars.org>

@@ -1,0 +1,132 @@
+
+ madplay - MPEG audio decoder and player
+ Copyright (C) 2000-2004 Robert Leslie
+
+ $Id$
+
+===============================================================================
+
+INTRODUCTION
+
+  `madplay' is a command-line MPEG audio decoder and player based on the MAD
+  library (libmad). For details about MAD, see the libmad package
+  distributed separately.
+
+  After decoding, `madplay' sends the output to an audio output module. The
+  following audio output modules are provided:
+
+    - an Open Sound System interface module (for Linux, et al.)
+    - a Sun audio interface module (for Solaris, NetBSD, et al.)
+    - a Mac OS Carbon audio interface module (for Mac OS X)
+    - a Win32 audio interface module (for Windows 95/98/NT/2000, et al.)
+    - an ALSA audio interface module
+    - a QNX audio interface module
+    - an EsounD interface module
+    - a CD audio output module (*.cdr, *.cda)
+    - an Audio IFF output module (*.aif, *.aiff)
+    - a Microsoft RIFF/WAVE file output module (*.wav)
+    - a Sun/NeXT audio file output module (*.au, *.snd)
+    - a raw PCM output module
+    - a hex output module (for debugging and compliance testing)
+    - a null module (for timing the decoder)
+
+  `madplay' will also read and display ID3 tag information, and further
+  supports the relative volume adjustment information (RVA2) in such tags,
+  as written by tools like `normalize'.
+
+Audio Quality
+
+  MAD produces output samples with a precision greater than 24 bits. Because
+  most output formats use fewer bits, typically 16, `madplay' implements a
+  dithering algorithm when truncating samples for output. This produces high
+  quality audio that generally sounds superior to the output of a simple
+  rounding algorithm. However, dithering may unfavorably affect an analytic
+  examination of the output (such as compliance testing), and therefore it
+  may optionally be disabled at runtime.
+
+===============================================================================
+
+BUILDING AND INSTALLING
+
+  Before you can build this package, you must first build and install the
+  libmad and libid3tag packages distributed separately.
+
+Windows Platforms
+
+  `madplay' can be built under Windows using either MSVC++ or Cygwin. A
+  MSVC++ project file and workspace can be found under the `msvc++'
+  subdirectory.
+
+  To build `madplay' using Cygwin, you will first need to install the Cygwin
+  tools:
+
+      http://www.cygwin.com/
+
+  You may then proceed with the following POSIX instructions within the
+  Cygwin shell.
+
+  Note that by default Cygwin will build an executable that depends on the
+  Cygwin DLL. You can use MinGW to build an executable that does not depend
+  on the Cygwin DLL. To do so, give the option --host=mingw32 to
+  `configure'. Be certain you also link with MinGW versions of libmad,
+  libid3tag, and any further dependent libraries (such as zlib).
+
+POSIX Platforms (including Cygwin)
+
+  The code is distributed with a `configure' script that will generate for
+  you a `Makefile' and a `config.h' in each of the subdirectories that
+  require them. See the file `INSTALL' for generic instructions.
+
+  The specific options you may want to give `configure' are:
+
+      --disable-debugging       do not compile with debugging support, and
+                                use more optimizations
+
+      --with-alsa               use ALSA for default audio output
+
+      --with-esd                use EsounD (Enlightened Sound Daemon) for
+                                default audio output
+
+  Support for the EsounD output format type (esd) is enabled automatically
+  if the EsounD library (libesd) is available, however it is not made the
+  default output format unless --with-esd is given. To disable EsounD
+  support completely, use --without-esd.
+
+  If you have installed libmad and/or libid3tag in an unusual place or
+  `configure' can't find them, you may need to indicate where they are:
+
+      ./configure ... CPPFLAGS="-I${include_dir}" LDFLAGS="-L${lib_dir}"
+
+  where ${include_dir} and ${lib_dir} are the locations of the installed
+  header and library files, respectively.
+
+Experimenting and Developing
+
+  Further options for `configure' that may be useful to developers and
+  experimenters are:
+
+      --enable-debugging        enable diagnostic debugging support and
+                                debugging symbols
+
+      --enable-profiling        generate `gprof' profiling code
+
+      --enable-experimental     enable code using the EXPERIMENTAL
+                                preprocessor define
+
+===============================================================================
+
+COPYRIGHT AND AUTHOR
+
+  Please read the `COPYRIGHT' file for copyright and warranty information.
+  Also, the file `COPYING' contains the full text of the GNU GPL.
+
+  Send inquiries, comments, bug reports, suggestions, patches, etc. to:
+
+      Robert Leslie <rob@mars.org>
+
+  See also the `madplay' home page on the Web:
+
+      http://www.mars.org/home/rob/proj/mpeg/
+
+===============================================================================
+

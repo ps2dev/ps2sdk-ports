@@ -1,0 +1,592 @@
+.\"
+.\" madplay - MPEG audio decoder and player
+.\" Copyright (C) 2000-2004 Robert Leslie
+.\"
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\"
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\"
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+.\"
+.\" $Id$
+.\"
+.TH MADPLAY 1 "22 February 2004" "MAD" "MPEG Audio Decoder"
+.SH NAME
+madplay \- decode and play MPEG audio stream(s)
+.SH SYNOPSIS
+.B madplay
+.RI [ options ]
+.I file
+\&...
+.br
+.B madplay
+.RI [ options ]
+\fB\-o\fR [\fItype\fB:\fR]\fIpath\fR
+.I file
+\&...
+.SH DESCRIPTION
+.B madplay
+is a command-line MPEG audio decoder and player based on the MAD library
+.RI ( libmad ).
+.PP
+MAD is a high-quality MPEG audio decoder. It currently supports MPEG-1 and the
+MPEG-2 extension to Lower Sampling Frequencies, as well as the so-called
+MPEG\ 2.5 format. All three audio layers (Layer\ I, Layer\ II, and Layer\ III
+a.k.a. MP3) are fully implemented.
+.PP
+Among the special features of MAD are 24-bit PCM resolution and 100%
+fixed-point (integer) computation. Since MAD is implemented entirely without
+the use of floating point arithmetic, it performs especially well on
+architectures without an FPU.
+.PP
+MAD does not yet support MPEG-2 multichannel audio (although it should be
+backward compatible with such streams) nor does it currently support AAC.
+.PP
+By default
+.B madplay
+reads and decodes one or more input
+.IR file s
+containing MPEG audio data and plays them on the native audio device. If the
+input file is a single dash (\-), data is read from standard input.
+.PP
+Decoded output may optionally be redirected to a file instead of being played
+on the audio device by using the
+.B \-o
+.RB ( \-\-output )
+option.
+.PP
+For each
+.IR file ,
+.B madplay
+will also attempt to read and display ID3 tag information. The supported tag
+versions are ID3v1, ID3v1.1, ID3v2.2, ID3v2.3, and ID3v2.4. If a tag contains
+relative volume adjustment information (RVA2),
+.B madplay
+will use the information to adjust the master volume for output. This behavior
+can be changed with the
+.B \-A
+.RB ( \-\-adjust\-volume )
+and
+.B \-G
+.RB ( \-\-replay\-gain )
+options.
+.PP
+If the
+.B \-T
+.RB ( \-\-show\-tags\-only )
+option is used, decoding is not performed but tag information is still
+displayed. When used in conjunction with
+.B \-v
+.RB ( \-\-verbose ),
+encoder as well as ID3 tags are shown.
+.SH OPTIONS
+.SS Verbosity
+.TP
+.BR \-v " or " \-\-verbose
+Generally show more information than the default. During decoding, show
+information about the stream including playing time, audio layer, bit rate,
+sampling frequency, and stereo mode.
+.TP
+.BR \-q " or " \-\-quiet
+Generally show less information than the default. Do not show any information
+during decoding except warnings.
+.TP
+.BR \-Q " or " \-\-very\-quiet
+Generally show no information except severe errors. Do not show any
+information or warnings during decoding.
+.TP
+.BI \-\-display\-time= mode
+Set the default verbose time display mode to
+.IR mode ,
+which must be one of
+.BR remaining ,
+.BR current ,
+or
+.BR overall .
+This is only relevant with
+.B -v
+.RB ( \-\-verbose ).
+See
+.B \-\-tty\-control
+below for details on changing the time display mode during playback.
+.SS Decoding
+.TP
+.B \-\-downsample
+Reduce the decoded sampling frequency 2:1. This also reduces the computational
+overhead of the decoder.
+.TP
+.BR \-i " or " \-\-ignore\-crc
+Ignore CRC information in the audio stream. This causes frames with CRC errors
+to be decoded and played anyway. This option is not recommended, but since
+some encoders have been known to generate bad CRC information, this option is
+a work-around to play streams from such encoders.
+.TP
+\fB\-\-ancillary\-output=\fIpath\fR
+Write ancillary data from the MPEG audio stream to
+.IR path .
+If
+.I path
+is a single dash (\-), the data will be written to standard output.
+Bits from the ancillary data stream are packed into octets; if any bits
+remain, the final octet will be padded with zero bits. See the
+.B NOTES
+section below for further information about this option.
+.SS Audio Output
+.TP
+\fB\-o\fR or \fB\-\-output=\fR[\fItype\fB:\fR]\fIpath\fR
+Direct output to
+.IR path ,
+rather than playing audio on the native audio device. The format of the output
+is specified by
+.I type
+which can be any of the supported output formats (see
+.B Output Formats
+below.) If a format is not specified, one will be inferred from
+.IR path .
+If
+.I path
+is a single dash (\-), the output will be written to standard output.
+.TP
+\fB\-b\fR or \fB\-\-bit\-depth=\fIdepth\fR
+Request an output precision of
+.I depth
+bits per sample. Higher bit depths yield higher quality sound. Typical bit
+depths are 8, 16, 24, and 32, however other depths may also be possible.
+Whether the request can be honored depends on the capabilities of the audio
+device or output format.
+See the
+.B NOTES
+section below for further details about this option.
+.TP
+\fB\-R\fR or \fB\-\-sample\-rate=\fIhertz\fR
+Request an output sampling frequency of
+.I hertz
+samples per second (Hz).
+The sample rate must be in the range 1000 to 65535\ Hz.
+Whether the request can be honored depends on the capabilities of the audio
+device or output format.
+If the effective rate is not the same as the rate of the decoded audio, output
+may be resampled, possibly resulting in lower quality sound.
+.TP
+.BR \-d " or " \-\-no\-dither
+Do not dither output PCM samples. This may result in lower quality sound but
+is useful for analyzing output from the decoder.
+.TP
+\fB\-\-fade\-in\fR[\fB=\fIduration\fR]
+Gradually fade-in the audio from each file over
+.IR duration .
+If not specified, the default duration is
+.B 0:05
+(five seconds.)
+.TP
+\fB\-a\fR or \fB\-\-attenuate=\fIdecibels\fR or \fB\-\-amplify=\fIdecibels\fR
+Attenuate or amplify the signal by
+.I decibels
+(dB).
+The signal is attenuated if the decibel value is negative; it is amplified if
+the value is positive.
+The value must be in the range \-175 to +18\ dB.
+The value may be fractional, e.g. \-1.5\ dB.
+A value of 0\ dB will leave the signal unchanged.
+Each step of 6\ dB will approximately halve (in the negative direction) or
+double (in the positive direction) the strength of the signal.
+.TP
+\fB\-A\fR or \fB\-\-adjust\-volume=\fIdecibels\fR
+Adjust the relative volume for all files. This option overrides any per-file
+volume adjustment settings. For example,
+.B \-A0
+may be used to ignore relative volume adjustments given by ID3 tags. Relative
+volume adjustments specified by this option or by ID3 tags are used as the
+base volume against which the signal is further attenuated or amplified using
+the
+.B \-a
+.RB ( \-\-attenuate ,
+.BR \-\-amplify )
+option or keyboard controls.
+This option cannot be used together with
+.B \-G
+.RB ( \-\-replay\-gain ).
+.TP
+\fB\-G\fR or \fB\-\-replay\-gain\fR[\fB=\fIprofile\fR]
+Enable Replay Gain volume adjustments. Replay Gain information contained in
+the decoded files (if any) is used to make volume adjustments for output. The
+.I profile
+may be one of
+.B radio
+(the default) or
+.BR audiophile .
+See the
+.B NOTES
+section below for further details. When Replay Gain is enabled, a default
+pre-amp gain of +6\ dB is also applied; this can be changed with the
+.B \-a
+.RB ( \-\-attenuate ,
+.BR \-\-amplify )
+option.
+.SS Channel Selection
+.PP
+For dual channel streams, an output channel should be selected. If one is not
+selected, the first (left) channel will be used.
+.PP
+For stereo streams, making a channel selection other than stereo will cause
+the output to become monaural.
+.TP
+.BR \-1 " or " \-\-left
+Output the first (left) channel only.
+.TP
+.BR \-2 " or " \-\-right
+Output the second (right) channel only.
+.TP
+.BR \-m " or " \-\-mono
+Mix the left and right channels together.
+.TP
+.BR \-S " or " \-\-stereo
+Force stereo output, even if the stream is single or dual channel.
+.SS Playback
+.TP
+\fB\-s\fR or \fB\-\-start=\fItime\fR
+Begin playing at
+.IR time ,
+given as an offset from the beginning of the first file
+.RB ( 0:00:00 ),
+seeking as necessary.
+.TP
+\fB\-t\fR or \fB\-\-time=\fIduration\fR
+Stop playback after the playing time of the output audio equals
+.IR duration .
+.TP
+.BR \-z " or " \-\-shuffle
+Randomize the list of files given on the command line for playback.
+.TP
+\fB\-r\fR or \fB\-\-repeat\fR[\fB=\fImax\fR]
+Play the input files
+.I max
+times, or indefinitely. Playback can be stopped prematurely by giving a time
+limit with the
+.B \-t
+.RB ( \-\-time )
+option. If
+.B \-z
+.RB ( \-\-shuffle )
+is also used, the files will be continuously shuffled and repeated in such a
+way that the same file is not played again until at least half of the other
+files have played in the interim.
+.TP
+.B \-\-tty\-control
+Enable keyboard controls during playback. This is the default unless standard
+input is not a terminal, output is redirected with
+.B \-o
+.RB ( \-\-output ),
+or either of
+.B \-q
+.RB ( \-\-quiet )
+or
+.B \-Q
+.RB ( \-\-very\-quiet )
+is given.
+The keyboard controls are:
+.RS
+.TP 3
+.B P
+Pause; press any key to resume.
+.TP 3
+.B S
+Stop; press any key to replay the current file from the beginning.
+.TP 3
+.B F
+Forward; advance to the next file.
+.TP 3
+.B B
+Back; replay the current file, unless it has been playing for less than 4
+seconds, in which case replay the previous file.
+.TP 3
+.B T
+Time display; change the time display mode. This only works with
+.B \-v
+.RB ( \-\-verbose ).
+The display mode alternates among overall playing time, current time
+remaining, and current playing time.
+.TP 3
+.B +
+Increase gain; increase the audio output gain by 0.5\ dB.
+.TP 3
+.B \-
+Decrease gain; decrease the audio output gain by 0.5\ dB.
+.TP 3
+.B Q
+Quit; stop decoding and exit.
+.RE
+.TP
+.B \-\-no\-tty\-control
+Disable keyboard controls during playback. This is the default when standard
+input is not a terminal, output is redirected with
+.B \-o
+.RB ( \-\-output ),
+or either of
+.B \-q
+.RB ( \-\-quiet )
+or
+.B \-Q
+.RB ( \-\-very\-quiet )
+is given.
+.SS Miscellaneous
+.TP
+.BR \-T " or " \-\-show\-tags\-only
+Show ID3 and/or encoder tags from the input
+.IR file s
+but do not otherwise decode or play any audio. By default only ID3 tags are
+shown (if any). With
+.B \-v
+.RB ( \-\-verbose ),
+all tags are shown. Encoder tags recognized by
+.B madplay
+include the Xing VBR header tag and the header tag format written by
+.BR lame (1).
+.TP
+.BR \-V " or " \-\-version
+Display the effective version and build options for
+.B madplay
+and exit.
+.TP
+.B \-\-license
+Display copyright, license, and warranty information and exit.
+.TP
+.BR \-h " or " \-\-help
+Display usage information and exit.
+.SH Output Formats
+Other than playing on the native audio device, the following output formats
+are supported:
+.TP
+.B cdda
+CD audio, 16-bit big-endian 44100\ Hz stereo PCM, padded to 2352-byte block
+boundary
+.RB ( *.cdr ,
+.BR *.cda )
+.TP
+.B aiff
+Audio IFF, [16-bit] PCM
+.RB ( *.aif ,
+.BR *.aiff )
+.TP
+.B wave
+Microsoft RIFF/WAVE, [16-bit] PCM
+.RB ( *.wav )
+.TP
+.B snd
+Sun/NeXT audio, 8-bit ISDN \(*m-law
+.RB ( *.au ,
+.BR *.snd )
+.TP
+.B raw
+binary [16-bit] host-endian linear PCM, stereo interleaved
+.TP
+.B hex
+ASCII hexadecimal [24-bit] linear PCM, stereo interleaved, one sample per
+output line
+.TP
+.B esd
+Enlightened Sound Daemon (EsounD) [16-bit] (give speaker host as
+.IR path )
+.TP
+.B null
+no output (usually for testing or timing the decoder)
+.PP
+Default bit depths shown in square brackets can be changed with the
+.B \-b
+.RB ( \-\-bit\-depth )
+option.
+.PP
+Note that EsounD support requires the
+.I libesd
+library.
+.SH Time Specifications
+For options which accept a time or duration argument, the following time
+specifications are recognized:
+.TP
+.IB hh : mm : ss . ddd
+Hours, minutes, seconds, and decimal fractions of a second. This specification
+is flexible;
+.IB hh : mm : ss\c
+,
+.IB mmm : ss\c
+,
+.BI : ss\c
+,
+.IB sss . ddd\c
+,
+.BI . ddd\c
+, and
+.I ssss
+are all acceptable. The component values are not constrained to any particular
+range or number of digits.
+.TP
+.IB frac / unit
+A length of time specified as a rational number, in seconds. This can be used
+for sample-granularity, for example
+.B 32/44100
+for 32 samples, assuming a 44100\ Hz sample frequency.
+.TP
+.IB time1 + time2
+A composite time made by adding two time values together. This permits mixing
+the above specification forms.
+.PP
+The resolution of any time value cannot exceed 1/352800000 seconds.
+.SH DIAGNOSTICS
+.TP
+.B error: frame #: lost synchronization
+If encountered at the beginning of a file, this means the file contains
+something other than an ID3v2 tag before the MPEG audio data. If encountered
+in the middle of a file, it may mean the file is corrupt. This message is most
+commonly encountered, however, at the end of a file if the file contains an
+ID3v1 tag that is not aligned to an MPEG audio frame boundary. In this case,
+the message is harmless and may be ignored.
+.PP
+.TP
+.B error: frame #: bad main_data_begin pointer
+This message can occur while decoding a Layer\ III stream that has been cut or
+spliced without preserving its bit reservoir. The affected frame cannot be
+properly decoded, but will be used to help restore the bit reservoir for
+following frames.
+.PP
+Most other messages indicate a deficiency in the input stream.
+.PP
+When a frame cannot be properly decoded, a concealment strategy is used as
+follows:
+.TP 2
+\(bu
+If the previous frame was properly decoded, it is repeated in place of the
+current frame.
+.TP 2
+\(bu
+If the previous frame was
+.I not
+properly decoded, the current frame is muted.
+.SH NOTES
+.SS Output Precision
+Because MAD produces samples with a precision greater than 24 bits, by default
+.B madplay
+will dither the samples to the precision of the output format. This produces
+high quality audio that generally sounds superior to the output of a simple
+rounding algorithm. However, dithering may unfavorably affect an analytic
+examination of the output, and therefore it may be disabled by using the
+.B \-d
+.RB ( \-\-no\-dither )
+option.
+.PP
+The actual precision of output samples can be requested with the
+.B \-b
+.RB ( \-\-bit\-depth )
+option. Whether the request can be honored depends on the capabilities of the
+audio device or output format. If this option is not specified, a typical
+default depth will be used (often 16) or in the case of output to an audio
+device, the highest bit depth determined to work reliably with the device will
+be used.
+.PP
+Note that bit depths greater than 24 are effectively the same as 24-bit
+precision samples padded to the requested depth.
+.SS Ancillary Data
+MPEG audio streams contain an ancillary data stream in addition to audio data.
+Most often this does not contain any useful information and may simply consist
+of padding bits. The MPEG-2 extension to multichannel audio uses part of this
+ancillary stream to convey multichannel information; presently MAD does not
+interpret such data.
+.PP
+For applications which have uses for the stream, ancillary data can be
+extracted with the
+.B \-\-ancillary\-output
+option.
+.SS Replay Gain
+.B madplay
+optionally supports the Replay Gain proposed standard with the
+.B \-G
+.RB ( \-\-replay\-gain )
+option to make compensating volume adjustments when playing decoded audio from
+different sources. There are two Replay Gain profiles:
+.B radio
+strives to make gain adjustments that give all tracks equal loudness, while
+.B audiophile
+attempts to give ideal listening loudness. These adjustments are relative to a
+reference of 83\ dB SPL.
+.PP
+A pre-amp gain is also used in conjunction with Replay Gain to achieve the
+overall desired loudness. When Replay Gain is enabled, this pre-amp gain
+defaults to +6\ dB, however it can be changed with the
+.B \-a
+.RB ( \-\-attenuate ,
+.BR \-\-amplify )
+option or keyboard controls.
+.PP
+Note that when enabled, Replay Gain overrides any relative volume adjustments
+specified by ID3 tags (RVA2). Replay Gain is also incompatible with the
+.B \-A
+.RB ( \-\-adjust\-volume )
+option; any attempt to use it will be ignored.
+.PP
+Replay Gain information is read either from an ID3 tag (RGAD) or from an
+encoder tag written by
+.BR lame (1).
+If both are present, the information in the ID3 tag takes precedence. In
+accordance with the proposed standard, if the requested Replay Gain profile is
+not available but the alternate is, the alternate is used instead.
+.PP
+Due to an unfortunate heresy, versions of
+.BR lame (1)
+since 3.95.1 write Replay Gain information using a reference of 89\ dB SPL
+instead of the 83\ dB specified in the Replay Gain proposed standard. To
+compensate,
+.B madplay
+automatically subtracts 6\ dB from the Replay Gain values read from such tags.
+.PP
+Note that
+.B madplay
+does not yet support hard limiting as suggested by the Replay Gain proposed
+standard; nor does it automatically reduce the pre-amp gain to avoid clipping.
+.SH CONFORMING TO
+MAD conforms to Part\ 3 of the ISO/IEC\ 11172 (MPEG-1) international standard
+for decoding MPEG audio. In addition, MAD supports the extension to Lower
+Sampling Frequencies (LSF) as defined in Part\ 3 of ISO/IEC\ 13818 (MPEG-2).
+.PP
+The output from MAD has been tested and found to satisfy the ISO/IEC\ 11172-4
+computational accuracy requirements for compliance. In most configurations,
+MAD is a
+.I Full Layer\ III ISO/IEC\ 11172-3 audio decoder
+as defined by the standard.
+.PP
+The ID3 tag parsing library used by
+.B madplay
+conforms to the ID3v2.4.0 informal standard.
+.PP
+With the exception of the clipping prevention provisions, Replay Gain support
+provided by
+.B madplay
+is in accordance with the Replay Gain proposed standard published on July\ 10,
+2001 by David Robinson.
+.SH BUGS
+The resampling algorithm used by
+.B madplay
+is one of a linear interpolation, and does not produce optimum quality
+sound.
+.PP
+The granularity of start and stop times
+.RB ( \-\-start
+and
+.BR \-\-time )
+is not yet as fine as this document suggests.
+.SH AUTHOR
+Robert Leslie <rob@mars.org>
+.SH SEE ALSO
+.BR lame (1),
+.BR normalize (1),
+.BR sox (1),
+.BR wget (1)
+.\" .BR id3tag (1)
+.\" .BR libmad (3)
+.\" .BR libid3tag (3)

@@ -1,0 +1,35 @@
+
+ madplay - MPEG audio decoder and player
+ Copyright (C) 2000-2004 Robert Leslie
+
+ $Id$
+
+===============================================================================
+
+madplay:
+  - auto attenuation?
+  - fade-out support
+  - customizable gap support
+  - fix start/stop time granularity
+  - resampling with bandlimited interpolation
+  - byte position reporting
+  - better bitstream error recovery
+  - handle emphasis
+  - equalizer support
+  - dynamically loaded filters
+  - automatic volume adjustment filter
+  - handle SIGPIPE? (audio_esd)
+  - pass ID3 tag data to output modules
+  - read RIFF-encapsulated MPEG audio files
+
+id3tag:
+  - needs work!
+
+madtime:
+  - recurse directories
+  - collect directory names
+  - non-mmap support
+
+mad123:
+  - needs work!
+

@@ -1,0 +1,22 @@
+# @configure_input@
+
+# Directories...
+$prefix=@prefix@
+$exec_prefix=@exec_prefix@
+$srcdir=@srcdir@
+
+# Product information
+%product @PACKAGE@
+%copyright GPL
+%vendor Robert Leslie <rob@mars.org>
+%license @srcdir@/COPYING
+%readme @srcdir@/README
+%description madplay is a command-line MPEG audio decoder and player.
+%version @VERSION@
+%packager Giuseppe "Cowo" Corbelli <cowo@lugbs.linux.it>
+
+%system all
+f 0755 root root @bindir@/madplay madplay
+f 0755 root root @bindir@/abxtest @srcdir@/abxtest
+f 0644 root root @mandir@/man1/madplay.1 @srcdir@/madplay.1
+f 0644 root root @mandir@/man1/abxtest.1 @srcdir@/abxtest.1

@@ -1,0 +1,7 @@
+0.15.2b
+configure.ac:24
+version.h:27
+abxtest:27
+msvc++/config.h:243,249,269
+
+msvc++/madplay.dsw:6,21

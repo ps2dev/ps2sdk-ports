@@ -1,0 +1,138 @@
+
+ madplay - MPEG audio decoder and player
+ Copyright (C) 2000-2004 Robert Leslie
+
+ $Id$
+
+===============================================================================
+
+AUTHOR
+
+  Except where otherwise noted, all code was authored by:
+
+      Robert Leslie <rob@mars.org>
+
+CONTRIBUTORS
+
+  Significant contributions have been incorporated with thanks to:
+
+      Erik Andersen <andersen@codepoet.org>
+        2000/09/30: configure.ac
+          - Suggested --disable-mmap option for low memory systems.
+        2000/09/30: madplay.c
+          - Suggested shuffle/repeat options.
+
+      Greg Berenfield <gberenfield@berenfield.com>
+        2001/12/01: madplay.c
+          - Suggested option to select default time display mode.
+
+      Gabriel Bouvigne <bouvigne@mp3-tech.org>
+        2000/10/15: po/fr.po
+          - French message translations.
+
+      Florin Braescu <braescu_f@yahoo.com>
+        2004/02/19: audio_alsa.c
+          - Provided patch for using ALSA on modern systems
+
+      Damian Brizuela <damianweb@yahoo.com>
+        2000/11/03: po/es.po
+          - Spanish message translations.
+
+      Simon Burge <simonb@wasabisystems.com>
+        2000/09/19: audio_sun.c
+          - Discovered endian assumption problem.
+        2001/02/09: audio_sun.c
+          - Reported <string.h> dependency under NetBSD.
+        2001/10/19: audio_sun.c
+          - NetBSD compatibility fix for I_FLUSH.
+
+      Giuseppe Corbelli <cowo@lugbs.linux.it>
+        2002/01/04: mad.list.in
+          - Contributed epm package list.
+
+      Rafael Avila de Espíndola <rafael.espindola@ic.unicamp.br>
+        2003/09/23: filter.h, player.h
+          - Reported problem with --disable-mmap option.
+
+      Matthew Green <mrg@eterna.com.au>
+        2000/11/26: player.c
+          - Provided initial implementation of TTY controls.
+
+      Steven Grimm <koreth@midwinter.com>
+        2001/11/26: audio_qnx.c, configure.ac
+          - Provided QNX audio output module.
+
+      Graham Guttocks <graham_guttocks@yahoo.co.nz>
+        2000/11/08: audio_oss.c
+          - Discovered FreeBSD compatibility problem.
+
+      Mario Horvat <marioh@ugrad.unimelb.edu.au>
+        2000/10/26: po/hr.po
+          - Croatian message translations.
+
+      Thomas Klausner <wiz@danbala.ifoer.tuwien.ac.at>
+        2000/11/25: player.c
+          - Suggested use of madvise() via patch from Antti Kantee to reduce
+            mmap() memory overhead.
+
+      Aleksander Korzynski <A.Korzynski@elka.pw.edu.pl>
+        2004/02/23: tag.c
+          - Reported LAME heresy with respect to Replay Gain reference
+            level.
+
+      Glenn Maynard <g_mad@zewt.org>
+        2004/01/23: tag.c
+          - Suggested checking for 'Info' as well as 'Xing' tags.
+
+      Hod McWuff <hod@users.sourceforge.net>
+        2002/02/18: audio_alsa.c
+          - Provided ALSA audio output module.
+
+      Dominik Mierzejewski <dmierzej@elka.pw.edu.pl>
+        2001/10/22: po/Makefile.in.in
+          - Reported missing use of DESTDIR.
+
+      Christoffer Nicolaisen <chrn@start.no>
+        2000/10/26: po/no.po
+          - Norwegian message translations.
+
+      Brett Paterson <brett@fmod.org>
+        2001/10/28: global.h
+          - Reported missing <assert.h> et al. under MS Embedded Visual C.
+
+      Sean 'Shaleh' Perry <shaleh@via.net>
+        2001/10/22: config.guess, config.sub
+          - Keep up to date for proper Debian packaging.
+
+      Bertrand Petit <eemad@phoe.frmug.org>
+        2001/10/22: player.c
+          - Suggested avoidance of log10(0).
+        2001/10/22: configure.ac, audio_oss.c
+          - Compatibility fix for FreeBSD versions 0-3.
+        2001/10/23: player.c
+          - Noted my bad fix for avoiding log10(0).
+
+      Nicolas Pitre <nico@cam.org>
+        2001/11/19: resample.c
+          - Suggested computation of any resampling ratio.
+
+      Ignatios Souvatzis <is@netbsd.org>
+        2003/06/02: audio_sun.c
+          - Suggested use of AUDIODEV environment variable for default audio
+            device path (e.g. SunRay terminals).
+
+      Sasaki Toshiya <s.toshi@nttcom.co.jp>
+        2002/06/05: madplay.c
+          - Reported need for _setmode() under Win32.
+
+      Felix von Leitner <leitner@fefe.de>
+        2001/10/24: madplay.c, player.c
+          - Suggested -i (--ignore-crc) option.
+        2001/10/24: madplay.c, player.c, madtime.c
+          - Suggested conditional use of localeconv() based on results from
+            `configure'.
+        2001/10/29: audio_oss.c
+          - Suggested trying /dev/sound/dsp before /dev/dsp.
+
+===============================================================================
+

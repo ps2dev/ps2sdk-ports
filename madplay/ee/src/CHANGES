@@ -1,0 +1,319 @@
+
+ madplay - MPEG audio decoder and player
+ Copyright (C) 2000-2004 Robert Leslie
+
+ $Id$
+
+===============================================================================
+
+Version 0.15.2 (beta)
+
+  * Applied a minor patch from Florin Braescu for the ALSA audio output
+    module.
+
+  * Modified the reading of LAME encoder tags to compensate for Replay Gain
+    heresy by subtracting 6 dB from Replay Gain values written by LAME
+    3.95.1 and later. This achieves a uniform reference of 83 dB SPL in
+    accordance with the Replay Gain proposed standard.
+
+  * Updated the display of encoder tags to show the Replay Gain reference
+    level.
+
+  * Updated documentation to mention the Replay Gain reference level and
+    LAME heresy.
+
+Version 0.15.1 (beta)
+
+  * Updated to autoconf 2.59, automake 1.8.2, libtool 1.5.2, gettext 0.14.1.
+
+  * Added support for Replay Gain to `madplay', enabled with a new -G
+    (--replay-gain) option.
+
+  * Added new -T (--show-tags-only) option to `madplay' to display ID3
+    and/or encoder tags without decoding any audio.
+
+  * Renamed `id3tag' command-line program to `madtag' to avoid conflict with
+    another package.
+
+  * Improved 32-bit support detection for audio_oss module.
+
+  * Fixed a problem using the --disable-mmap configure option.
+
+Version 0.15.0 (beta)
+
+  * Updated to autoconf 2.57, automake 1.7.5, libtool 1.4.3, gettext 0.11.5.
+
+  * Added support to `madplay' for arbitrary resampling ratios.
+
+  * Added new -R (--sample-rate) option to `madplay'.
+
+  * Added support to `madplay' for RVA2 (relative volume adjustment) frames
+    in ID3 tags. The "master volume" channel volume adjustment of the first
+    RVA2 frame is now honored, unless overridden by a command-line option.
+
+  * Added new -A (--adjust-volume) option to `madplay' to override per-file
+    relative volume adjustments (see above).
+
+  * Added new keyboard controls to `madplay' for dynamically increasing (+)
+    and decreasing (-) the audio output gain.
+
+  * Changed `madplay' tty controls to be disabled by default when -q or -Q
+    is given (on the assumption these are most often used when running
+    madplay in the background.)
+
+  * Added new --display-time option to `madplay'.
+
+  * Changed `madplay' to allow switching to Overall Time even for singleton
+    playlists.
+
+  * Added new --ancillary-output option to `madplay'.
+
+  * Added new audio_qnx module (untested) for QNX platforms courtesy of
+    Steven Grimm.
+
+  * Added new audio_alsa module (untested) for ALSA platforms courtesy of
+    Hod McWuff.
+
+  * Added new audio_carbon module for Mac OS X platforms.
+
+  * Changed audio_sun to use the AUDIODEV environment variable for the
+    default audio device path.
+
+  * Changed audio_hex support to be enabled in all builds.
+
+  * Changed to use native Cygwin build by default; give --host=mingw32 to
+    `configure' to use MinGW (and avoid a dependency on the Cygwin DLL).
+
+  * Begun work on a new `id3tag' command-line tool for displaying and
+    manipulating ID3 tags.
+
+Version 0.14.2 (beta)
+
+  * Added a new output module, audio_esd, for EsounD (Enlightened Sound
+    Daemon) support. You must have EsounD already installed before running
+    `configure'. Use -o esd:[HOSTNAME] as args to `madplay'. If --with-esd
+    is given to `configure', EsounD will be used for native audio output.
+
+  * Added a new output module, audio_cdda, for creating CD audio images.
+    Output is forced to 16-bit 44100 Hz stereo.
+
+  * Added a new output module, audio_aiff, for Audio IFF (AIFF) format
+    files.
+
+  * Changed the audio_wave module to initially write ~0 length rather than
+    0, for better compatibility when output is piped to another program.
+
+  * Changed audio_oss module to try /dev/sound/dsp before /dev/dsp.
+
+  * Added new -b (--bit-depth) option to `madplay'. Most output modules now
+    support configurable bit depths.
+
+  * Added new -i (--ignore-crc) option to `madplay'.
+
+  * Changed Cygwin builds to use MinGW; resulting Win32 executables no
+    longer have a dependency on Cygwin DLLs.
+
+  * `madplay' now supports keyboard controls under Win32.
+
+  * Made use of localeconv() conditional based on results from `configure'.
+
+  * Made use of assert() portable to systems without <assert.h>.
+
+  * Fixed my bad fix for avoiding log10(0).
+
+Version 0.14.1 (beta)
+
+  * Updated config.guess and config.sub to latest upstream versions.
+
+  * Fixed a NetBSD compatibility issue in audio_sun.
+
+  * Fixed a FreeBSD compatibility issue in audio_oss.
+
+  * Modified the audio_null output module to compute peak amplitude.
+
+  * Changed the peak amplitude computation to avoid evaluating log10(0).
+
+  * Several other small fixes.
+
+Version 0.14.0 (beta)
+
+  * Fixed a possible segmentation fault due to mmap() abuse.
+
+  * Improved MSVC++ portability and added MSVC++ project files.
+
+  * Modified the PCM dithering routine for better dithered output.
+
+  * Added TTY controls and new --tty-control and --no-tty-control options to
+    `madplay'. TTY control keys: `P' pause, `S' stop, `Q' quit, `F' forward,
+    `B' backward.
+
+  * New time/time-remaining modes with --verbose --tty-control (select by
+    pressing `T'.)
+
+Version 0.13.0 (beta)
+
+  * The last complete audio frame should now be properly decoded even when
+    it is not followed by other data.
+
+  * Added new --downsample option to `madplay'.
+
+Version 0.12.3 (beta)
+
+  * Added calls to madvise() on supported systems to reduce memory overhead
+    when using mmap().
+
+  * Added support for automatic mono/stereo channel selection based on
+    output capability.
+
+  * Added a new option to force stereo output of single or dual channel
+    streams.
+
+  * Added a new option to amplify/attenuate the output signal by an amount
+    expressed in decibels.
+
+  * Output statistics (peak amplitude, clipped samples) are now gathered and
+    displayed after decoding.
+
+  * Fixed a problem calling setlocale() when NLS is disabled.
+
+  * Fixed a configure problem when multiple -O CFLAGS are present.
+
+Version 0.12.2 (beta)
+
+  * Fixed another FreeBSD sound compatibility problem in audio_oss.c.
+
+Version 0.12.1 (beta)
+
+  * Rewrote the audio PCM packing routines for (hopefully) somewhat better
+    performance.
+
+  * Fixed a FreeBSD sound compatibility problem in audio_oss.c with help
+    from Graham Guttocks.
+
+  * Moved ID3 genre table into a separate file and updated extensions with
+    current list from Winamp.
+
+  * New Croatian, Norwegian, and Spanish translations courtesy of Mario
+    Horvat, Christoffer Nicolaisen, and Damian Brizuela, respectively.
+
+  * Added a simple ABX testing script.
+
+Version 0.12.0 (alpha)
+
+  * Changed the build environment to use automake and libtool. A libmad
+    shared library can now be built using the --enable-shared option to
+    `configure'.
+
+  * Added internationalization support via GNU gettext. New French
+    translation added courtesy of Gabriel Bouvigne.
+
+  * Changed raw output module to use host-endian byte order.
+
+  * Added --disable-mmap option to `configure' per suggestion of Erik
+    Andersen.
+
+  * Debug builds now link with -lefence, if available.
+
+  * Added `madplay' support for filter chains. This could eventually be
+    extended to support dynamically loaded filters.
+
+  * Added a new optional fade-in filter.
+
+  * Rewrote madplay.c to use GNU getopt, and added many new options (use
+    `madplay --help' to see them all.)
+
+  * Updated the man page for `madplay'.
+
+Version 0.11.4 (beta)
+
+  * Added Sun/NeXT audio file output module (audio_au.c).
+
+  * Added 32-bit (really 24-bit) output support to OSS module.
+
+  * Relaxed output sample frequency match requirement.
+
+  * Fixed endian assumption problem in audio_sun.c.
+
+  * Added -mtune=strongarm for all ARM targets.
+
+Version 0.11.3 (beta)
+
+  * Joint stereo mode now shows LR indicator during playback.
+
+Version 0.11.2 (beta)
+
+  * Added a dual channel output selection option.
+
+  * Improved the OSS output module by falling back on 8-bit format if 16-bit
+    is not available, and by using native 16-bit endianness.
+
+  * PCM output is now dithered for better audio quality. A new runtime
+    option can disable this feature.
+
+  * Added a resampling feature for unsupported output sampling frequencies.
+
+  * Centralized sample scaling and formatting in audio.c for the output
+    modules.
+
+  * Moved the empeg-car audio output support into a separate module.
+
+  * Added bad-CRC frame muting code to madplay.c.
+
+  * Changed `madtime' to indicate average bitrates.
+
+  * Reduced the ID3 genre table memory usage.
+
+  * Minor code clean-up.
+
+Version 0.11.1 (beta)
+
+  * Improved the robustness of the Win32 audio output module.
+
+  * Added a short man page for madplay.
+
+  * Wrote most of the code for madtime.
+
+  * Wrote code for an experimental multi-stream mixer `madmix'
+    (--enable-experimental to add -x option support for this to madplay).
+
+Version 0.10.3 (beta)
+
+  * Made portable to Cygwin.
+
+  * Wrote new Win32 audio interface module.
+
+Version 0.10.1 (beta)
+
+  * Miscellaneous code clean-up.
+
+  * Running madplay with no arguments now gives usage info.
+
+Version 0.10.0 (beta)
+
+  * Added framework for ID3v2 support.
+
+  * Added prefix parsing for output module selection.
+
+  * Added audio_raw output module.
+
+  * Rewrote madplay.c to use high-level interface.
+
+Version 0.9.7 (beta)
+
+  * Added audio_hex module (--enable-debugging) for PCM-level debugging.
+
+  * Fixed bug in audio_sun module; should work correctly now.
+
+  * Added -Q (very quiet) option to omit bitstream error messages.
+
+  * Reduced -v output by eliminating timing tenths.
+
+  * Fixed problem configuring unsupported sample frequencies, and added user
+    feedback.
+
+  * Enhanced final frame count reporting to include playing time.
+
+  * Cleaned up madplay.c somewhat.
+
+===============================================================================
+
