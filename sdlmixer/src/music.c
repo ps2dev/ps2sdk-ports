@@ -330,8 +330,6 @@ int open_music(SDL_AudioSpec *mixer)
 {
 	int music_error;
 
-	printf("\n\n----------open_music---------\n\n\n");
-
 	music_error = 0;
 #ifdef WAV_MUSIC
 	if ( WAVStream_Init(mixer) < 0 ) {
@@ -372,7 +370,6 @@ int open_music(SDL_AudioSpec *mixer)
 			++music_error;
 		}
 	}
-	printf("--------foo2--------\n");
 	current_output_channels = mixer->channels;
 	current_output_format = mixer->format;
 	if ( mixer->channels > 1 ) {
@@ -389,7 +386,6 @@ int open_music(SDL_AudioSpec *mixer)
 	md_sndfxvolume = 128;
 	md_pansep	  = 128;
 	md_reverb	  = 0;
-	printf("foo3\n");
 #ifdef LIBMIKMOD_MUSIC
 	md_mode |= DMODE_HQMIXER|DMODE_SOFT_MUSIC|DMODE_SURROUND;
 #endif
@@ -400,10 +396,8 @@ int open_music(SDL_AudioSpec *mixer)
 #ifdef LIBMIKMOD_MUSIC
 	if(!MikMod_InfoLoader())
 #endif
-	printf("@@@@registering loaders@@@\n");
 	MikMod_RegisterAllLoaders();
 	if ( MikMod_Init() ) {
-		printf("FAILED!!!\n");
 		Mix_SetError("%s", MikMod_strerror(MikMod_errno));
 		++music_error;
 	}
