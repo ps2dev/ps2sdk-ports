@@ -89,20 +89,27 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 {
 	vformat->BitsPerPixel = 24;
 	vformat->BytesPerPixel = 3;
+	vformat->Rmask = 0xff << 0;
+	vformat->Gmask = 0xff << 8;
+	vformat->Bmask = 0xff << 16;
+	vformat->Amask = 0xff << 24;
 
 	gsGlobal = gsKit_init_global(GS_MODE_PAL);
-
-	/* initialize the DMAC */
-	dmaKit_init(D_CTRL_RELE_ON,D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8);
-	dmaKit_chan_init(DMA_CHANNEL_GIF);
-
-	gsKit_init_screen(gsGlobal);
 
 	if (gsGlobal == NULL)
 	{
 		SDL_SetError("Failed to initialize gsKit");
 		return -1;
 	}
+
+	/* initialize the DMAC */
+	dmaKit_init(D_CTRL_RELE_ON,D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8);
+	dmaKit_chan_init(DMA_CHANNEL_GIF);
+
+	/* reduce zbuffer requirements, so we'll get more memory for texture
+	gsGlobal->PSMZ = GS_PSMZ_16;
+	*/
+	gsKit_init_screen(gsGlobal);
 
 	gsKit_clear(gsGlobal, BLACK_RGBAQ);
 	return 0;
@@ -162,12 +169,13 @@ static SDL_Rect **PS2_ListModes(SDL_VideoDevice *device, SDL_PixelFormat *format
 static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *current, int width, int height, int bpp, Uint32 flags)
 {
 	int psm, size;
-	int Rmask, Gmask, Bmask;
+	int Rmask, Gmask, Bmask, Amask;
 	float w_ratio, h_ratio;
 
 	Rmask = 0;
 	Gmask = 0;
 	Bmask = 0;
+	Amask = 0;
 	switch(bpp)
 	{
 		case 4:
@@ -180,23 +188,24 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		
 		case 16:
 		psm = GS_PSM_CT16; 
-		Bmask = 0x0000f800;
-		Gmask = 0x000007e0;
 		Rmask = 0x0000001f;
+		Gmask = 0x000003e0;
+		Bmask = 0x00007c00;
 		break;
 		
 		case 24:
 		psm = GS_PSM_CT24;
-		Rmask = 0x00ff0000;
+		Rmask = 0x000000ff;
 		Gmask = 0x0000ff00;
-		Bmask = 0x000000ff;
+		Bmask = 0x00ff0000;
 		break;
 		
 		case 32:
 		psm = GS_PSM_CT32;
-		Bmask = 0x00ff0000;
-		Gmask = 0x0000ff00;
 		Rmask = 0x000000ff;
+		Gmask = 0x0000ff00;
+		Bmask = 0x00ff0000;
+		Amask = 0xff000000;
 		break;
 		
 		default:
@@ -217,10 +226,20 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 
 	memset((void *)gsTexture.Mem, '\0', size);
 	gsTexture.Vram = gsKit_vram_alloc(gsGlobal, size);
-	gsTexture.Clut = gsClut;
-	gsTexture.VramClut = (u32)gsKit_vram_alloc(gsGlobal, 1024);
+
+	if (bpp <= 8)
+	{
+		gsTexture.Clut = gsClut;
+		gsTexture.VramClut = (u32)gsKit_vram_alloc(gsGlobal, 1024);
+	}
+	else
+	{
+		/* no cluts needed */
+		gsTexture.Clut = 0;
+		gsTexture.VramClut = 0;
+	}
 	
-	if (! SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, 0)) 
+	if (! SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, Amask)) 
 	{
 		// FIXME: free GS memory //
 		free(gsTexture.Mem);
