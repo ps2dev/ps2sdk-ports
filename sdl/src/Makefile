@@ -32,8 +32,15 @@ SDL_OBJS += thread/ps2sdk/SDL_syssem.o
 SDL_OBJS += thread/ps2sdk/SDL_systhread.o
 SDL_OBJS += timer/ps2sdk/SDL_systimer.o
 SDL_OBJS += video/ps2sdk/SDL_ps2video.o
+SDL_OBJS += video/ps2sdk/ps2kbd.o
+SDL_OBJS += video/ps2sdk/ps2mouse.o
+SDL_OBJS += video/ps2sdk/ps2usbd.o
+SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
+SDL_OBJS += video/ps2sdk/SDL_ps2mouseevents.o
+SDL_OBJS += video/ps2sdk/SDL_ps2USBevents.o
 SDL_OBJS += audio/ps2sdk/SDL_ps2audio.o 
-SDL_OBJS += audio/ps2sdk/sjpcm_irx.o audio/ps2sdk/sjpcm_rpc.o
+SDL_OBJS += audio/ps2sdk/sjpcm_irx.o 
+SDL_OBJS += audio/ps2sdk/sjpcm_rpc.o
 SDL_OBJS += cdrom/ps2sdk/SDL_syscdrom.o
 SDL_OBJS += joystick/ps2sdk/ps2joystick.o
 
