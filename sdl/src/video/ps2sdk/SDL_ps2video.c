@@ -116,9 +116,8 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	dmaKit_init(D_CTRL_RELE_ON,D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8);
 	dmaKit_chan_init(DMA_CHANNEL_GIF);
 
-	/* reduce zbuffer requirements, so we'll get more memory for texture
-	gsGlobal->PSMZ = GS_PSMZ_16;
-	*/
+	/* disable zbuffer because we're only doing 2d now */
+	gsGlobal->ZBuffering = GS_SETTING_OFF;
 
 	/* initialize keyboard and mouse */
 	if (PS2_InitUSB(device) >= 0) 
@@ -164,6 +163,8 @@ static SDL_Rect rect_320x200 = {0, 0, 320, 200};
 static SDL_Rect rect_320x240 = {0, 0, 320, 240};
 static SDL_Rect rect_320x256 = {0, 0, 320, 256};
 static SDL_Rect rect_512x448 = {0, 0, 512, 448};
+static SDL_Rect rect_640x200 = {0, 0, 640, 200};
+static SDL_Rect rect_640x400 = {0, 0, 640, 400};
 static SDL_Rect rect_640x448 = {0, 0, 640, 448};
 static SDL_Rect rect_640x480 = {0, 0, 640, 480};
 static SDL_Rect rect_800x600 = {0, 0, 800, 600};
@@ -176,6 +177,8 @@ static SDL_Rect *vesa_modes[] = {
 	&rect_320x240,
 	&rect_320x256,
 	&rect_512x448,
+	&rect_640x200,
+	&rect_640x400,
 	&rect_640x448,
 	&rect_640x480,
 	&rect_800x600,
@@ -203,7 +206,8 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 {
 	int psm, size;
 	int Rmask, Gmask, Bmask, Amask;
-	float w_ratio, h_ratio;
+	int visible_h;
+	float ratio, w_ratio, h_ratio;
 
 	gsKit_init_screen(gsGlobal);
 	gsKit_clear(gsGlobal, BLACK_RGBAQ);
@@ -277,7 +281,10 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		gsTexture.VramClut = 0;
 	}
 
-	printf("vmem 0x%x, vclut 0x%x, diff %d\n", gsTexture.Vram, gsTexture.VramClut, gsTexture.VramClut - gsTexture.Vram);
+	/* enable bilinear */
+	gsTexture.Filter = GS_FILTER_LINEAR;
+
+	/* printf("vmem 0x%x, vclut 0x%x, diff %d\n", gsTexture.Vram, gsTexture.VramClut, gsTexture.VramClut - gsTexture.Vram); */
 	
 	if (! SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, Amask)) 
 	{
@@ -295,9 +302,16 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	current->pixels = (unsigned char *)gsTexture.Mem;
 
 	/* full screen, with aspect ratio */
+	visible_h = gsGlobal->Height - gsGlobal->StartY;
 	w_ratio = gsGlobal->Width / (float)width;
-	h_ratio = gsGlobal->Height / (float)height;
-	device->hidden->ratio = (w_ratio <= h_ratio) ? w_ratio : h_ratio;
+	h_ratio = visible_h / (float)height;
+	ratio = (w_ratio <= h_ratio) ? w_ratio : h_ratio;
+
+	device->hidden->ratio = ratio;
+	device->hidden->center_x = (gsGlobal->Width - (width * ratio)) / 2;
+	device->hidden->center_y = (visible_h - (height * ratio)) / 2;
+
+	printf("center_x %d center_y %d\n", device->hidden->center_x, device->hidden->center_y);
 
 	return current;
 }
@@ -361,6 +375,7 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 {
 	int i;
 	float ratio;
+	int center_x, center_y;
 	
 	if (gsGlobal == NULL)
 	{
@@ -369,6 +384,8 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 	}
 
 	ratio = device->hidden->ratio;
+	center_x = device->hidden->center_x;
+	center_y = device->hidden->center_y;
 
 	/* send new texture via dma */
 	gsKit_clear(gsGlobal, BLACK_RGBAQ);
@@ -378,12 +395,19 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 	for (i=0; i<numrects; i++)
 	{
 		int x1, y1, x2, y2;
+		int u1, v1, u2, v2;
 		
-		x1 = rects[i].x;
-		y1 = rects[i].y;
-		x2 = x1 + rects[i].w;
-		y2 = y1 + rects[i].h;
-		gsKit_prim_sprite_texture(gsGlobal, &gsTexture, x1*ratio, y1*ratio, x1, y1, x2*ratio, y2*ratio, x2, y2, 1.0, TEXTURE_RGBAQ);
+		u1 = rects[i].x;
+		v1 = rects[i].y;
+		u2 = rects[i].x + rects[i].w;
+		v2 = rects[i].y + rects[i].h;
+
+		x1 = (rects[i].x * ratio) + center_x;
+		y1 = (rects[i].y * ratio) + center_y;
+		x2 = ((rects[i].x + rects[i].w) * ratio) + center_x;
+		y2 = ((rects[i].y + rects[i].h) * ratio) + center_y;
+
+		gsKit_prim_sprite_texture(gsGlobal, &gsTexture, x1, y1, u1, v1, x2, y2, u2, v2, 1.0, TEXTURE_RGBAQ);
 	}
 
 	/* 
@@ -433,8 +457,6 @@ static SDL_VideoDevice *PS2_CreateDevice(int devindex)
 	device->UpdateRects = PS2_UpdateRects;
 	device->free = PS2_DeleteDevice;
 
-	printf("PS2_CreateDevice done\n");
-	
 	memset(device->hidden, '\0', (sizeof *device->hidden));
 	return device;
 }
