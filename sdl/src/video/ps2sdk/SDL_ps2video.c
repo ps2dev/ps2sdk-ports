@@ -109,9 +109,6 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	/* reduce zbuffer requirements, so we'll get more memory for texture
 	gsGlobal->PSMZ = GS_PSMZ_16;
 	*/
-	gsKit_init_screen(gsGlobal);
-
-	gsKit_clear(gsGlobal, BLACK_RGBAQ);
 	return 0;
 }
 
@@ -131,18 +128,22 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
 	free(device);
 }
 
+static SDL_Rect rect_256x224 = {0, 0, 256, 224};
 static SDL_Rect rect_256x256 = {0, 0, 256, 256};
 static SDL_Rect rect_320x200 = {0, 0, 320, 200};
 static SDL_Rect rect_320x240 = {0, 0, 320, 240};
+static SDL_Rect rect_320x256 = {0, 0, 320, 256};
 static SDL_Rect rect_512x448 = {0, 0, 512, 448};
 static SDL_Rect rect_640x480 = {0, 0, 640, 480};
 static SDL_Rect rect_800x600 = {0, 0, 800, 600};
 static SDL_Rect rect_1024x768 = {0, 0, 1024, 768};
 static SDL_Rect rect_1280x1024 = {0, 0, 1280, 1024};
 static SDL_Rect *vesa_modes[] = {
+	&rect_256x224,
 	&rect_256x256,
 	&rect_320x200,
 	&rect_320x240,
+	&rect_320x256,
 	&rect_512x448,
 	&rect_640x480,
 	&rect_800x600,
@@ -171,6 +172,9 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	int psm, size;
 	int Rmask, Gmask, Bmask, Amask;
 	float w_ratio, h_ratio;
+
+	gsKit_init_screen(gsGlobal);
+	gsKit_clear(gsGlobal, BLACK_RGBAQ);
 
 	Rmask = 0;
 	Gmask = 0;
@@ -212,8 +216,10 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		SDL_SetError("Unsupported depth");
 		return NULL;
 	}
-	
+
 	size = gsKit_texture_size(width, height, psm);
+	size = 640*400;
+
 	gsTexture.Width = width;
 	gsTexture.Height = height;
 	gsTexture.PSM = psm;
@@ -238,6 +244,8 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		gsTexture.Clut = 0;
 		gsTexture.VramClut = 0;
 	}
+
+	printf("vmem 0x%x, vclut 0x%x, diff %d\n", gsTexture.Vram, gsTexture.VramClut, gsTexture.VramClut - gsTexture.Vram);
 	
 	if (! SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, Amask)) 
 	{
@@ -387,6 +395,8 @@ static SDL_VideoDevice *PS2_CreateDevice(int devindex)
 	device->PumpEvents = PS2_PumpEvents;
 	device->UpdateRects = PS2_UpdateRects;
 	device->free = PS2_DeleteDevice;
+
+	printf("PS2_CreateDevice done\n");
 	
 	memset(device->hidden, '\0', (sizeof *device->hidden));
 	return device;
