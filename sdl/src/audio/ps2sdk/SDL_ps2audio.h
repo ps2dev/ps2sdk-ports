@@ -37,6 +37,9 @@ struct SDL_PrivateAudioData {
 	Uint8 playing;
 	Uint8 *mixbuf;
 	Uint32 mixlen;
+	Uint32 mixpos;
+
+	int waitaudio_sema;
 };
 
 #endif /* _SDL_ps2audio_h */

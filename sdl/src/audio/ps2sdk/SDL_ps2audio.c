@@ -33,103 +33,150 @@ static char rcsid =
 #include "SDL_timer.h"
 #include "SDL_ps2audio.h"
 #include <string.h>
-#include <loadfile.h>
 
 #include <kernel.h>
 #include <sifrpc.h>
+#include <iopheap.h>
+#include <loadfile.h>
 
-// FIXME
-#define	FREESD_IRX                 0xC003245
-#define FREESD_INIT                        1
-#define FREESD_PLAY                        2
-#define FREESD_STOP                        3
-#define FREESD_POLL                        4
-#define FREESD_SET_VOLUME                  5
+#include "sjpcm.h"
 
+extern int size_sjpcm_irx;
+extern char sjpcm_irx[];
 
-static SifRpcClientData_t _freesd_cd;
+int tick = 960;
 
-int freesd_poll()
-{
-	int res;
-	int status;
-
-	res = SifCallRpc(&_freesd_cd, FREESD_POLL, 0, NULL, 0, &status, sizeof(status), NULL, NULL);
-	if (res < 0)
-	{
-		return 0;
-	}
-
-	return status;
-}
-
-int freesd_init(int *status)
-{
-	int res;
-
-	res = SifCallRpc(&_freesd_cd, FREESD_INIT, 0, NULL, 0, &status, sizeof(status), NULL, NULL);
-	if (res < 0)
-	{
-		return res;
-	}
-
-	return 0;
-}
+#define REG_VIDEO_MODE   (* (u8 *)0x1fc80000)
+#define MODE_PAL                        0xf3
 
 static int spu2_init()
 {
-	int error, res;
-	u32 status;
+	int id;
+	int error;
+	char *iopbuf;
+ 	struct t_SifDmaTransfer sdt;
 
 	SifInitRpc(0);
 
-	error = SifLoadModule("host:FREESD.IRX", 0, NULL);
+	printf("REG: 0x%x\n", REG_VIDEO_MODE);
+//	if (REG_VIDEO_MODE == MODE_PAL)
+	if (1)
+	{
+		tick = 48000 / 50;
+		printf("system is pal, tick %d\n", tick);
+	}
+	else
+	{
+		tick = 48000 / 60;
+	}
+
+	error = SifLoadModule("rom0:LIBSD", 0, NULL);
 	if (error < 0)
 	{
-		SDL_SetError("Failed to open FREESD.IRX module");
+		SDL_SetError("Failed to open LIBSD module");
 		return -1;
 	}
 
-	while (((res = SifBindRpc(&_freesd_cd, FREESD_IRX, 0)) >= 0) &&
-		(_freesd_cd.server == NULL))
+	iopbuf = (char *)SifAllocIopHeap(size_sjpcm_irx);
+	if (iopbuf == NULL)
+	{
+		SDL_SetError("Failed to allocate IOP memory");
+		return -1;
+	}
+
+	sdt.src = (void *)sjpcm_irx;
+	sdt.dest = (void *)iopbuf;
+	sdt.size = size_sjpcm_irx;
+	sdt.attr = 0;
+
+	/* start DMA transfer */
+	FlushCache(0);
+	id = SifSetDma(&sdt, 1);
+	while (SifDmaStat(id) >= 0)
+	{
+		/* wait until completion */
 		nopdelay();
-
-	if (res < 0)
-	{
-		SDL_SetError("Failed to bind RPC");
-		return res;
 	}
 
-	if (freesd_init(&status) < 0)
+	error = SifLoadModuleBuffer(iopbuf, 0, NULL);
+	if (error < 0)
 	{
-		SDL_SetError("Failed to initialize FREESD");
+		SDL_SetError("Failed to open SjPCM module");
 		return -1;
 	}
+
+	/* init sjpcm in blocking mode */
+	SjPCM_Init(0);
+ 	SjPCM_Clearbuff();
+	SjPCM_Setvol(0x0);
 
 	return 0;
 }
 
-/* Audio driver bootstrap functions */
 static int PS2AUD_Available(void)
 {
+	/* this device is always available */
 	return 1;
 }
 
 static void PS2AUD_DeleteDevice(SDL_AudioDevice *device)
 {
+	/* free device structure */
+	DeleteSema(device->hidden->waitaudio_sema);
+	device->hidden->waitaudio_sema = 0;
 	free(device->hidden);
 	free(device);
 }
 
-/* This function waits until it is possible to write a full sound buffer */
+/* block until can write a full sound buffer */
 static void PS2AUD_WaitAudio(_THIS)
 {
-	printf("WaitAudio\n");
-	if (this->hidden->playing) 
+	s16 left[960], right[960];
+	s16 *lptr, *rptr, *ptr;
+
+	if (this->hidden->playing == 0)
 	{
-		while (1)
+		/* not even playing */
+		return;
+	}
+
+	if (this->hidden->waitaudio_sema <= 0)
+	{
+		/* eek, error */
+		return;
+	} 
+
+	/* wait for a signal from the vsync handler */
+	while (1)
+	{
+		if (this->hidden->mixpos >= this->hidden->mixlen)
 		{
-			/* wait */
+			/* no more buffer to enqueue */
+			this->hidden->mixpos = 0;
+			break;
+		}
+
+		if (SjPCM_Available() >= tick)
+		{
+			int p;
+
+			ptr = (s16 *)(this->hidden->mixbuf + this->hidden->mixpos);
+			lptr = left;
+			rptr = right;
+	
+			for (p=0; p<tick; p++)
+			{
+				*lptr++ = *ptr++;
+				*rptr++ = *ptr++;
+			}
+
+			this->hidden->mixpos += tick*2*2;
+
+			SjPCM_Enqueue(left, right, tick, 1);
+		}
+		else
+		{
+			/* wait for a buffer */
 			SDL_Delay(1);
 		}
 	}
@@ -137,6 +184,12 @@ static void PS2AUD_WaitAudio(_THIS)
 
 static void PS2AUD_PlayAudio(_THIS)
 {
+	if (this->hidden->playing == 0)
+	{
+		this->hidden->playing = 1;
+		SjPCM_Setvol(0x3fff);
+		SjPCM_Play();
+	}
 }
 
 static Uint8 *PS2AUD_GetAudioBuf(_THIS)
@@ -150,14 +203,24 @@ static void PS2AUD_CloseAudio(_THIS)
 
 static int PS2AUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
 {
-	switch(spec->format&0xff) 
+	Uint16 format;
+	ee_sema_t ps2sem;
+
+	if ((spec->format & 0xff) != 16 || spec->freq != 48000 || spec->channels != 2)
 	{
-		case  8: 
-		spec->format = AUDIO_S8; 
+		SDL_SetError("Unsupported audio format");
+		return -1;
+	}
+
+	/*
+	switch(spec->format & 0xff)
+	{
+		case 8:
+		format = AUDIO_S8;
 		break;
 
-		case 16: 
-		spec->format = AUDIO_S16LSB; 
+		case 16:
+		format = AUDIO_S16;
 		break;
 
 		default:
@@ -165,18 +228,32 @@ static int PS2AUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
 		return -1;
 	}
 
+	SDL_BuildAudioCVT(&this->convert, format, spec->channels, spec->freq,
+		AUDIO_S16LSB, 2, 48000);
+
+	this.convert.needed = 1;
+	*/
+
 	/* Update the fragment size as size in bytes */
 	SDL_CalculateAudioSpec(spec);
+	spec->size = 960*4;
 
 	/* Allocate mixing buffer */
 	this->hidden->mixlen = spec->size;
-	this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+	this->hidden->mixbuf = (Uint8 *)SDL_AllocAudioMem(this->hidden->mixlen);
 	if (this->hidden->mixbuf == NULL)
 	{
 		return(-1);
 	}
 
 	memset(this->hidden->mixbuf, spec->silence, spec->size);
+
+	/* initialize a locked semaphore */
+	ps2sem.attr = 0;
+	ps2sem.init_count = 0;
+	ps2sem.max_count = 1;
+	ps2sem.option = 0;
+	this->hidden->waitaudio_sema = CreateSema(&ps2sem);
 
 	this->hidden->playing = 0;
 	return 0;
