@@ -1,0 +1,21 @@
+
+                     PS2SDK-PORTS LICENSE
+    		     --------------------
+
+
+  This file is NOT a license file for the PS2SDK-Ports package. Read the
+README file to get more details about what this package is.
+
+  This file is only here to warn you about the fact that the softwares
+contained in that directory are not homogenous, and especially, are most likely
+NOT AFL-compatible.
+
+  Since this directory is only a placeholder for various packages ports, it
+cannot have a single license scheme. Each port has its own license, and you
+have to read and follow each of them if you plan on using the ports. Some of
+the ports are licensed GPL style, some others BSD style, etc.
+
+  Here is a quick list of hints about the various licenses contained here:
+  
+libid3tag, libmad, madplay: GPL2
+sdl, sdlmixer: LGPL
