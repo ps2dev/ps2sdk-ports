@@ -44,6 +44,13 @@ $(LIB_SDL): $(SDL_OBJS)
 $(LIB_SDLMAIN): $(SDLMAIN_OBJS)
 	$(EE_AR) cru $(LIB_SDLMAIN) $(SDLMAIN_OBJS)
 
+install: all
+	mkdir -p $(PS2SDK)/ports/sdl
+	mkdir -p $(PS2SDK)/ports/sdl/include
+	mkdir -p $(PS2SDK)/ports/sdl/lib
+	cp -f $(LIB_SDL) $(LIB_SDLMAIN) $(PS2SDK)/ports/sdl/lib
+	cp -f ../include/*.h $(PS2SDK)/ports/sdl/include
+
 clean:
 	rm -f $(LIB_SDL) $(LIB_SDLMAIN) $(SDL_OBJS)
 
