@@ -1,12 +1,14 @@
 BINS = \
+	testcdrom.elf \
 	testendian.elf \
 	testerror.elf \
 	testjoystick.elf \
-	testver.elf
+	testver.elf \
+	checkkeys.elf
 
 OBJS = 
 EE_INCS = -I../include
-EE_LIBS = -lc -L$(GSKIT)/lib -L../lib -lsdl -lgskit -ldmakit -lpad -lcdvd
+EE_LIBS = -L. -lc -L$(GSKIT)/lib -L../lib -lsdl -lgskit -ldmakit -lpad -lcdvd  -lkbd -lmouse
 
 all: $(BINS)
 
