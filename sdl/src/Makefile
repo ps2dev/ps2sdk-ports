@@ -33,7 +33,7 @@ SDL_OBJS += joystick/SDL_joystick.o joystick/ps2sdk/ps2joystick.o
 SDLMAIN_OBJS = main/arch.o main/ps2sdk/sdl_main.o
 
 EE_INCS  = -I../include
-EE_INCS +=-Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
+EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
 EE_INCS += -I$(GSKIT)/ee/gs/include -I$(GSKIT)/ee/dma/include
 
 all: $(LIB_SDL) $(LIB_SDLMAIN)
