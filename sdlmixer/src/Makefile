@@ -31,10 +31,16 @@ SMPEG_OBJS += smpeg/MPEGstream.o smpeg/MPEGsystem.o smpeg/MPEG.o
 
 EE_OBJS = $(MIXER_OBJS) $(MIKMOD_OBJS) $(SMPEG_OBJS)
 
-EE_INCS = -I. -Imikmod -I$(PS2SDK)/common/include -I$(PS2SDK)/common/include/SDL
-EE_LIBS = 
+EE_INCS  = -I. -Imikmod -I$(PS2SDK)/common/include 
+EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
+EE_LIBS  = 
 
 all: $(EE_LIB)
+
+install: all
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f ../include/*.h $(PS2SDK)/ports/include/SDL
 
 clean:
 	rm -f $(EE_LIB) $(EE_BIN) $(EE_OBJS)
