@@ -816,15 +816,10 @@ int main(int argc, char *argv[])
 # endif
 
   /* run the player */
-
-printf ("running player\n");
-
   if (player_run(&player, argc - optind, (char const **) &argv[optind]) == -1)
     result = 4;
 
   /* finish up */
-printf ("finishing up\n");
-
   player_finish(&player);
 
   return result;
