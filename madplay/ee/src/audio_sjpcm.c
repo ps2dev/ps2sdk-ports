@@ -54,14 +54,14 @@ static char const *host;
 
 //int frame_num __attribute__((aligned (16)));
 
-int current_buffer __attribute__((aligned (16)));
-int buffered __attribute__((aligned (16)));
+int current_buffer __attribute__((aligned (16))); // total number of ticks played
+int buffered __attribute__((aligned (16))); // total number of ticks buffered
 
 ee_thread_t thread __attribute__((aligned (16)));
 static char userThreadStack[16*1024] __attribute__((aligned(16)));
 
-volatile int mainPid __attribute__((aligned(16))) = 0;
-volatile int outputPid __attribute__((aligned(16))) = 0;
+volatile int mainPid __attribute__((aligned(16))) = 0; // pid of this thread
+volatile int outputPid __attribute__((aligned(16))) = 0; // pid of output thread
 
 int loadModules()
 {
@@ -126,7 +126,7 @@ unsigned int AddVSyncCallback(void (*func_ptr)())
 
 
 	// Enable VSync callbacks if not already enabled
-	EnableVSyncCallbacks();
+	EnableVSyncCallbacks(); // perhaps this should only be done once, and not here
 
 	return AddCallbackID;
 }
@@ -193,7 +193,6 @@ int init(struct audio_init *init)
 	SjPCM_Init(1);
  	SjPCM_Clearbuff();
 	SjPCM_Setvol(0x3fff);
-	SjPCM_Play();
 
 	/* buffer */
 	bzero(hold, sizeof(hold));
@@ -350,6 +349,9 @@ int buffer(unsigned short const *leftptr, unsigned short const *rightptr, signed
 	return 0;
 }
 
+
+int is_playing __attribute__((aligned(16))) = 0;
+
 static
 int play(struct audio_play *play)
 {
@@ -357,6 +359,11 @@ int play(struct audio_play *play)
 	unsigned short right[MAX_NSAMPLES];
 	signed int len;
 	int status;
+
+	if (is_playing == 0) {
+		is_playing = 1;
+		SjPCM_Play();
+	}
 
 	len = audio_pcm_sjpcm(left, right, play->nsamples,
 			play->samples[0], play->samples[1],
@@ -371,8 +378,7 @@ static
 int stop(struct audio_stop *stop)
 {
 	SjPCM_Pause();
-
-	DeleteThread(outputPid);
+	is_playing = 0;
 
 	return 0;
 }
@@ -396,9 +402,12 @@ void DisableVSyncCallbacks(void)
 static
 int finish(struct audio_finish *finish)
 {
+	while (buffered > current_buffer)  // let buffer finish first
+		SuspendThread(mainPid);
+
 	SjPCM_Pause();
 
-	DisableVSyncCallbacks();
+	DisableVSyncCallbacks(); // perhaps this shouldn't be done
 
 	return 0;
 }
