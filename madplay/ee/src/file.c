@@ -42,8 +42,8 @@
 /*Store the current media being used, either Hard drive (MODE_HDD) or 
   CD drive (MODE_CD.)  Important in our directory functions.*/
 
+char elfPath[255];
 int mediaMode = MODE_HOST; 
-char elfPath[256];
 
 void
 setPathInfo(int argc, char **argv)
@@ -64,7 +64,7 @@ setPathInfo(int argc, char **argv)
     }
 
     strncpy(elfPath, bootPath, 255);
-    elfPath[255] = '\0';
+    elfPath[254] = '\0';
 
     ptr = strrchr(elfPath, '/');
     if (ptr == NULL) {
@@ -81,7 +81,7 @@ setPathInfo(int argc, char **argv)
 	ptr++;
 	*ptr = '\0';
 
-    printf("path is %s\n", elfPath);
+    printf("Path is %s\n", elfPath);
 }
 
 
