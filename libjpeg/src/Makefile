@@ -16,10 +16,10 @@ EE_INCS  = -I../include
 all: $(EE_LIB)
 
 install: all
-	mkdir -p $(PS2SDK)/ports/include/jpeg
+	mkdir -p $(PS2SDK)/ports/include
 	mkdir -p $(PS2SDK)/ports/lib
 	cp -f ../lib/$(EE_LIB) $(PS2SDK)/ports/lib
-	cp -f ../include/*.h $(PS2SDK)/ports/include/jpeg
+	cp -f ../include/*.h $(PS2SDK)/ports/include
 
 clean:
 	rm -f $(EE_LIB) $(EE_OBJS)
