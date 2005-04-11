@@ -1,6 +1,6 @@
 
-                     PS2SDK-PORTS LICENSE
-    		     --------------------
+                             PS2SDK-PORTS LICENSE
+    	        	     --------------------
 
 
   This file is NOT a license file for the PS2SDK-Ports package. Read the
@@ -17,5 +17,9 @@ the ports are licensed GPL style, some others BSD style, etc.
 
   Here is a quick list of hints about the various licenses contained here:
   
-libid3tag, libmad, madplay, ucl: GPL2
-sdl, sdlmixer: LGPL
+expat: Mozilla Public License 1.1, or GPL
+freetype, libid3tag, libmad, madplay, ucl: GPL2
+sdl, sdlimage, sdlmixer: LGPL
+libjpeg: own license, see the COPYING file in the libjpeg directory for details
+libpng: own license, see the LICENSE file in the libjpeg directory for details
+zlib: own license, see the zlib.h file in the zlib/include directory
