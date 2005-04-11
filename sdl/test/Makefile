@@ -8,7 +8,7 @@ BINS = \
 
 OBJS = 
 EE_INCS = -I../include
-EE_LIBS = -L. -lc -L$(GSKIT)/lib -L../lib -lsdl -lgskit -ldmakit -lpad -lcdvd  -lkbd -lmouse
+EE_LIBS = -L. -lc -L$(PS2DEV)/gsKit/lib -L../lib -lsdl -lgskit -ldmakit -lpad -lcdvd  -lkbd -lmouse
 
 all: $(BINS)
 
