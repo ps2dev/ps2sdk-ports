@@ -10,9 +10,7 @@
 
 EE_LIB = lib/libSDL_image.a
 
-EE_INCS      += -I./include -I$(LIBZLIB)/include -I$(LIBPNG)/include \
-		-I$(LIBJPG)/include -I$(SDL)/include
-		
+EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
 EE_LIBS      += -lpng -lz -ljpg -lSDL
 
 EE_CFLAGS    += -DLOAD_BMP \
@@ -40,6 +38,12 @@ EE_OBJS =	IMG.o			\
 		IMG_xpm.o
 
 all: $(EE_LIB)
+
+install: all
+	mkdir -p $(PS2SDK)/ports/include/SDL
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f include/*.h $(PS2SDK)/ports/include/SDL
 
 clean:
 	/bin/rm -f $(EE_OBJS) $(EE_LIB)
