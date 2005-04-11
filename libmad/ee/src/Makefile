@@ -5,6 +5,12 @@ EE_OBJS = bit.o decoder.o fixed.o frame.o huffman.o layer12.o layer3.o \
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal
 
+install: all
+	mkdir -p $(PS2SDK)/ports/include
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f ../include/mad.h $(PS2SDK)/ports/include
+
 EE_CFLAGS += -DHAVE_CONFIG_H -DHAVE_SYS_TYPES_H -DHAVE_ERRNO_H -DHAVE_UNISTD_H \
 	-DHAVE_FCNTL_H -I$(PS2SDK)/common/include/sys/  -I../include
 
