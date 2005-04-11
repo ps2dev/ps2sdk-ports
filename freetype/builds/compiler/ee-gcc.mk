@@ -55,7 +55,7 @@ T := -o$(space)
 #   ANSI compliance.
 #
 ifndef CFLAGS
-  CFLAGS := -c -g -O2 -Wall -I$(EE)/include
+  CFLAGS := -c -g -O2 -G0 -Wall -I$(EE)/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ee/include
 endif
 
 # ANSIFLAGS: Put there the flags used to make your compiler ANSI-compliant.
