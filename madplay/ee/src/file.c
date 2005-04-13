@@ -81,7 +81,6 @@ setPathInfo(int argc, char **argv)
 	ptr++;
 	*ptr = '\0';
 
-    printf("Path is %s\n", elfPath);
 }
 
 

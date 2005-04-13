@@ -739,8 +739,6 @@ int main(int argc, char *argv[])
   struct player player;
   int result = 0;
 
-  setPathInfo(argc, argv);
-
   argv0 = argv[0];
 
   /* ensure binary standard I/O */
