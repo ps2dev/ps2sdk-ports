@@ -64,6 +64,8 @@ volatile int mainPid __attribute__((aligned(16))) = 0; // pid of this thread
 volatile int outputPid __attribute__((aligned(16))) = 0; // pid of output thread
 int handlerId __attribute__((aligned (16))); // vsync interrupt handler
 
+int playing __attribute__((aligned(16))) = 0;
+
 extern u8 *isjpcm_irx;
 extern int size_isjpcm_irx;
 
@@ -153,35 +155,33 @@ unsigned int AddVSyncCallback(void (*func_ptr)())
 }
 
 #define FRAME_SIZE	48000 // 1 frame
-#define FRAMES	50 // 60 for ntsc
-#define TICK	(FRAME_SIZE / FRAMES) 	
+#define TICKS_PER_FRAME	50 // 60 for ntsc
+#define TICK_SIZE	(FRAME_SIZE / TICKS_PER_FRAME) 	
 
-// store 2 channels 
-unsigned short hold[2][FRAME_SIZE] __attribute__((aligned (16)));
-unsigned int held __attribute__((aligned (16))); // number of samples buffd 
-// ... for incomplete tick
+unsigned short hold[2][TICK_SIZE] __attribute__((aligned (16))); // left/right samples
+unsigned int held __attribute__((aligned (16)));  // number of left/right samples
 
-static void output(void *dat)
-{
-	int offset;
-
-	while (1) 
-	{
-
-		SuspendThread(mainPid); // suspend instead of blocking on semaphors.
-
-		offset = (current_buffer % FRAMES) * TICK;
-
-		if ((buffered - current_buffer) > 0) { 
-			SjPCM_Enqueue(&(hold[0][offset]), &(hold[1][offset]), TICK, 0); 
-			current_buffer++;
-		}
-
-		ResumeThread(mainPid);
-		SleepThread();
-
-	}
-}
+//static void output(void *dat)
+//{
+//	int offset, todo;
+//
+//	while (1) 
+//	{
+//
+//		SuspendThread(mainPid); // suspend instead of blocking on semaphors.
+//		todo =  SjPCM_Available() % TICK_SIZE;
+//
+//		while (( ( buffered - current_buffer) > 0 ) && todo--) { 
+//			offset = (current_buffer % TICKS_PER_FRAME) * TICK_SIZE;
+//			SjPCM_Enqueue(&(hold[0][offset]), &(hold[1][offset]), TICK_SIZE, 1); 
+//			current_buffer++;
+//		}
+//
+//		ResumeThread(mainPid);
+//		SleepThread();
+//
+//	}
+//}
 
 int vsync_func(void)
 {
@@ -197,23 +197,21 @@ int vsync_func(void)
 static
 int init(struct audio_init *init)
 {
-	int status;
+//	int status;
 
 	host = init->path;
 	if (host && *host == 0)
 		host = 0;
 
-printf ("loadModules \n");
 	/* load modules... maybe shouldnt do this here */
 	SifInitRpc(0);
 	if (loadModules() < 0) {
 		printf ("Failed to load modules\n");
 		return -1;
 	}
-printf ("loadModules complete\n");
 
 	/* sound */
-	if(SjPCM_Init(1) < 0)
+	if(SjPCM_Init(0) < 0)
 	{ 
 		printf("SjPCM Bind failed!!");
 		return -1;
@@ -229,22 +227,20 @@ printf ("loadModules complete\n");
 	current_buffer = 0;
 
 	/* vsync interrupt handler */
-	handlerId = AddVSyncCallback((functionPointer)&vsync_func);
-
-	/* thread to output func */
-	thread.func = (void *)output;
-	thread.stack = userThreadStack;
-	thread.stack_size = sizeof(userThreadStack);
-	thread.gp_reg = &_gp;
-	thread.initial_priority = 48;
-
-	mainPid = GetThreadId();
-	ChangeThreadPriority(mainPid, 51);
-
-	printf("about to spawn thread\n");
-
-	outputPid = CreateThread(&thread);
-	status = StartThread(outputPid, NULL);
+//	handlerId = AddVSyncCallback((functionPointer)&vsync_func);
+//
+//	/* thread to output func */
+//	thread.func = (void *)output;
+//	thread.stack = userThreadStack;
+//	thread.stack_size = sizeof(userThreadStack);
+//	thread.gp_reg = &_gp;
+//	thread.initial_priority = 40;
+//
+//	mainPid = GetThreadId();
+//	ChangeThreadPriority(mainPid, 50);
+//
+//	outputPid = CreateThread(&thread);
+//	status = StartThread(outputPid, NULL);
 
 	return 0;
 
@@ -329,23 +325,21 @@ unsigned int audio_pcm_sjpcm(unsigned short *leftout, unsigned short *rightout, 
 }
 
 static
-int buffer(unsigned short const *leftptr, unsigned short const *rightptr, signed int len)
+int output(unsigned short const *leftptr, unsigned short const *rightptr, signed int len)
 {
 
 	unsigned int grab;
 
-	while ((buffered - current_buffer) >= (FRAMES - 5))  // leave 5 ticks empty to avoid overrun
-	{
-
-		SuspendThread(mainPid);
-
-	}
-
 	while (len > 0) 
 	{
+		while (SjPCM_Available() < TICK_SIZE) {
+			int i;
+			for (i = 0; i < 3; i++) 
+				nopdelay(); 
+		}
 
 		// grab a ticks worth of data
-		grab = TICK;
+		grab = TICK_SIZE;
 
 		// or grab enough to complete a tick
 		grab = (grab - held) < grab ? (grab - held) : grab; 
@@ -355,32 +349,39 @@ int buffer(unsigned short const *leftptr, unsigned short const *rightptr, signed
 
 		len -= grab;
 
-		// copy the data to the buffer
-	    	memcpy(&hold[0][(buffered % FRAMES) * TICK + held], leftptr, grab * 2);
-	    	memcpy(&hold[1][(buffered % FRAMES) * TICK + held], rightptr, grab * 2);
-
-		if ((grab + held) == TICK) {
-
+		if ((grab + held) == TICK_SIZE) {
 			// a complete tick has been buffered
-			buffered++;
-			held = 0;
-    			leftptr += grab;
-    			rightptr += grab;
+
+			if (held) {
+
+	    			memcpy(&hold[0][held], leftptr, grab * 2); 
+	    			memcpy(&hold[1][held], rightptr, grab * 2); 
+				held = 0;
+
+				SjPCM_Enqueue(&hold[0][0], &hold[1][0], TICK_SIZE, 1); 
+
+			} else {
+
+				SjPCM_Enqueue(leftptr, rightptr, TICK_SIZE, 1); 
+
+			}
 
 		} else {
 
 			// only part of a tick stored... remember for next iteration
+	    		memcpy(&hold[0][held], leftptr, grab * 2); 
+	    		memcpy(&hold[1][held], rightptr, grab * 2); 
 			held += grab; 
 
 		}
+
+		leftptr += grab;
+    		rightptr += grab;
 
 	}
 
 	return 0;
 }
-
-
-int is_playing __attribute__((aligned(16))) = 0;
 
 static
 int play(struct audio_play *play)
@@ -390,8 +391,9 @@ int play(struct audio_play *play)
 	signed int len;
 	int status;
 
-	if (is_playing == 0) {
-		is_playing = 1;
+	if (playing == 0) 
+	{
+		playing = 1;
 		SjPCM_Play();
 	}
 
@@ -399,7 +401,7 @@ int play(struct audio_play *play)
 			play->samples[0], play->samples[1],
 			play->mode, play->stats);
 
-	status = buffer(left, right, len);
+	status = output(left, right, len);
 
 	return status;
 }
@@ -408,7 +410,7 @@ static
 int stop(struct audio_stop *stop)
 {
 	SjPCM_Pause();
-	is_playing = 0;
+	playing = 0;
 
 	return 0;
 }
@@ -432,15 +434,20 @@ void DisableVSyncCallbacks(void)
 static
 int finish(struct audio_finish *finish)
 {
-	while (buffered > current_buffer)  // let buffer finish first
-		SuspendThread(mainPid);
+//	while (buffered > current_buffer)  // let buffer finish first
+//		SuspendThread(mainPid);
+	while (SjPCM_Buffered() > TICK_SIZE) {
+		int i;
+		for (i = 0; i < 3; i++) 	
+			nopdelay(); 
+	}
 
-	DeleteThread(outputPid);
-	RemoveVSyncCallback(handlerId);
+//	DeleteThread(outputPid);
+//	RemoveVSyncCallback(handlerId);
 
 	SjPCM_Pause();
 
-	DisableVSyncCallbacks(); // perhaps this shouldn't be done
+//	DisableVSyncCallbacks(); // perhaps this shouldn't be done
 
 	return 0;
 }

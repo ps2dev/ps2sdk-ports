@@ -165,7 +165,7 @@ int parse_lame(struct tag_lame *lame,
     str[5] = 0;
 
 //    sscanf(str, "%u.%u.%u", &major, &minor, &patch);
-    printf ("fixme: parse_lame\n");
+//    printf ("fixme: parse_lame\n");
 
     if (major > 3 ||
 	(major == 3 && (minor > 95 ||

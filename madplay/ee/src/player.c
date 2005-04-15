@@ -482,19 +482,15 @@ enum mad_flow decode_input_read(void *data, struct mad_stream *stream)
   struct input *input = &player->input;
   int len = 0;
 
-//printf ("decode_input_read %p\n", data);
-
   if (input->eof)
     return MAD_FLOW_STOP;
 
   if (stream->next_frame) {
-//printf ("	stream->next_frame\n");
     memmove(input->data, stream->next_frame,
 	    input->length = &input->data[input->length] - stream->next_frame);
   }
 
   do {
-//printf ("	read data\n");
 //    len = read(input->fd, input->data + input->length,
 //	       MPEG_BUFSZ - input->length);
       len = BstdRead(input->data + input->length,MPEG_BUFSZ - input->length,1,BstdFile);
@@ -506,7 +502,6 @@ enum mad_flow decode_input_read(void *data, struct mad_stream *stream)
     return MAD_FLOW_BREAK;
   }
   else if (len == 0) {
-//printf ("	len == 0\n");
     input->eof = 1;
 
     assert(MPEG_BUFSZ - input->length >= MAD_BUFFER_GUARD);
@@ -1946,8 +1941,6 @@ int play_one(struct player *player)
 		printf("could not open file\n");		
 		return(1);
 	}
-	else
-		printf("opened file\n");		
 
     if (player->input.fd == -1) {
       error(0, ":", file);

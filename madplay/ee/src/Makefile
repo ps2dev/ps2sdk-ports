@@ -14,7 +14,7 @@ EE_LIBS += -lfileXio -ldebug -lmad -lid3tag \
 EE_CXXFLAGS += -fno-exceptions -fno-rtti
 
 EE_CFLAGS += -O2 -DHAVE_STRNCASECMP -DHAVE_CONFIG_H -DHAVE_UNISTD_H \
-	-DHAVE_STRING_H -DHAVE_SYS_TYPES_H -DNOPRINT -DLIBSD
+	-DHAVE_STRING_H -DHAVE_SYS_TYPES_H 
 
 EE_INCS +=  -I../include -Iinclude -I$(PS2SDK)/common/include -I$(PS2SDK)/ee/include \
 	-I$(PS2SDK)/ports/include -I$(PS2DEV)/isjpcm/include
