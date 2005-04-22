@@ -1,7 +1,7 @@
 LIBPATH=../lib
 EE_LIB = $(LIBPATH)/libsdlmixer.a
 
-EE_CFLAGS = -DMOD_MUSIC -DWAV_MUSIC -DMIKMOD_DEBUG
+EE_CFLAGS = -DMOD_MUSIC -DWAV_MUSIC -DMIKMOD_DEBUG -DUSE_RWOPS
 EE_CXXFLAGS = -DNOCONTROLS
 
 MIKMOD_OBJS  = mikmod/mplayer.o mikmod/mdriver.o mikmod/mloader.o
@@ -27,6 +27,7 @@ SMPEG_OBJS += smpeg/video/util.o smpeg/video/motionvector.o
 SMPEG_OBJS += smpeg/video/readfile.o smpeg/video/MPEGvideo.o
 SMPEG_OBJS += smpeg/video/floatdct.o smpeg/video/jrevdct.o
 SMPEG_OBJS += smpeg/video/vhar128.o smpeg/video/gdith.o
+SMPEG_OBJS += smpeg/video/parseblock.o
 SMPEG_OBJS += smpeg/MPEGstream.o smpeg/MPEGsystem.o smpeg/MPEG.o
 
 EE_OBJS = $(MIXER_OBJS) $(MIKMOD_OBJS) $(SMPEG_OBJS)
