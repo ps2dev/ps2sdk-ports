@@ -41,10 +41,10 @@ static char rcsid =
 
 #include "sjpcm.h"
 
-extern int size_sjpcm_irx;
-extern char sjpcm_irx[];
+extern int sjpcm_irx_size;
+extern char sjpcm_irx_start[];
 
-int tick = 960;
+static int tick;
 
 #define REG_VIDEO_MODE   (* (u8 *)0x1fc80000)
 #define MODE_PAL                        0xf3
@@ -58,15 +58,16 @@ static int spu2_init()
 
 	SifInitRpc(0);
 
-	printf("REG: 0x%x\n", REG_VIDEO_MODE);
+//	printf("REG: 0x%x\n", REG_VIDEO_MODE);
 //	if (REG_VIDEO_MODE == MODE_PAL)
 	if (1)
 	{
+		/* pal system, 50 vsyncs */
 		tick = 48000 / 50;
-		printf("system is pal, tick %d\n", tick);
 	}
 	else
 	{
+		/* ntsc system, 60 vsyncs */
 		tick = 48000 / 60;
 	}
 
@@ -77,16 +78,16 @@ static int spu2_init()
 		return -1;
 	}
 
-	iopbuf = (char *)SifAllocIopHeap(size_sjpcm_irx);
+	iopbuf = (char *)SifAllocIopHeap(sjpcm_irx_size);
 	if (iopbuf == NULL)
 	{
 		SDL_SetError("Failed to allocate IOP memory");
 		return -1;
 	}
 
-	sdt.src = (void *)sjpcm_irx;
+	sdt.src = (void *)sjpcm_irx_start;
 	sdt.dest = (void *)iopbuf;
-	sdt.size = size_sjpcm_irx;
+	sdt.size = sjpcm_irx_size;
 	sdt.attr = 0;
 
 	/* start DMA transfer */
@@ -147,19 +148,13 @@ static void PS2AUD_WaitAudio(_THIS)
 	} 
 
 	/* wait for a signal from the vsync handler */
-	while (1)
+	while (this->hidden->mixpos < this->hidden->mixlen)
 	{
-		if (this->hidden->mixpos >= this->hidden->mixlen)
-		{
-			/* no more buffer to enqueue */
-			this->hidden->mixpos = 0;
-			break;
-		}
-
 		if (SjPCM_Available() >= tick)
 		{
 			int p;
 
+			/* demux left/right */
 			ptr = (s16 *)(this->hidden->mixbuf + this->hidden->mixpos);
 			lptr = left;
 			rptr = right;
@@ -172,6 +167,7 @@ static void PS2AUD_WaitAudio(_THIS)
 
 			this->hidden->mixpos += tick*2*2;
 
+			/* enqueue packet for sjpcm */
 			SjPCM_Enqueue(left, right, tick, 1);
 		}
 		else
@@ -180,6 +176,9 @@ static void PS2AUD_WaitAudio(_THIS)
 			SDL_Delay(1);
 		}
 	}
+
+	/* no more buffer to enqueue */
+	this->hidden->mixpos = 0;
 }
 
 static void PS2AUD_PlayAudio(_THIS)

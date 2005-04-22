@@ -1,7 +1,8 @@
-A few quick notes about the implementation of ps2sdk sdl audio.
+A few quick notes about the implementation of ps2sdk SDL audio.
 
-* I chose to use SjPCM for the time being. It works fine, and with
-time, I will put my own IRX here, which suits SDL needs better.
+* I chose to use isjPCM for the time being. It works fine, and with
+time, I will put my own IRX here, which suits SDL needs better. You
+are required to precompile and install isjPCM beforehand.
 
 * Only 48000 hz, 16 bit stereo waves are supported. Anything else will
 fail. There is an option in SDL to automagically convert samples on the
@@ -11,7 +12,10 @@ fly, but I couldn't get it to work.
 
 This is a work in progress. I am constantly updating and releasing 
 my source tree, to let everyone catch up with the latest changes. If you
-have any comment, feedback, please contact me. I will be thankful for some
-peer code reviews.
+have any comments, please contact me. I will be thankful for some peer 
+code reviews.
+
+* I have been informed of problems with isjPCM 2.2, and isjPCM 2.1 is known
+to work; you have been warned.
 
 -- gawd
