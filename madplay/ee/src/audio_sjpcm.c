@@ -78,110 +78,12 @@ int loadModules()
 	return ret;
 }
 
-// taken from gslib
-void EnableVSyncCallbacks(void)
-{
-	asm __volatile__ ("
-		di
-
-		addiu $4, $0, 2	 
-		addiu $3, $0, 20
-
-		syscall
-		nop
-
-		ei
-	");
-}
-
-// taken from gslib
-void RemoveVSyncCallback(unsigned int RemoveID)
-{
-	asm __volatile__ ("
-		di
-
-		addu  $5, $0, %0	# RemoveID will have already been passed into this func in $4
-		addiu $4, $0, 2		# 2 = vsync_start
-		addiu $3, $0, 17	# RemoveIntcHandler
-		syscall
-		nop
-
-		ei"
-		: 
-		: "g" (RemoveID)
-		);
-}
-
-// taken from gslib
-unsigned int AddVSyncCallback(void (*func_ptr)())
-{
-	unsigned int AddCallbackID;
-
-	asm __volatile__ ("
-		di
-
-		# 'func_ptr' param will have been passed in $4, so move it to $5 (needed for syscall)
-
-		addu  $5, $0, %1
-		addiu $4, $0, 2		# 2 = vsync_start	
-
-		addiu $6, $0, 0
-		addiu $3, $0, 16	# AddIntcHandler
-
-		syscall				# Returns assigned ID in $2
-		nop
-
-		addu  %0, $0, $2
-		
-		addiu $4, $0, 2	 
-		addiu $3, $0, 20
-
-		syscall
-		nop
-
-		ei"
-	: "=r" (AddCallbackID)
-	: "g" (func_ptr)
-	);
-
-//		la $4, AddCallbackID	# Store ID in var
-//		sw $2, 0($4)
-
-
-	// Enable VSync callbacks if not already enabled
-	EnableVSyncCallbacks(); // perhaps this should only be done once, and not here
-
-	return AddCallbackID;
-}
-
 #define FRAME_SIZE	48000 // 1 frame
 #define TICKS_PER_FRAME	50 // 60 for ntsc
 #define TICK_SIZE	(FRAME_SIZE / TICKS_PER_FRAME) 	
 
 unsigned short hold[2][TICK_SIZE] __attribute__((aligned (16))); // left/right samples
 unsigned int held __attribute__((aligned (16)));  // number of left/right samples
-
-//static void output(void *dat)
-//{
-//	int offset, todo;
-//
-//	while (1) 
-//	{
-//
-//		SuspendThread(mainPid); // suspend instead of blocking on semaphors.
-//		todo =  SjPCM_Available() % TICK_SIZE;
-//
-//		while (( ( buffered - current_buffer) > 0 ) && todo--) { 
-//			offset = (current_buffer % TICKS_PER_FRAME) * TICK_SIZE;
-//			SjPCM_Enqueue(&(hold[0][offset]), &(hold[1][offset]), TICK_SIZE, 1); 
-//			current_buffer++;
-//		}
-//
-//		ResumeThread(mainPid);
-//		SleepThread();
-//
-//	}
-//}
 
 int vsync_func(void)
 {
@@ -225,22 +127,6 @@ int init(struct audio_init *init)
 	held = 0;
 	buffered = 0;
 	current_buffer = 0;
-
-	/* vsync interrupt handler */
-//	handlerId = AddVSyncCallback((functionPointer)&vsync_func);
-//
-//	/* thread to output func */
-//	thread.func = (void *)output;
-//	thread.stack = userThreadStack;
-//	thread.stack_size = sizeof(userThreadStack);
-//	thread.gp_reg = &_gp;
-//	thread.initial_priority = 40;
-//
-//	mainPid = GetThreadId();
-//	ChangeThreadPriority(mainPid, 50);
-//
-//	outputPid = CreateThread(&thread);
-//	status = StartThread(outputPid, NULL);
 
 	return 0;
 
@@ -415,39 +301,16 @@ int stop(struct audio_stop *stop)
 	return 0;
 }
 
-void DisableVSyncCallbacks(void)
-{
-	asm __volatile__ ("
-		di
-
-		addiu $4, $0, 2	 
-		addiu $3, $0, 21
-
-		syscall
-		nop
-
-
-		ei
-	");
-}
-
 static
 int finish(struct audio_finish *finish)
 {
-//	while (buffered > current_buffer)  // let buffer finish first
-//		SuspendThread(mainPid);
 	while (SjPCM_Buffered() > TICK_SIZE) {
 		int i;
 		for (i = 0; i < 3; i++) 	
 			nopdelay(); 
 	}
 
-//	DeleteThread(outputPid);
-//	RemoveVSyncCallback(handlerId);
-
 	SjPCM_Pause();
-
-//	DisableVSyncCallbacks(); // perhaps this shouldn't be done
 
 	return 0;
 }
