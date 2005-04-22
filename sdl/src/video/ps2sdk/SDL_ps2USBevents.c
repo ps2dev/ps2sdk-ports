@@ -36,8 +36,8 @@
 #define USB_NOT_AVAILABLE 0
 static int usbState = USB_NOT_AVAILABLE;
 
-extern u8 ps2usbd_irx[];
-extern int size_ps2usbd_irx;
+extern u8 ps2usbd_irx_start[];
+extern int ps2usbd_irx_size;
 
 /*
   No homebrew USBD driver available so.. need to load one from somewhere ! :D
@@ -51,7 +51,7 @@ int PS2_InitUSB(_THIS)
     
 	printf("[PS2] Init USB driver\n");
 
-	SifExecModuleBuffer(ps2usbd_irx, size_ps2usbd_irx, 0, NULL, &ret);
+	SifExecModuleBuffer(ps2usbd_irx_start, ps2usbd_irx_size, 0, NULL, &ret);
 	if (ret < 0) 
 	{
 		SDL_SetError("[PS2] Failed to load module: usbd_irx\n");

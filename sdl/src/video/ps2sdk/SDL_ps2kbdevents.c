@@ -44,8 +44,8 @@
 //Keyboard driver lib
 #include <libkbd.h>
 
-extern u8 ps2kbd_irx[];
-extern int size_ps2kbd_irx;
+extern u8 ps2kbd_irx_start[];
+extern int ps2kbd_irx_size;
 
 //Keyboard state
 #define KBD_AVAILABLE 1
@@ -357,7 +357,7 @@ int PS2_InitKeyboard(_THIS){
     printf("[PS2] Init USB Keyboard\n");
     
     // the keyboard driver is embedded in the library....
-    SifExecModuleBuffer(ps2kbd_irx, size_ps2kbd_irx, 0, NULL, &ret);
+    SifExecModuleBuffer(ps2kbd_irx_start, ps2kbd_irx_size, 0, NULL, &ret);
     if (ret < 0) {
            SDL_SetError("[PS2] Failed to load module: ps2kbd_irx\n");
            return -1;

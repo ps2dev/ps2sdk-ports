@@ -41,8 +41,8 @@
 #include <libpad.h>
 
 //binary driver
-extern u8 ps2mouse_irx[];
-extern int size_ps2mouse_irx;
+extern u8 ps2mouse_irx_start[];
+extern int ps2mouse_irx_size;
 
 //default mouse threshold and acceleration
 #define THRES_DEF 1
@@ -90,7 +90,7 @@ int PS2_InitMouse(_THIS)
 	printf("[PS2] Init USB Mouse\n");
 
 	// the mouse driver is embedded in the library....
-	SifExecModuleBuffer(ps2mouse_irx, size_ps2mouse_irx, 0, NULL, &ret);
+	SifExecModuleBuffer(ps2mouse_irx_start, ps2mouse_irx_size, 0, NULL, &ret);
 	if (ret < 0)
 	{
 		SDL_SetError("[PS2] Failed to load module: PS2MOUSE.IRX\n");
