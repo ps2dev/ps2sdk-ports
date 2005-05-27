@@ -2,16 +2,14 @@ LIBPATH=../lib
 LIB_SDL=$(LIBPATH)/libsdl.a
 LIB_SDLMAIN=$(LIBPATH)/libsdlmain.a
 
-ISJPCM = $(PS2DEV)/isjpcm
-
-EE_CFLAGS = -DDISABLE_TIMERS
-EE_CFLAGS += -DNO_SIGNAL_H -DDEBUG_ERROR -DDEBUG_VIDEO -DUSE_MATH_H
+EE_CFLAGS  = -DDISABLE_TIMERS
+EE_CFLAGS += -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
 EE_CFLAGS += -DENABLE_PS2SDK
 
 EE_INCS  = -I../include
 EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
-EE_INCS += -I$(PS2DEV)/gsKit/include -I$(ISJPCM)/include
-EE_LIBS  = -L$(ISJPCM) -lsjpcm
+EE_INCS += -I$(PS2DEV)/gsKit/include
+EE_LIBS  = 
 
 all: $(LIB_SDL) $(LIB_SDLMAIN)
 
@@ -49,7 +47,7 @@ SDL_OBJS += cdrom/ps2sdk/SDL_syscdrom.o
 SDL_OBJS += joystick/ps2sdk/ps2joystick.o
 
 # embedded objects
-SDL_OBJS += audio/ps2sdk/sjpcm_irx.o 
+SDL_OBJS += audio/ps2sdk/audsrv_irx.o 
 SDL_OBJS += video/ps2sdk/ps2kbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2usbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2mouse_irx.o 
@@ -57,8 +55,8 @@ SDL_OBJS += video/ps2sdk/ps2mouse_irx.o
 SDLMAIN_OBJS = main/arch.o main/ps2sdk/sdl_main.o
 
 # inline
-audio/ps2sdk/sjpcm_irx.o: $(ISJPCM)/bin/isjpcm.irx
-	$(PS2SDK)/bin/bin2o $< $@ sjpcm_irx
+audio/ps2sdk/audsrv_irx.o: $(PS2SDK)/iop/irx/audsrv.irx
+	$(PS2SDK)/bin/bin2o $< $@ audsrv_irx
 
 video/ps2sdk/ps2kbd_irx.o: $(PS2SDK)/iop/irx/ps2kbd.irx
 	$(PS2SDK)/bin/bin2o $< $@ ps2kbd_irx
@@ -74,7 +72,7 @@ EMBEDDED = \
 	$(PS2SDK)/ee/lib/libpad.a           \
 	$(PS2SDK)/ee/lib/libkbd.a           \
 	$(PS2SDK)/ee/lib/libmouse.a         \
-	$(PS2DEV)/isjpcm/lib/libsjpcm.a     \
+	$(PS2SDK)/ee/lib/libaudsrv.a        \
 	$(PS2DEV)/gsKit/lib/libdmakit.a     \
 	$(PS2DEV)/gsKit/lib/libgskit.a
 
