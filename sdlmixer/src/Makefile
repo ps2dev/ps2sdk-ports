@@ -1,8 +1,10 @@
-LIBPATH=../lib
+LIBPATH = ../lib
 EE_LIB = $(LIBPATH)/libsdlmixer.a
 
-EE_CFLAGS = -DMOD_MUSIC -DWAV_MUSIC -DMIKMOD_DEBUG -DUSE_RWOPS
+EE_CFLAGS   = -DMOD_MUSIC -DWAV_MUSIC -DUSE_RWOPS
 EE_CXXFLAGS = -DNOCONTROLS
+
+HAVE_MP3_MUSIC = 0
 
 MIKMOD_OBJS  = mikmod/mplayer.o mikmod/mdriver.o mikmod/mloader.o
 MIKMOD_OBJS += mikmod/load_it.o mikmod/load_s3m.o mikmod/load_mod.o mikmod/load_xm.o 
@@ -16,6 +18,8 @@ MIXER_OBJS  = load_aiff.o load_ogg.o load_voc.o music.o music_cmd.o
 MIXER_OBJS += music_ogg.o wavestream.o effect_position.o
 MIXER_OBJS += effect_stereoreverse.o effects_internal.o mixer.o
 
+ifeq ($(HAVE_MP3_MUSIC), 1)
+EE_CFLAGS  += -DMP3_MUSIC
 SMPEG_OBJS  = smpeg/smpeg.o smpeg/MPEGlist.o smpeg/MPEGring.o
 SMPEG_OBJS += smpeg/audio/bitwindow.o smpeg/audio/filter.o
 SMPEG_OBJS += smpeg/audio/filter_2.o smpeg/audio/huffmantable.o
@@ -27,12 +31,15 @@ SMPEG_OBJS += smpeg/video/util.o smpeg/video/motionvector.o
 SMPEG_OBJS += smpeg/video/readfile.o smpeg/video/MPEGvideo.o
 SMPEG_OBJS += smpeg/video/floatdct.o smpeg/video/jrevdct.o
 SMPEG_OBJS += smpeg/video/vhar128.o smpeg/video/gdith.o
-SMPEG_OBJS += smpeg/video/parseblock.o
+SMPEG_OBJS += smpeg/video/parseblock.o smpeg/MPEGfilter.o
 SMPEG_OBJS += smpeg/MPEGstream.o smpeg/MPEGsystem.o smpeg/MPEG.o
+else
+SMPEG_OBJS =
+endif
 
 EE_OBJS = $(MIXER_OBJS) $(MIKMOD_OBJS) $(SMPEG_OBJS)
 
-EE_INCS  = -I. -Imikmod -I$(PS2SDK)/common/include 
+EE_INCS  = -I. -I../include -Imikmod -Ismpeg -I$(PS2SDK)/common/include 
 EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
 EE_LIBS  = 
 
