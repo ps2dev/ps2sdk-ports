@@ -46,6 +46,7 @@ static char rcsid =
     (defined(__mips__) && defined(__MIPSEL__)) || \
      defined(__SYMBIAN32__) || \
      defined(__x86_64__) || \
+     defined(_EE) || \
      defined(__LITTLE_ENDIAN__)
 #define SDL_BYTEORDER	SDL_LIL_ENDIAN
 #else
