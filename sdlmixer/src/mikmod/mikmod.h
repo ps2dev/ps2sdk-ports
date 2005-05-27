@@ -85,7 +85,7 @@ typedef char CHAR;
 
 /*@DOES_NOT_HAVE_SIGNED@*/
 
-#if defined(__alpha) || defined(_LP64)
+#if defined(__alpha) || defined(_LP64) || defined(_EE)
 /* 64 bit architectures */
 
 typedef signed char     SBYTE;      /* 1 byte, signed */

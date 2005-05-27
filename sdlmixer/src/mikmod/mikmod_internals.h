@@ -72,6 +72,8 @@ extern "C" {
 #if defined(__alpha) || defined(_LP64)
 typedef long		SLONGLONG;
 #define NATIVE_64BIT_INT
+#elif defined(_EE)
+typedef long		SLONGLONG;
 #elif defined(__WATCOMC__)
 typedef __int64		SLONGLONG;
 #elif defined(WIN32) && !defined(__MWERKS__)
