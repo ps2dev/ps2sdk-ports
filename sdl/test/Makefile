@@ -1,4 +1,5 @@
 BINS = \
+	testtimer.elf \
 	testcdrom.elf \
 	testendian.elf \
 	testerror.elf \
