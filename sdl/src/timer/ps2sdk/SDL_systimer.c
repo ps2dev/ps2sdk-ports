@@ -38,19 +38,25 @@ static char rcsid =
 
 #include <kernel.h>
 
-/* 
-	NOTE:
+#define INTC_TIM1  	10
+#define T1_COUNT        (volatile u32 *)0x10000800
+#define T1_MODE         (volatile u32 *)0x10000810
+#define T1_COMP         (volatile u32 *)0x10000820
 
-	Very quick hack to get my game working. more work is needed!
-*/
+/** ticks since starting SDL */
+static int ticks = 0;
+
+/** tim1 handler id */
+static int tim1_handler_id = -1;
 
 void SDL_StartTicks(void)
 {
+	ticks = 0;
 }
 
 Uint32 SDL_GetTicks(void)
 {
-	return 0;
+	return ticks;
 }
 
 static void alarm_callback(u32 alarm_id, u16 time, void *data)
@@ -65,9 +71,6 @@ static void alarm_callback(u32 alarm_id, u16 time, void *data)
 
 void SDL_Delay(Uint32 ms)
 {
-	/* this is done using PS2SDK calls directly, since
-	 * SDL does not support setting initial count to zero
-	 */
 	int id;
 	ee_sema_t sem;
 
@@ -87,22 +90,52 @@ void SDL_Delay(Uint32 ms)
 	DeleteSema(id);
 }
 
+static int ms_handler(int ca)
+{
+	ticks++;
+
+	/* reset counter */
+	*T1_COUNT = 0;
+	/* reset interrupt */
+	*T1_MODE |= (1 << 10);
+	__asm__ volatile("sync.l; ei");
+	return 0;
+}
+
 /* This is only called if the event thread is not running */
 int SDL_SYS_TimerInit(void)
 {
+	printf("initializing timer..\n");
+	tim1_handler_id = AddIntcHandler(INTC_TIM1, ms_handler, 0);
+	EnableIntc(INTC_TIM1);
+
+	*T1_COUNT = 0;
+	*T1_COMP = 586; /* 150MHZ / 256 / 1000 */
+	*T1_MODE = 2 | (0<<2) | (0<<6) | (1<<7) | (1<<8);
+
+	printf("timer init ended okay\n");
 	return 0;
 }
 
 void SDL_SYS_TimerQuit(void)
 {
+	DisableIntc(INTC_TIM1);
+
+	if (tim1_handler_id >= 0)
+	{
+		RemoveIntcHandler(INTC_TIM1, tim1_handler_id);
+		tim1_handler_id = -1;
+	}
 }
 
 int SDL_SYS_StartTimer(void)
 {
+	printf("FIXME: StartTimer not implemented!\n");
 	return(-1);
 }
 
 void SDL_SYS_StopTimer(void)
 {
+	printf("FIXME: StopTimer not implemented!\n");
 	return;
 }
