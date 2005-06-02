@@ -49,6 +49,14 @@ static int ticks = 0;
 /** tim1 handler id */
 static int tim1_handler_id = -1;
 
+/* since more than one thread is permitted to sleep on
+ * SDL_Delay, and Playstation 2 offers no option to re-schedule,
+ * we will be putting our threads to sleep and the handler will 
+ * wake them up
+ */
+#define MAX_SLEEPING_THREADS 4
+static int sleeping_threads[MAX_SLEEPING_THREADS];
+
 void SDL_StartTicks(void)
 {
 	ticks = 0;
@@ -59,40 +67,47 @@ Uint32 SDL_GetTicks(void)
 	return ticks;
 }
 
-static void alarm_callback(u32 alarm_id, u16 time, void *data)
-{
-	int id = (int)data;
-
-	if (id > 0)
-	{
-		iSignalSema(id);
-	}
-}
-
 void SDL_Delay(Uint32 ms)
 {
-	int id;
-	ee_sema_t sem;
+	int i;
 
-	sem.init_count = 0;
-	sem.max_count = 1;
-	sem.option = 0;
-	sem.attr = 0;
-	id = CreateSema(&sem);
-	if (id <= 0)
+	for (i=0; i<MAX_SLEEPING_THREADS; i++)
 	{
-		/* error :( */
+		if (sleeping_threads[i] == -1)
+		{
+			break;
+		}
+	}
+
+	if (i >= MAX_SLEEPING_THREADS)
+	{
+		fprintf(stderr, "too many threads are sleeping at SDL_Delay\n");
 		return;
 	}
 
-	SetAlarm(ms * 12, (void *)alarm_callback, (void *)id);
-	WaitSema(id);
-	DeleteSema(id);
+	sleeping_threads[i] = GetThreadId();
+	while (ms > 0)
+	{
+		SleepThread();
+		ms--;
+	}
+
+	sleeping_threads[i] = -1;
 }
 
 static int ms_handler(int ca)
 {
+	int i;
+
 	ticks++;
+
+	for (i=0; i<MAX_SLEEPING_THREADS; i++)
+	{
+		if (sleeping_threads[i] != -1)
+		{
+			iWakeupThread(sleeping_threads[i]);
+		}
+	}
 
 	/* reset counter */
 	*T1_COUNT = 0;
@@ -105,7 +120,15 @@ static int ms_handler(int ca)
 /* This is only called if the event thread is not running */
 int SDL_SYS_TimerInit(void)
 {
+	int i;
+
 	printf("initializing timer..\n");
+
+	for (i=0; i<MAX_SLEEPING_THREADS; i++)
+	{
+		sleeping_threads[i] = -1;
+	}
+
 	tim1_handler_id = AddIntcHandler(INTC_TIM1, ms_handler, 0);
 	EnableIntc(INTC_TIM1);
 
