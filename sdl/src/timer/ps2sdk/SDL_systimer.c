@@ -54,8 +54,10 @@ static int tim1_handler_id = -1;
  * we will be putting our threads to sleep and the handler will 
  * wake them up
  */
-#define MAX_SLEEPING_THREADS 4
+#define MAX_SLEEPING_THREADS 16
 static int sleeping_threads[MAX_SLEEPING_THREADS];
+
+static volatile int nsleeping_threads = 0;
 
 void SDL_StartTicks(void)
 {
@@ -71,28 +73,31 @@ void SDL_Delay(Uint32 ms)
 {
 	int i;
 
-	for (i=0; i<MAX_SLEEPING_THREADS; i++)
+	if (nsleeping_threads >= MAX_SLEEPING_THREADS)
 	{
-		if (sleeping_threads[i] == -1)
-		{
-			break;
-		}
-	}
-
-	if (i >= MAX_SLEEPING_THREADS)
-	{
-		fprintf(stderr, "too many threads are sleeping at SDL_Delay\n");
+		fprintf(stderr, "too many threads are sleeping at SDL_Delay (current thread %d)\n", GetThreadId());
 		return;
 	}
 
+	/* in theory, a locking mechanism is required here. but since
+	 * nothing happens if interrupt handler wakes up an already
+	 * running thread, I chose not to use one.
+	 */
+
+	i = nsleeping_threads;
+	nsleeping_threads++;
+
 	sleeping_threads[i] = GetThreadId();
+
 	while (ms > 0)
 	{
 		SleepThread();
 		ms--;
 	}
 
-	sleeping_threads[i] = -1;
+	nsleeping_threads--;
+	sleeping_threads[i] = sleeping_threads[nsleeping_threads];
+	sleeping_threads[nsleeping_threads] = -1;
 }
 
 static int ms_handler(int ca)
@@ -101,9 +106,9 @@ static int ms_handler(int ca)
 
 	ticks++;
 
-	for (i=0; i<MAX_SLEEPING_THREADS; i++)
+	for (i=0; i<nsleeping_threads; i++)
 	{
-		if (sleeping_threads[i] != -1)
+		if (sleeping_threads[i] >= 0)
 		{
 			iWakeupThread(sleeping_threads[i]);
 		}
@@ -120,14 +125,7 @@ static int ms_handler(int ca)
 /* This is only called if the event thread is not running */
 int SDL_SYS_TimerInit(void)
 {
-	int i;
-
 	printf("initializing timer..\n");
-
-	for (i=0; i<MAX_SLEEPING_THREADS; i++)
-	{
-		sleeping_threads[i] = -1;
-	}
 
 	tim1_handler_id = AddIntcHandler(INTC_TIM1, ms_handler, 0);
 	EnableIntc(INTC_TIM1);
