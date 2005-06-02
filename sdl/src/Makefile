@@ -2,8 +2,15 @@ LIBPATH=../lib
 LIB_SDL=$(LIBPATH)/libsdl.a
 LIB_SDLMAIN=$(LIBPATH)/libsdlmain.a
 
+# Enable USB keyboard and mouse (100 KB)
+HAVE_INPUT_DEVICES=0
+
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
-EE_CFLAGS += -DENABLE_PS2SDK
+EE_CFLAGS += -DENABLE_PS2SDK 
+
+ifeq ($(HAVE_INPUT_DEVICES), 1)
+EE_CFLAGS += -DPS2SDL_USE_INPUT_DEVICES
+endif
 
 EE_INCS  = -I../include
 EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
@@ -38,18 +45,22 @@ SDL_OBJS += thread/ps2sdk/SDL_syssem.o
 SDL_OBJS += thread/ps2sdk/SDL_systhread.o
 SDL_OBJS += timer/ps2sdk/SDL_systimer.o
 SDL_OBJS += video/ps2sdk/SDL_ps2video.o
-SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
-SDL_OBJS += video/ps2sdk/SDL_ps2mouseevents.o
-SDL_OBJS += video/ps2sdk/SDL_ps2USBevents.o
 SDL_OBJS += audio/ps2sdk/SDL_ps2audio.o 
 SDL_OBJS += cdrom/ps2sdk/SDL_syscdrom.o
 SDL_OBJS += joystick/ps2sdk/ps2joystick.o
 
 # embedded objects
 SDL_OBJS += audio/ps2sdk/audsrv_irx.o 
+
+ifeq ($(HAVE_INPUT_DEVICES), 1)
+SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
+SDL_OBJS += video/ps2sdk/SDL_ps2mouseevents.o
+SDL_OBJS += video/ps2sdk/SDL_ps2USBevents.o
+
 SDL_OBJS += video/ps2sdk/ps2kbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2usbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2mouse_irx.o 
+endif
 
 SDLMAIN_OBJS = main/arch.o main/ps2sdk/sdl_main.o
 

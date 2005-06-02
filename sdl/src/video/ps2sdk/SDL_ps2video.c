@@ -92,6 +92,45 @@ static u32 gsClut[256] __attribute__ ((aligned(64)));
 static GSGLOBAL *gsGlobal = NULL;
 static GSTEXTURE gsTexture;
 
+#ifdef PS2SDL_USE_INPUT_DEVICES
+/** Initialize USB devices
+
+    Updates SDL error status upon exit
+ */
+static void initialize_devices(SDL_VideoDevice *device)
+{
+	/* initialize keyboard and mouse */
+	if (PS2_InitUSB(device) >= 0) 
+	{
+    		if (PS2_InitKeyboard(device) < 0) 
+		{
+	   		SDL_SetError("Unable to open keyboard");
+	    	}
+
+		if (PS2_InitMouse(device) < 0) 
+		{
+    			SDL_SetError("Unable to open mouse");
+		}
+    	}       
+	else
+	{
+		/* no mouse, or keyboard */
+    		SDL_SetError("Unable to open USB Driver");	
+	}
+}
+
+#else
+
+/* input devices are disabled, provide stubs */
+static void PS2_UpdateMouse(_THIS)
+{
+}
+
+static void PS2_InitOSKeymap(SDL_VideoDevice *device)
+{
+}
+#endif
+
 static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 {
 	int pal;
@@ -119,25 +158,10 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	/* disable zbuffer because we're only doing 2d now */
 	gsGlobal->ZBuffering = GS_SETTING_OFF;
 
+#ifdef PS2SDL_USE_INPUT_DEVICES
 	/* initialize keyboard and mouse */
-	if (PS2_InitUSB(device) >= 0) 
-	{
-    		if (PS2_InitKeyboard(device) < 0) 
-		{
-	   		SDL_SetError("Unable to open keyboard");
-	    	}
-
-		if (PS2_InitMouse(device) < 0) 
-		{
-    			SDL_SetError("Unable to open mouse");
-		}
-    	}       
-	else
-	{
-		/* no mouse, or keyboard */
-    		SDL_SetError("Unable to open USB Driver");	
-	}
-
+	initialize_devices(device);
+#endif
 	return 0;
 }
 
@@ -231,6 +255,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		Rmask = 0x0000001f;
 		Gmask = 0x000003e0;
 		Bmask = 0x00007c00;
+		Amask = 0x00008000;
 		break;
 		
 		case 24:
@@ -254,7 +279,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	}
 
 	size = gsKit_texture_size(width, height, psm);
-	size = 640*400;
+	if (size < 640*400*2) size = 640*400*2;
 
 	gsTexture.Width = width;
 	gsTexture.Height = height;
@@ -284,7 +309,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	/* enable bilinear */
 	gsTexture.Filter = GS_FILTER_LINEAR;
 
-	/* printf("vmem 0x%x, vclut 0x%x, diff %d\n", gsTexture.Vram, gsTexture.VramClut, gsTexture.VramClut - gsTexture.Vram); */
+	//printf("vmem 0x%x, vclut 0x%x, diff %d\n", gsTexture.Vram, gsTexture.VramClut, gsTexture.VramClut - gsTexture.Vram);
 	
 	if (! SDL_ReallocFormat(current, bpp, Rmask, Gmask, Bmask, Amask)) 
 	{
@@ -338,15 +363,11 @@ static void PS2_FreeHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 
 static void PS2_PumpEvents(SDL_VideoDevice *device)
 {
+#ifdef PS2SDL_USE_INPUT_DEVICES
 	PS2_PumpKeyboardEvents(device);
 	PS2_PumpMouseEvents(device);       
+#endif
 }
-
-/*
-static void PS2_InitOSKeymap(SDL_VideoDevice *device)
-{
-}
-*/
 
 static int PS2_SetColors(SDL_VideoDevice *device, int firstcolor, int ncolors, SDL_Color *colors)
 {
@@ -410,13 +431,13 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 		gsKit_prim_sprite_texture(gsGlobal, &gsTexture, x1, y1, u1, v1, x2, y2, u2, v2, 1.0, TEXTURE_RGBAQ);
 	}
 
-	/* 
-	uncomment to force update of the entire screen
-	gsKit_prim_sprite_texture(gsGlobal, &gsTexture, 0, 0, 0, 0, gsGlobal->Width, gsGlobal->Height, rects[0].w, rects[0].h, 1.0, TEXTURE_RGBAQ); 
-	*/
-
-	/* vsync and flip */
 	gsKit_sync_flip(gsGlobal);
+}
+
+static int PS2_FlipHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
+{
+	gsKit_sync_flip(gsGlobal);
+	return 0;
 }
 
 static SDL_VideoDevice *PS2_CreateDevice(int devindex)
@@ -455,6 +476,7 @@ static SDL_VideoDevice *PS2_CreateDevice(int devindex)
 	device->UpdateMouse = PS2_UpdateMouse;	
 	device->PumpEvents = PS2_PumpEvents;
 	device->UpdateRects = PS2_UpdateRects;
+	device->FlipHWSurface = PS2_FlipHWSurface;
 	device->free = PS2_DeleteDevice;
 
 	memset(device->hidden, '\0', (sizeof *device->hidden));
