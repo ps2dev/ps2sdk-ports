@@ -46,8 +46,8 @@ static char rcsid =
  "@(#) $Id$";
 #endif
 
-#define REG_VIDEO_MODE   (* (u8 *)0x1fc80000)
-#define MODE_PAL                        0xf3
+#define REG_VIDEO_MODE   (* (u8 *)0x1fc7ff52)
+#define MODE_PAL                        'E'
 
 static int clut_xlut[256] =
 {
@@ -122,11 +122,11 @@ static void initialize_devices(SDL_VideoDevice *device)
 #else
 
 /* input devices are disabled, provide stubs */
-static void PS2_UpdateMouse(_THIS)
+void PS2_UpdateMouse(_THIS)
 {
 }
 
-static void PS2_InitOSKeymap(SDL_VideoDevice *device)
+void PS2_InitOSKeymap(SDL_VideoDevice *device)
 {
 }
 #endif
@@ -142,7 +142,8 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	vformat->Bmask = 0x00007c00;
 	vformat->Amask = 0x00008000;
 
-	pal = 1; //(REG_VIDEO_MODE == MODE_PAL);
+	pal = (REG_VIDEO_MODE == MODE_PAL);
+	printf("SDL: initializing gsKit in %s mode\n", pal ? "PAL" : "NTSC");
 	gsGlobal = gsKit_init_global(pal ? GS_MODE_PAL : GS_MODE_NTSC);
 
 	if (gsGlobal == NULL)
@@ -195,19 +196,19 @@ static SDL_Rect rect_800x600 = {0, 0, 800, 600};
 static SDL_Rect rect_1024x768 = {0, 0, 1024, 768};
 static SDL_Rect rect_1280x1024 = {0, 0, 1280, 1024};
 static SDL_Rect *vesa_modes[] = {
-	&rect_256x224,
-	&rect_256x256,
-	&rect_320x200,
-	&rect_320x240,
-	&rect_320x256,
-	&rect_512x448,
-	&rect_640x200,
-	&rect_640x400,
-	&rect_640x448,
-	&rect_640x480,
-	&rect_800x600,
-	&rect_1024x768,
 	&rect_1280x1024,
+	&rect_1024x768,
+	&rect_800x600,
+	&rect_640x480,
+	&rect_640x448,
+	&rect_640x400,
+	&rect_640x200,
+	&rect_512x448,
+	&rect_320x256,
+	&rect_320x240,
+	&rect_320x200,
+	&rect_256x256,
+	&rect_256x224,
 	NULL
 };
 	
@@ -230,7 +231,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 {
 	int psm, size;
 	int Rmask, Gmask, Bmask, Amask;
-	int visible_h;
+	int visible_w, visible_h;
 	float ratio, w_ratio, h_ratio;
 
 	gsKit_init_screen(gsGlobal);
@@ -279,7 +280,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	}
 
 	size = gsKit_texture_size(width, height, psm);
-	if (size < 640*400*2) size = 640*400*2;
+//	if (size < 640*400*2) size = 640*400*2;
 
 	gsTexture.Width = width;
 	gsTexture.Height = height;
@@ -292,12 +293,14 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	}
 
 	memset((void *)gsTexture.Mem, '\0', size);
-	gsTexture.Vram = gsKit_vram_alloc(gsGlobal, size);
+	gsTexture.Vram = 0x380000;
+	//removed: gsKit_vram_alloc(gsGlobal, size);
 
 	if (bpp <= 8)
 	{
 		gsTexture.Clut = gsClut;
-		gsTexture.VramClut = (u32)gsKit_vram_alloc(gsGlobal, 1024);
+		gsTexture.VramClut = 0x300000;
+		//removed: (u32)gsKit_vram_alloc(gsGlobal, 1024);
 	}
 	else
 	{
@@ -328,12 +331,13 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 
 	/* full screen, with aspect ratio */
 	visible_h = gsGlobal->Height - gsGlobal->StartY;
-	w_ratio = gsGlobal->Width / (float)width;
+	visible_w = gsGlobal->Width;
+	w_ratio = visible_w / (float)width;
 	h_ratio = visible_h / (float)height;
 	ratio = (w_ratio <= h_ratio) ? w_ratio : h_ratio;
 
 	device->hidden->ratio = ratio;
-	device->hidden->center_x = (gsGlobal->Width - (width * ratio)) / 2;
+	device->hidden->center_x = (visible_w - (width * ratio)) / 2;
 	device->hidden->center_y = (visible_h - (height * ratio)) / 2;
 
 	printf("center_x %d center_y %d\n", device->hidden->center_x, device->hidden->center_y);
