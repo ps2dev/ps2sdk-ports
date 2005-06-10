@@ -47,11 +47,13 @@ static char rcsid =
 #include "libpad.h" ////// FIXME
 
 #define MAX_JOYSTICKS	2
-#define MAX_AXES	6	/* each joystick can have up to 6 axes */
-#define MAX_BUTTONS	12	/* and 8 buttons                      */
+#define MAX_AXES	4	/* 2 analog sticks x 2 axes each  */
+#define MAX_BUTTONS	12	/* and 12 buttons                  */
 #define	MAX_HATS	2
 
 #define	JOYNAMELEN	8
+
+#define AXIS_THRESHOLD  0
 
 /* array to hold joystick ID values */
 static char padbufs[MAX_JOYSTICKS*256] __attribute__((aligned(64)));
@@ -75,16 +77,22 @@ static const int sdl_buttons[MAX_BUTTONS] =
 struct joystick_hwdata
 {
 	int prev_buttons;
+	int prev_ljoy_h;
+	int prev_ljoy_v;
+	int prev_rjoy_h;
+	int prev_rjoy_v;
 };
 
 static int wait_pad(int port, int slot)
 {
+	int tries;
 	int state, last_state;
 	char state_string[16];
 
 	state = padGetState(port, slot);
 	last_state = -1;
 
+	tries = 5000;
 	while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1)) 
 	{
 		if (state != last_state) 
@@ -95,6 +103,13 @@ static int wait_pad(int port, int slot)
 
 		last_state = state;
 		state = padGetState(port, slot);
+
+		tries--;
+		if (tries == 0)
+		{
+			printf("waited too long! giving up\n");
+			break;
+		}
 	}
 
 	return 0;
@@ -110,6 +125,7 @@ int SDL_SYS_JoystickInit(void)
 {
 	int ret;
 	int numports, numdevs;
+	int port, slot;
 
 	ret = SifLoadModule("rom0:SIO2MAN", 0, NULL);
 	if (ret < 0)
@@ -134,14 +150,20 @@ int SDL_SYS_JoystickInit(void)
 		/* multitap not supported yet :| */
 	}
 
-	ret = padPortOpen(0, 0, &padbufs[0]);
+	port = 0;
+	slot = 0;
+
+	ret = padPortOpen(port, slot, &padbufs[0]);
 	if (ret < 0)
 	{
-		SDL_SetError("padPortOpen %d, %d failed\n", 0, 0);
+		SDL_SetError("padPortOpen %d, %d failed\n", port, slot);
 		return 0;
 	}
 
-	wait_pad(0, 0);
+	wait_pad(port, slot);
+
+ 	padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
+	wait_pad(port, slot);
 
 	return(1);
 }
@@ -160,12 +182,13 @@ const char *SDL_SYS_JoystickName(int index)
 int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 {
 	/* allocate memory for system specific hardware data */
-	joystick->hwdata = (struct joystick_hwdata *) malloc(sizeof(*joystick->hwdata));
+	joystick->hwdata = (struct joystick_hwdata *)malloc(sizeof(*joystick->hwdata));
 	if (joystick->hwdata == NULL)
 	{
 		SDL_OutOfMemory();
 		return(-1);
 	}
+
 	memset(joystick->hwdata, 0, sizeof(*joystick->hwdata));
 
 	/* fill nbuttons, naxes, and nhats fields */
@@ -185,6 +208,8 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 {
 	int i, ret;
 	int port, slot;
+	int rjoy_h, rjoy_v;
+	int ljoy_h, ljoy_v;
 	struct padButtonStatus buttons;
 	u32 paddata;
 	u32 old_pad;
@@ -201,7 +226,7 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 
 		old_pad = joystick->hwdata->prev_buttons;
 		paddata = 0xffff ^ buttons.btns;
-		new_pad = paddata & ~old_pad;
+		new_pad = paddata; 
 		changed = paddata ^ old_pad;
 		joystick->hwdata->prev_buttons = paddata;
 
@@ -239,6 +264,46 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 		if (changed & (PAD_LEFT|PAD_RIGHT|PAD_UP|PAD_DOWN))
 		{
 			SDL_PrivateJoystickHat(joystick, 0, hat);
+		}
+
+		/* now do axis */
+		ljoy_h = buttons.ljoy_h - 128;
+		ljoy_v = buttons.ljoy_v - 128;
+		rjoy_h = buttons.rjoy_h - 128;
+		rjoy_v = buttons.rjoy_v - 128;
+
+		/*
+		printf("rjoy_h %d rjoy_v %d ljoy_h %d ljoy_v %d (%d, %d, %d, %d)\n",
+		rjoy_h, rjoy_v,
+		ljoy_h, ljoy_v,
+		joystick->hwdata->prev_rjoy_h, joystick->hwdata->prev_rjoy_v,
+		joystick->hwdata->prev_ljoy_h, joystick->hwdata->prev_ljoy_v);
+		*/
+
+		/* left analog stick */
+		if (abs(joystick->hwdata->prev_ljoy_h - ljoy_h) > AXIS_THRESHOLD)
+		{
+			SDL_PrivateJoystickAxis(joystick, 0, ljoy_h * 127);
+			joystick->hwdata->prev_ljoy_h = ljoy_h;
+		}
+
+		if (abs(joystick->hwdata->prev_ljoy_v - ljoy_v) > AXIS_THRESHOLD)
+		{
+			SDL_PrivateJoystickAxis(joystick, 1, ljoy_v * 127);
+			joystick->hwdata->prev_ljoy_v = ljoy_v;
+		}
+
+		/* right analog stick */
+		if (abs(joystick->hwdata->prev_rjoy_h - rjoy_h) > AXIS_THRESHOLD)
+		{
+			SDL_PrivateJoystickAxis(joystick, 2, rjoy_h  * 127);
+			joystick->hwdata->prev_rjoy_h = rjoy_h;
+		}
+
+		if (abs(joystick->hwdata->prev_rjoy_v - rjoy_v) > AXIS_THRESHOLD)
+		{
+			SDL_PrivateJoystickAxis(joystick, 3, rjoy_v * 127);
+			joystick->hwdata->prev_rjoy_v = rjoy_v;
 		}
 	} 
 	else
