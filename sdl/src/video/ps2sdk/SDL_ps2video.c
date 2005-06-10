@@ -234,7 +234,10 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	int visible_w, visible_h;
 	float ratio, w_ratio, h_ratio;
 
+	gsGlobal->PSM = GS_PSM_CT32;
+	gsGlobal->Test->ZTE = 0;
 	gsKit_init_screen(gsGlobal);
+
 	gsKit_clear(gsGlobal, BLACK_RGBAQ);
 
 	Rmask = 0;
