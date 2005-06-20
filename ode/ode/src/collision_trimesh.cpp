@@ -33,7 +33,7 @@
 // Trimesh data
 dxTriMeshData::dxTriMeshData(){
 #ifndef dTRIMESH_ENABLED
-  dUASSERT(g, "dTRIMESH_ENABLED is not defined. Trimesh geoms will not work");
+  printf("dTRIMESH_ENABLED is not defined. Trimesh geoms will not work\n");
 #endif
 }
 
@@ -120,7 +120,8 @@ dxTriMeshData::Build(const void* Vertices, int VertexStide, int VertexCount,
 }
 
 dTriMeshDataID dGeomTriMeshDataCreate(){
-	return new dxTriMeshData();
+        dxTriMeshData* d = new dxTriMeshData();
+	return d;
 }
 
 void dGeomTriMeshDataDestroy(dTriMeshDataID g){
