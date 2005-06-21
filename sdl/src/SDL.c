@@ -60,7 +60,7 @@ static SDL_version version =
 
 /* The initialized subsystems */
 static Uint32 SDL_initialized = 0;
-// static Uint32 ticks_started = 0;
+static Uint32 ticks_started = 0;
 
 #ifdef CHECK_LEAKS
 int surfaces_allocated = 0;
