@@ -273,7 +273,7 @@ Texture::~Texture()
 
 void Texture::bind (int modulate)
 {
-  glBindTexture (GL_TEXTURE_2D,name);
+// currently tlb erroring //  glBindTexture (GL_TEXTURE_2D,name);
   glTexEnvi (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE,
 	     modulate ? GL_MODULATE : GL_DECAL);
 }

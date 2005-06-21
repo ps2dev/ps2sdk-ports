@@ -37,7 +37,8 @@ typedef unsigned int intP;
 //#define dDOUBLE 1
 
 /* the floating point infinity */
-#define dInfinity DBL_MAX
+//#define dInfinity DBL_MAX
+#define dInfinity 1e20f
 
 /* available functions */
 

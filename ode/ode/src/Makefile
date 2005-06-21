@@ -17,7 +17,7 @@ EE_INCS  = -I../../include -I../../OPCODE
 
 all: $(LIB_ODE) 
 
-$(LIB_ODE): $(ODE_OBJS) $(OPCODE_OBJS)
+$(LIB_ODE): $(ODE_OBJS)
 	$(EE_AR) cru $(LIB_ODE) $(ODE_OBJS)
 
 install: all

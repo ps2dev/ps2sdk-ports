@@ -13,10 +13,10 @@ BINS = \
 	test_space_stress.elf \
 	test_boxstack.elf \
 	test_moving_trimesh.elf \
-	test_trimesh.elf 
+	test_trimesh.elf \
+	test_step.elf \
+	test_I.elf 
 
-#	test_I.elf 
-#	test_step.elf 
 
 OBJS = 
 EE_INCS = -I../include
@@ -30,7 +30,7 @@ install:
 %.elf : %.o $(PS2SDK)/ee/startup/crt0.o
 	$(EE_CC) -mno-crt0 -T$(PS2SDK)/ee/startup/linkfile $(EE_LDFLAGS) \
 		-o $@ $(PS2SDK)/ee/startup/crt0.o  $< $(EE_LIBS)
-#	ee-strip $@
+	ee-strip $@
 
 clean:
 	rm -f $(BINS) $(OBJS)

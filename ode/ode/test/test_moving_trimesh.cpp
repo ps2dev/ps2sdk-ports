@@ -62,7 +62,7 @@ static MyObject obj[NUM];
 static dJointGroupID contactgroup;
 static int selected = -1;	// selected object
 static int show_aabb = 0;	// show geom AABBs?
-static int show_contacts = 0;	// show contact points?
+static int show_contacts = 1;	// show contact points?
 static int random_pos = 1;	// drop objects from random position?
 
 // Bunny mesh ripped from Opcode
@@ -1822,6 +1822,7 @@ static void simLoop (int pause)
     dsDrawTriangle(Pos, Rot, &v[0], &v[3], &v[6], 0);
   }}}
 
+/* only need one bunny right now
   {const dReal* Pos = dGeomGetPosition(TriMesh2);
   const dReal* Rot = dGeomGetRotation(TriMesh2);
 
@@ -1839,6 +1840,7 @@ static void simLoop (int pause)
     };
     dsDrawTriangle(Pos, Rot, &v[0], &v[3], &v[6], 1);
   }}}
+*/
 }
 
 

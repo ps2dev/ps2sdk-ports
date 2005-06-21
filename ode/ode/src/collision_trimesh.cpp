@@ -60,7 +60,7 @@ dxTriMeshData::Build(const void* Vertices, int VertexStide, int VertexCount,
 	Settings.mRules = SPLIT_BEST_AXIS;
 
     // best compromise?
-    //Settings.mRules = SPLIT_BEST_AXIS | SPLIT_SPLATTER_POINTS | SPLIT_GEOM_CENTER;
+    // Settings.mRules = SPLIT_BEST_AXIS | SPLIT_SPLATTER_POINTS | SPLIT_GEOM_CENTER;
 
 
 	OPCODECREATE TreeBuilder;
