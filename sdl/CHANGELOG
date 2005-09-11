@@ -1,0 +1,8 @@
+PS2SDL CHANGELOG
+-------------
+
+11 Sep 2005 gawd
+
+	* fixed SDL_Joystick's wait_pad routine
+	* SDL_Joystick now turns on ANALOG if available
+

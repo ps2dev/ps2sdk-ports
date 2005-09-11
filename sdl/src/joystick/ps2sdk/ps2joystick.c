@@ -19,8 +19,6 @@
     Gil Megidish
     gil@megidish.net
 
-    based on BERO's code
-
     Sam Lantinga
     slouken@libsdl.org
 */
@@ -90,15 +88,21 @@ static int wait_pad(int port, int slot)
 	char state_string[16];
 
 	state = padGetState(port, slot);
+	if (state == PAD_STATE_DISCONN)
+	{
+		printf("SDL_Joystick: pad (%d, %d) is disconnected\n", port, slot);
+		return -1;
+	}
+
 	last_state = -1;
 
-	tries = 5000;
+	tries = 65536;
 	while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1)) 
 	{
 		if (state != last_state) 
 		{
 			padStateInt2String(state, state_string);
-			printf("Please wait, pad(%d,%d) is in state %s\n", port, slot, state_string);
+			printf("SDL_Joystick: pad (%d,%d) is in state %s\n", port, slot, state_string);
 		}
 
 		last_state = state;
@@ -124,8 +128,11 @@ static int wait_pad(int port, int slot)
 int SDL_SYS_JoystickInit(void)
 {
 	int ret;
+	int id;
 	int numports, numdevs;
 	int port, slot;
+
+	printf("SDL_Joystick: JoystickInit begins\n");
 
 	ret = SifLoadModule("rom0:SIO2MAN", 0, NULL);
 	if (ret < 0)
@@ -145,6 +152,7 @@ int SDL_SYS_JoystickInit(void)
 
 	numdevs = 0;
 	numports = padGetPortMax();
+	printf("SDL_Joystick: numports %d\n", numports);
 	if (numports > 1)
 	{
 		/* multitap not supported yet :| */
@@ -162,10 +170,49 @@ int SDL_SYS_JoystickInit(void)
 
 	wait_pad(port, slot);
 
- 	padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
-	wait_pad(port, slot);
+	id = padInfoMode(port, slot, PAD_MODECURID, 0);
+	if (id != 0)
+	{
+		int ext;
 
-	return(1);
+		ext = padInfoMode(port, slot, PAD_MODECUREXID, 0);
+		if (ext != 0)
+		{
+			id = ext;
+		}
+
+		if (id == PAD_TYPE_DIGITAL)
+		{
+			printf("SDL_Joystick: digital pad detected\n");
+		}
+		else if (id == PAD_TYPE_DUALSHOCK)
+		{
+			printf("SDL_Joystick: dualshock detected\n");
+		}
+		else 
+		{
+			printf("SDL_Joystick: unknown identifier %d detected\n", id);
+		}
+
+
+		if (id == PAD_TYPE_DIGITAL || id == PAD_TYPE_DUALSHOCK)
+		{
+			ret = padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
+			if (ret == 1) 
+			{ 
+				printf("JoystickInit: Request received\n"); 
+			} 
+			else
+			{ 
+				printf("not received!!!\n"); 
+			}
+		}
+
+		wait_pad(port, slot);
+	}
+ 	
+	printf("SDL_Joystick: JoystickInit ends\n");
+	return 1;
 }
 
 /* Function to get the device-dependent name of a joystick */
