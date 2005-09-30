@@ -100,7 +100,12 @@ static CDstatus SDL_SYS_CDStatus(SDL_CD *cdrom, int *position)
 /* Start play */
 static int SDL_SYS_CDPlay(SDL_CD *cdrom, int start, int length)
 {
-	audsrv_play_sectors(start, start + length);
+	if (audsrv_play_sectors(start, start + length) == 0)
+	{
+		return 0;
+	}
+
+	return -1;
 }
 
 /* Pause play */
