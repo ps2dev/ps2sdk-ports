@@ -159,6 +159,15 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	/* disable zbuffer because we're only doing 2d now */
 	gsGlobal->ZBuffering = GS_SETTING_OFF;
 
+	gsGlobal->DoubleBuffering = GS_SETTING_ON;
+	gsGlobal->PrimAAEnable = 0;
+	gsGlobal->PrimAlphaEnable = 0;
+
+	gsGlobal->PSM = GS_PSM_CT16;
+	gsGlobal->Test->ZTE = 0;
+
+	gsKit_init_screen(gsGlobal);
+
 #ifdef PS2SDL_USE_INPUT_DEVICES
 	/* initialize keyboard and mouse */
 	initialize_devices(device);
@@ -229,16 +238,17 @@ static SDL_Rect **PS2_ListModes(SDL_VideoDevice *device, SDL_PixelFormat *format
 
 static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *current, int width, int height, int bpp, Uint32 flags)
 {
-	int psm, size;
+	int i, psm, size;
 	int Rmask, Gmask, Bmask, Amask;
 	int visible_w, visible_h;
 	float ratio, w_ratio, h_ratio;
 
-	gsGlobal->PSM = GS_PSM_CT32;
-	gsGlobal->Test->ZTE = 0;
-	gsKit_init_screen(gsGlobal);
-
-	gsKit_clear(gsGlobal, BLACK_RGBAQ);
+	for (i=0; i<2; i++)
+	{
+		/* clear both frames */
+		gsKit_clear(gsGlobal, BLACK_RGBAQ);
+		gsKit_sync_flip(gsGlobal);
+	}
 
 	Rmask = 0;
 	Gmask = 0;
@@ -259,7 +269,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		Rmask = 0x0000001f;
 		Gmask = 0x000003e0;
 		Bmask = 0x00007c00;
-		Amask = 0x00008000;
+		//Amask = 0x00008000;
 		break;
 		
 		case 24:
