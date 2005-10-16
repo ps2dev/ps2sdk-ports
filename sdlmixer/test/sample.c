@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
 	Mix_Music *music;
 	SDL_RWops *rw;
 	int position;
-	char *c;
 	FILE *fp;
 
 	if (argc != 2)
@@ -41,7 +40,7 @@ int main(int argc, char *argv[])
 	}
 
 	/* initialize SDL */
-	error = SDL_Init(SDL_INIT_AUDIO);
+	error = SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER);
 	if (error != 0)
 	{
 		printf("SDL_GetError returned: %s\n", SDL_GetError());
