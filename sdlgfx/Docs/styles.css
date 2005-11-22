@@ -1,0 +1,246 @@
+BODY
+{
+    COLOR: #000000;
+    BACKGROUND-COLOR: #E0E0E0;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 8pt; */
+}
+
+.default
+{
+    COLOR: #000000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 8pt; */
+}
+
+.PROMPT
+{
+    /* FONT-SIZE: 11pt; */
+    FONT-SIZE: 120%;
+    FONT-WEIGHT: bold
+}
+.HIGHLIGHT
+{
+    FONT-WEIGHT: bold;
+}
+EM
+{
+    COLOR: #000044;
+    /* FONT-SIZE: 12pt; *
+    FONT-SIZE: 130%;
+    FONT-WEIGHT: bold;
+    TEXT-DECORATION: none
+}
+STRONG
+{
+    COLOR: #cc0000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 11pt; */
+    FONT-SIZE: 120%;
+    FONT-WEIGHT: bold;
+    TEXT-DECORATION: none
+}
+PRE
+{
+    COLOR: #003000;
+    FONT-FAMILY: Courier;
+    FONT-SIZE: 100%;
+    TEXT-DECORATION: none
+}
+TABLE
+{
+    COLOR: #000000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    FONT-SIZE: 8pt;
+}
+SMALL
+{
+    COLOR: #000000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 8pt */
+}
+.NANO
+{
+    COLOR: #000000;
+    FONT-FAMILY: Arial Narrow,Arial,Helvetica,Verdana;
+    /* FONT-SIZE: 6pt */
+    FONT-SIZE: 80%;
+}
+.MICRO
+{
+    COLOR: #000000;
+    FONT-FAMILY: Arial Narrow,Arial,Helvetica,Verdana;
+    /* FONT-SIZE: 7pt */
+    FONT-SIZE: 70%;
+}
+.MILI
+{
+    COLOR: #000000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 7pt */
+    FONT-SIZE: 70%;
+}
+.MARQUEEE
+{
+    COLOR: #003399;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 10pt; */
+    FONT-SIZE: 110%;
+    FONT-WEIGHT: bold
+}
+.LIGHTBACK
+{
+    BACKGROUND: #ffffff
+}
+TEXTAREA
+{
+    COLOR: #000044;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 9pt */
+    FONT-SIZE: 110%;
+}
+SELECT
+{
+    COLOR: #000044;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 9pt */
+    FONT-SIZE: 110%;
+}
+INPUT
+{
+    COLOR: #000044;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 8pt */
+}
+TEXT
+{
+    COLOR: #000044;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 9pt */
+    FONT-SIZE: 110%;
+}
+H1
+{
+    COLOR: #CC0000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 11pt; */
+    FONT-SIZE: 180%;
+/*    FONT-SIZE: larger; */
+    FONT-WEIGHT: bold
+}
+H2
+{
+    COLOR: #000044;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 11pt; */
+    FONT-SIZE: 160%;
+    /* FONT-SIZE: larger; */
+    FONT-WEIGHT: bold
+}
+H3
+{
+    COLOR: #008b8b;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 9pt */
+    FONT-SIZE: 140%;
+    /* FONT-SIZE: large; */
+    FONT-WEIGHT: bold
+}
+H4
+{
+    COLOR: #003000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 9pt */
+    FONT-SIZE: 120%;
+    /* FONT-SIZE: large; */
+}
+.ODD {
+    BACKGROUND-COLOR: #EEEEFF
+}
+.EVEN 
+{
+    BACKGROUND-COLOR: #FFFFFF
+}
+.HEADING
+{
+    COLOR: #aa0000;
+    /* FONT-SIZE: 8pt; */
+    FONT-WEIGHT: bold
+}
+.WARNING
+{
+    COLOR: #ff0000;
+    /* FONT-SIZE: 11pt; */
+    FONT-SIZE: 120%;
+    FONT-WEIGHT: bold
+}
+.TIMESUM
+{
+    COLOR: #ff0000;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    /* FONT-SIZE: 8pt; */
+    FONT-WEIGHT: bold
+}
+.SUBWARNING
+{
+    COLOR: #ff0000;
+    /* FONT-SIZE: 8pt; */
+    FONT-WEIGHT: bold
+}
+
+.GRAY
+{
+    COLOR: #777777;
+}
+
+.BORDER
+{
+    BORDER-WIDTH: 2cm;
+    BORDER-STYLE: solid;
+    BORDER-COLOR: #777777;
+}
+
+A
+{
+    COLOR: #0000ff;
+    TEXT-DECORATION: none
+}
+A:visited
+{
+    COLOR: #0000ff
+}
+A:active
+{
+    COLOR: #ff0000
+    TEXT-DECORATION: underline
+}
+A:hover
+{
+    TEXT-DECORATION: underline
+}
+
+A.MILI
+{
+    COLOR: #0000FF;
+    FONT-FAMILY: Verdana,Arial,Helvetica;
+    FONT-SIZE: 20pt
+    TEXT-DECORATION: none
+}
+
+A.GRAY:link
+{
+    COLOR: #777777;
+    TEXT-DECORATION: none
+}
+
+A.GRAY:visited
+{
+    COLOR: #777777;
+    TEXT-DECORATION: none
+}
+
+A.GRAY:hover
+{
+    COLOR: #777777;
+    TEXT-DECORATION: underline
+}

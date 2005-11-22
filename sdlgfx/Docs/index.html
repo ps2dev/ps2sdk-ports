@@ -1,0 +1,887 @@
+<html>
+<head><link rel="stylesheet" type="text/css" href="styles.css">
+<title>SDL_gfx Library</title>
+</head>
+
+<body>
+
+<table width="600">
+<tr>
+<td bgcolor="D0D0D0"><img src="blank.gif" alt="" width="40"></td>
+<td><img src="blank.gif" alt="" width="10"></td>
+<td>
+
+<br>
+<h1>SDL_gfx Library</h1>
+
+<br>
+
+<h3>SDL graphics drawing primitives and other support functions</h3>
+
+<div style="margin-left:0.6cm;">
+The SDL_gfx library evolved out of the <i>SDL_gfxPrimitives</i> code which
+provided basic drawing routines such as lines, circles or polygons and 
+<i>SDL_rotozoom</i> which implemented a interpolating rotozoomer
+for SDL surfaces.<p>
+
+The current components of the SDL_gfx library are:
+<UL>
+<LI> Graphic Primitives (SDL_gfxPrimitves.h)
+<LI> Rotozoomer (SDL_rotozoom.h)
+<LI> Framerate control (SDL_framerate.h)
+<LI> MMX image filters (SDL_imageFilter.h)
+</UL><p>
+
+The library is backwards compatible to the above mentioned code. Its is
+written in plain C and can be used in C++ code.<p>
+
+(c) <a href="mailto:aschiffler-nospam@appwares.com">A. Schiffler</a>, 1999-2003, licensed under the 
+<a href="http://www.fsf.org/copyleft/lgpl.html" target="_blank">LGPL</a>
+
+</div>
+
+<h3>Screenshots</h3>
+<div style="margin-left:0.6cm;">
+<table>
+<tr>
+<td><a href="Screenshots/SDL_gfxPrimitives.jpg" alt="SDL_gfxPrimitives Test
+Screenshot" target="_blank"><img
+src="Screenshots/SDL_gfxPrimitives-thumb.jpg" border="0"></a></td>
+<td><a href="Screenshots/SDL_rotozoom.jpg" alt="SDL_rotozoom Test
+Screenshot" target="_blank"><img
+src="Screenshots/SDL_rotozoom-thumb.jpg" border="0"></a></td>
+</tr>
+<tr><td><font size="1">SDL_gfxPrimitives</font></td><td><font
+size="1">SDL_rotozoom</font></td></tr>
+</table>
+<p>
+
+</div>
+
+<h3>Downloads</h3>
+<div style="margin-left:0.6cm;">
+<a href="SDL_gfx-2.0.13.tar.gz">SDL_gfx-2.0.13.tar.gz</a><p>
+<a href="SDL_gfx-2.0.13-1.src.rpm">SDL_gfx-2.0.13-1.src.rpm</a><p>
+<a href="SDL_gfx-2.0.13-1.i586.rpm">SDL_gfx-2.0.13-1.i586.rpm</a><p>
+<a href="SDL_gfx-devel-2.0.13-1.i586.rpm">SDL_gfx-devel-2.0.13-1.i586.rpm</a><p>
+<a href="SDL_gfx-demos-2.0.13-1.i586.rpm">SDL_gfx-demos-2.0.13-1.i586.rpm</a><p>
+<p>
+
+</div>
+
+<h3>Supported Platforms</h3>
+
+<div style="margin-left:0.6cm;">
+The library compiles and is tested for a Linux target (gcc compiler) and 
+a Win32 target (VisualC, xmingw32 cross-compiler) as well as BeOS and MacOS
+X PowerBuilder
+
+See README for VC and PowerBuilder compile information.
+
+When using the cross-compiler (available on the author's homepage), 
+the build process generates .DLLs. You can use the command line 'LIB.EXE' 
+tool to generate VC6 compatible .LIB files for linking purposes. 
+</div>
+
+<h3>Notes on Graphics Primitives</h3>
+
+<div style="margin-left:0.6cm;">
+
+Care has been taken so that all routines are fully alpha-aware and can 
+blend any primitive onto the target surface if ALPHA&lt;255. Surface depths 
+supported are 1,2,3 and 4 bytes per pixel. Surface locking is implemented
+in each routine and the library should work well with hardware 
+accelerated surfaces. 
+
+Currently, The following Anti-Aliased drawing primitives are available:
+<UL>
+<LI> AA-line
+<LI> AA-circle
+<LI> AA-ellipse
+<LI> AA-polygon (not filled)
+</UL><br>
+
+<h4>[[[ Interface ]]]</h4>
+
+<pre>
+
+Note: all ___Color routines expect the color to be in format 0xRRGGBBAA 
+
+ Pixel 
+
+   int pixelColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+			      Uint32 color);
+   int pixelRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, Uint8 r,
+			     Uint8 g, Uint8 b, Uint8 a);
+
+ Horizontal line 
+
+   int hlineColor(SDL_Surface * dst, Sint16 x1, Sint16 x2,
+			      Sint16 y, Uint32 color);
+   int hlineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 x2,
+			     Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Vertical line 
+
+   int vlineColor(SDL_Surface * dst, Sint16 x, Sint16 y1,
+			      Sint16 y2, Uint32 color);
+   int vlineRGBA(SDL_Surface * dst, Sint16 x, Sint16 y1,
+			     Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Rectangle 
+
+   int rectangleColor(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+				  Sint16 x2, Sint16 y2, Uint32 color);
+   int rectangleRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+				 Sint16 x2, Sint16 y2, Uint8 r, Uint8 g,
+				 Uint8 b, Uint8 a);
+
+ Filled rectangle (Box) 
+
+   int boxColor(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+			    Sint16 x2, Sint16 y2, Uint32 color);
+   int boxRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2,
+			   Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Line 
+
+   int lineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+			     Sint16 x2, Sint16 y2, Uint32 color);
+   int lineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+			    Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b,
+			    Uint8 a);
+
+ AA Line 
+   int aalineColor(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+			       Sint16 x2, Sint16 y2, Uint32 color);
+   int aalineRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1,
+			      Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b,
+			      Uint8 a);
+
+ Circle 
+
+   int circleColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+			       Sint16 r, Uint32 color);
+   int circleRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+			      Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ AA Circle 
+
+   int aacircleColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+				 Sint16 r, Uint32 color);
+   int aacircleRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+				Sint16 rad, Uint8 r, Uint8 g, Uint8 b,
+				Uint8 a);
+
+ Filled Circle 
+
+   int filledCircleColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+				     Sint16 r, Uint32 color);
+   int filledCircleRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+				    Sint16 rad, Uint8 r, Uint8 g, Uint8 b,
+				    Uint8 a);
+
+ Ellipse 
+
+   int ellipseColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+				Sint16 rx, Sint16 ry, Uint32 color);
+   int ellipseRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+			       Sint16 rx, Sint16 ry, Uint8 r, Uint8 g,
+			       Uint8 b, Uint8 a);
+
+ AA Ellipse 
+
+   int aaellipseColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+				  Sint16 rx, Sint16 ry, Uint32 color);
+   int aaellipseRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+				 Sint16 rx, Sint16 ry, Uint8 r, Uint8 g,
+				 Uint8 b, Uint8 a);
+
+ Filled Ellipse 
+
+   int filledEllipseColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+				      Sint16 rx, Sint16 ry, Uint32 color);
+   int filledEllipseRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+				     Sint16 rx, Sint16 ry, Uint8 r, Uint8 g,
+				     Uint8 b, Uint8 a);
+ Pie 
+
+   int pieColor(SDL_Surface * dst, Sint16 x, Sint16 y, Sint16 rad,
+		   Sint16 start, Sint16 end, Uint32 color);
+   int pieRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, Sint16 rad,
+		   Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Filled Pie 
+
+   int filledPieColor(SDL_Surface * dst, Sint16 x, Sint16 y, Sint16 rad,
+		   Sint16 start, Sint16 end, Uint32 color);
+   int filledPieRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, Sint16 rad,
+		   Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Trigon 
+
+    int trigonColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3, Uint32 color);
+    int trigonRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+				 Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ AA-Trigon
+
+    int aatrigonColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3, Uint32 color);
+    int aatrigonRGBA(SDL_Surface * dst,  Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+				   Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Filled Trigon
+
+    int filledTrigonColor(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3, int color);
+    int filledTrigonRGBA(SDL_Surface * dst, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+				       Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Polygon 
+
+   int polygonColor(SDL_Surface * dst, Sint16 * vx, Sint16 * vy,
+				int n, Uint32 color);
+   int polygonRGBA(SDL_Surface * dst, Sint16 * vx, Sint16 * vy,
+			       int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ AA-Polygon 
+
+   int aapolygonColor(SDL_Surface * dst, Sint16 * vx, Sint16 * vy,
+				int n, Uint32 color);
+   int aapolygonRGBA(SDL_Surface * dst, Sint16 * vx, Sint16 * vy,
+		 	       int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ Filled Polygon 
+
+   int filledPolygonColor(SDL_Surface * dst, Sint16 * vx,
+				      Sint16 * vy, int n, int color);
+   int filledPolygonRGBA(SDL_Surface * dst, Sint16 * vx,
+				     Sint16 * vy, int n, Uint8 r, Uint8 g,
+				     Uint8 b, Uint8 a);
+
+ Bezier Curve
+
+    int bezierColor(SDL_Surface * dst, Sint16 * vx, 
+				Sint16 * vy, int n, int s, Uint32 color);
+    int bezierRGBA(SDL_Surface * dst, Sint16 * vx, Sint16 * vy,
+                                 int n, int s, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+ 8x8 Characters/Strings 
+
+   int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y,
+				  char c, Uint32 color);
+   int characterRGBA(SDL_Surface * dst, Sint16 x, Sint16 y,
+				 char c, Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+   int stringColor(SDL_Surface * dst, Sint16 x, Sint16 y, char *c,
+			       Uint32 color);
+   int stringRGBA(SDL_Surface * dst, Sint16 x, Sint16 y, char *c,
+			      Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+
+   void gfxPrimitivesSetFont(unsigned char *fontdata, int cw, int ch);
+ 
+</pre>
+</div>
+
+<h3>Notes on Rotozoomer</h3>
+
+<div style="margin-left:0.6cm;">
+The rotozoom without interpolation code should be fast enough 
+even for some realtime effects if the CPU is fast or bitmaps small. 
+With interpolation the routines are typically used for 
+pre-rendering stuff in higher 
+quality (i.e. smoothing) - that's also a reason why the API differs from 
+SDL_BlitRect() and creates a new target surface each time rotozoom is called. 
+The final rendering speed is dependent on the target surface size
+as it is beeing xy-scanned when rendering the new surface.<p>
+
+Note also that the smoothing toggle is dependent on the input surface bit 
+depth. 8bit surfaces will never be smoothed - only 32bit surfaces will.<p>
+
+Note that surfaces of other bit depth then 8 and 32 will be converted 
+on the fly to a 32bit surface using a blit into a temporary surface. This 
+impacts performance somewhat.<p>
+
+
+
+<h4>[[[ Interface ]]]</h4>
+<pre>
+
+SDL_Surface * rotozoomSurface (SDL_Surface *src, double angle, double zoom, int smooth);
+
+ Rotates and zoomes a 32bit or 8bit 'src' surface to newly created 'dst' surface.
+ 'angle' is the rotation in degrees. 'zoom' a scaling factor. If 'smooth' is 1
+ then the destination 32bit surface is anti-aliased. If the surface is not 8bit
+ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
+
+
+SDL_Surface * rotozoomSurfaceXY (SDL_Surface *src, double angle, double zoomx, double zoomy, int smooth);
+
+ Rotates and zoomes a 32bit or 8bit 'src' surface to newly created 'dst' surface.
+ 'angle' is the rotation in degrees. 'zoomx' and 'zoomy' are scaling factors that
+ can also be negative. In this case the corresponding axis is flipped.  If 'smooth' 
+ is 1 then the destination 32bit surface is anti-aliased. If the surface is not 8bit
+ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
+
+ Note: Flipping currently only works with antialiasing turned off.
+
+
+SDL_Surface * zoomSurface (SDL_Surface *src, double zoomx, double zoomy, int smooth);
+
+ Zoomes a 32bit or 8bit 'src' surface to newly created 'dst' surface.
+ 'zoomx' and 'zoomy' are scaling factors for width and height. If 'smooth' is 1
+ then the destination 32bit surface is anti-aliased. If the surface is not 8bit
+ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
+
+
+Smoothing (interpolation) flags work only on 32bit surfaces:
+
+ #define SMOOTHING_OFF		0
+ #define SMOOTHING_ON		1
+</pre><br>
+</div>
+
+<h3>Notes on framerate functions</h3>
+
+<div style="margin-left:0.6cm;">
+The framerate functions are used to insert delays into the graphics loop
+to maintain a constant framerate.<p>
+
+The implementation is more sophisticated that the usual<br>
+<pre>	SDL_Delay(1000/FPS);</pre>
+call since these functions keep track of the desired game time per frame 
+for a linearly interpolated sequence of future timing points of each frame. 
+This is done to avoid rounding errors from the inherent instability in the 
+delay generation and application - i.e. the 100th frame of a game running at 50Hz will be accurately
+2.00sec after the 1st frame (if the machine can keep up with the
+drawing). See also the diagram for more details on this.<p>
+
+<table><tr><td><a href="framerate.png" target="_blank"><img src="framerate-thumb.png" alt="Framerate
+Calc. Diagram
+Thumbnail"></a></td></tr><tr><td><font size="1">Framerate Calc.
+Diagram</font></td></tr></table>
+<p>
+
+<h4>[[[ Interface ]]]</h4>
+
+<pre>
+
+The functions return 0 or value for sucess and -1 for error. All functions
+use a pointer to a framerate-manager variable to operate.
+
+void SDL_initFramerate(FPSmanager * manager);
+
+ Initialize the framerate manager, set default framerate of 30Hz and
+ reset delay interpolation.
+
+
+int SDL_setFramerate(FPSmanager * manager, int rate);
+
+ Set a new framerate for the manager and reset delay interpolation.
+
+
+int SDL_getFramerate(FPSmanager * manager);
+
+ Get the currently set framerate of the manager.
+
+
+void SDL_framerateDelay(FPSmanager * manager);
+
+ Generate a delay to accomodate currently set framerate. Call once in the
+ graphics/rendering loop. If the computer cannot keep up with the rate (i.e.
+ drawing too slow), the delay is zero and the delay interpolation is reset.
+</pre><br>
+
+<h3>Notes on imageFilter functions</h3>
+
+<div style="margin-left:0.6cm;">
+The imagefilter functions are a collection of MMX optimized routines that
+operate on continuous buffers of bytes - typically greyscale images from 
+framegrabbers and such - performing functions such as image addition and 
+binarization. All functions (almost .. not the the convolution routines) 
+have a C implementation that is automatically used on systems without MMX 
+capabilities.<p>
+
+
+<h4>[[[ Interface ]]]</h4>
+
+<pre>
+
+Comments:                                                                           
+  1.) MMX functions work best if all data blocks are aligned on a 32 bytes boundary. 
+  2.) Data that is not within an 8 byte boundary is processed using the C routine.   
+  3.) Convolution routines do not have C routines at this time.                      
+  4.) All routines return 0 for OK and -1 for error.
+
+Detect MMX capability in CPU
+
+  int SDL_imageFilterMMXdetect(void);
+
+Force use of MMX off (or turn possible use back on)
+
+  void SDL_imageFilterMMXoff(void);
+  void SDL_imageFilterMMXon(void);
+
+
+SDL_imageFilterAdd: D = saturation255(S1 + S2)
+
+  int SDL_imageFilterAdd (unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterMean: D = S1/2 + S2/2
+
+  int SDL_imageFilterMean(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterSub: D = saturation0(S1 - S2)
+
+  int SDL_imageFilterSub(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterAbsDiff: D = | S1 - S2 |
+
+  int SDL_imageFilterAbsDiff(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterMult: D = saturation(S1 * S2)
+
+  int SDL_imageFilterMult(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterMultNor: D = S1 * S2   (non-MMX)
+
+  int SDL_imageFilterMultNor(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterMultDivby2: D = saturation255(S1/2 * S2)
+
+  int SDL_imageFilterMultDivby2(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterMultDivby4: D = saturation255(S1/2 * S2/2)
+
+  int SDL_imageFilterMultDivby4(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterBitAnd: D = S1 & S2
+
+  int SDL_imageFilterBitAnd(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterBitOr: D = S1 | S2
+
+  int SDL_imageFilterBitOr(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterDiv: D = S1 / S2   (non-MMX)
+
+  int SDL_imageFilterDiv(unsigned char *Src1, unsigned char *Src2, unsigned char *Dest, int length);
+
+SDL_imageFilterBitNegation: D = !S
+
+  int SDL_imageFilterBitNegation(unsigned char *Src1, unsigned char *Dest, int length);
+
+SDL_imageFilterAddByte: D = saturation255(S + C)
+
+  int SDL_imageFilterAddByte(unsigned char *Src1, unsigned char *Dest, int length, unsigned char C);
+
+SDL_imageFilterAddByteToHalf: D = saturation255(S/2 + C)
+
+  int SDL_imageFilterAddByteToHalf(unsigned char *Src1, unsigned char *Dest, int length, unsigned char C);
+
+SDL_imageFilterSubByte: D = saturation0(S - C)
+
+  int SDL_imageFilterSubByte(unsigned char *Src1, unsigned char *Dest, int length, unsigned char C);
+
+SDL_imageFilterShiftRight: D = saturation0(S >> N)
+
+  int SDL_imageFilterShiftRight(unsigned char *Src1, unsigned char *Dest, int length, unsigned char N);
+
+SDL_imageFilterMultByByte: D = saturation255(S * C)
+
+  int SDL_imageFilterMultByByte(unsigned char *Src1, unsigned char *Dest, int length, unsigned char C);
+
+SDL_imageFilterShiftRightAndMultByByte: D = saturation255((S >> N) * C)
+
+  int SDL_imageFilterShiftRightAndMultByByte(unsigned char *Src1, unsigned char *Dest, int length, unsigned char N, unsigned char C);
+
+SDL_imageFilterShiftLeftByte: D = (S << N)
+
+  int SDL_imageFilterShiftLeftByte(unsigned char *Src1, unsigned char *Dest, int length, unsigned char N);
+
+SDL_imageFilterShiftLeft: D = saturation255(S << N)
+
+  int SDL_imageFilterShiftLeft(unsigned char *Src1, unsigned char *Dest, int length, unsigned char N);
+
+SDL_imageFilterBinarizeUsingThreshold: D = S >= T ? 255:0
+
+  int SDL_imageFilterBinarizeUsingThreshold(unsigned char *Src1, unsigned char *Dest, int length, unsigned char T);
+
+SDL_imageFilterClipToRange: D = (S >= Tmin) & (S <= Tmax) 255:0
+
+  int SDL_imageFilterClipToRange(unsigned char *Src1, unsigned char *Dest, int length, unsigned char Tmin, unsigned char Tmax);
+
+SDL_imageFilterNormalizeLinear: D = saturation255((Nmax - Nmin)/(Cmax - Cmin)*(S - Cmin) + Nmin)
+
+  int SDL_imageFilterNormalizeLinear(unsigned char *Src1, unsigned char *Dest, int length, int Cmin, int Cmax, int Nmin, int Nmax);
+
+ !!! NO C-ROUTINE FOR THESE FUNCTIONS YET !!! 
+
+SDL_imageFilterConvolveKernel3x3Divide: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel3x3Divide(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                      signed short *Kernel, unsigned char Divisor);
+
+SDL_imageFilterConvolveKernel5x5Divide: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel5x5Divide(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                      signed short *Kernel, unsigned char Divisor);
+
+SDL_imageFilterConvolveKernel7x7Divide: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel7x7Divide(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                            signed short *Kernel, unsigned char Divisor);
+
+SDL_imageFilterConvolveKernel9x9Divide: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel9x9Divide(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                            signed short *Kernel, unsigned char Divisor);
+
+SDL_imageFilterConvolveKernel3x3ShiftRight: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel3x3ShiftRight(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                                signed short *Kernel, unsigned char NRightShift);
+
+SDL_imageFilterConvolveKernel5x5ShiftRight: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel5x5ShiftRight(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                                signed short *Kernel, unsigned char NRightShift);
+
+SDL_imageFilterConvolveKernel7x7ShiftRight: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel7x7ShiftRight(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                                signed short *Kernel, unsigned char NRightShift);
+
+SDL_imageFilterConvolveKernel9x9ShiftRight: Dij = saturation0and255( ... )
+
+  int SDL_imageFilterConvolveKernel9x9ShiftRight(unsigned char *Src, unsigned char *Dest, int rows, int columns,
+                                signed short *Kernel, unsigned char NRightShift);
+
+SDL_imageFilterSobelX: Dij = saturation255( ... )
+
+  int SDL_imageFilterSobelX(unsigned char *Src, unsigned char *Dest, int rows, int columns);
+
+SDL_imageFilterSobelXShiftRight: Dij = saturation255( ... )
+
+  int SDL_imageFilterSobelXShiftRight(unsigned char *Src, unsigned char *Dest, int rows, int columns, 
+                     unsigned char NRightShift);
+
+Align/restore stack to 32 byte boundary -- Functionality untested! --
+
+  void SDL_imageFilterAlignStack(void);
+  void SDL_imageFilterRestoreStack(void);
+
+</pre>
+
+
+</div>
+
+<h3>Installation and Test</h3>
+
+<div style="margin-left:0.6cm;">
+To compile the library your need the SDL 1.2 installed from source or 
+with the 'devel' RPM package.<p>
+
+Run<br>
+<pre>
+	./autogen.sh
+	./configure
+	make
+</pre>
+
+to compile the library. Run the shell script 'nodebug.sh' before make, to
+patch the makefile for optimized compilation.<p>
+
+Run<br>
+<pre>
+	make install
+	ldconfig
+</pre>
+
+to install the library. The default location for the installation is
+/usr/local/lib and /usr/local/include (for Linux).<p>
+
+To create a Windows DLL using VisualC:
+<pre>
+        vcvars.bat
+	copy VisualC/makefile
+   	nmake
+</pre>
+
+To create a Windows DLL using the xmingw32 cross-compiler:
+<pre>
+        cross-configure
+        cross-make
+        cross-make install
+</pre>
+
+Change to the ./Test directory and run<br>
+<pre>
+	./configure
+	make
+</pre>
+to create several test programs for the libraries functions.<p>
+
+To build without MMX code enabled (i.e. PPC architecture):<br>
+<pre>
+        ./configure --disable-mmx
+        make
+        make install
+</pre>
+<p>
+
+To build on MacOS X with Project Builder, follow these steps:<br>
+<li>Update your developer tools to the lastest version (December 2002 as
+of this revision).
+<li>Install the SDL Developers framework for Mac OS X.
+<li>Download the latest SDL_gfx source distribution and extract the
+archive in a convenient location.
+<li>Extract the included OSX-PB.tgz archive into the
+top directory of the SDL_gfx distribution (from step 3). This will
+create a PB that contains the project files.
+<li>The project has targets for the SDL_gfx framework and the four test
+programs. All can be built using the 'deployment' or 'development'
+build styles.
+</div>
+
+
+
+<h3>Change Log</h3>
+
+<div style="margin-left:0.6cm;">
+<pre>
+CHANGES/VERSION
+===============
+
+Ver 2.0.13 - Tue Dec 21 08:41:25 EST 2004
+* changed include back to "SDL.h"
+* compile fixes for OSX fink  (thanks (Michael)
+* compile fixes for gcc3.4 (thanks Dries)
+* support vertical and horizontal flipping of axis in new 
+  rotozoomSurfaceXY function (thanks Victor)
+* updated TestRotozoom program 
+
+Ver 2.0.12 - Mon Aug 30 09:04:11 EDT 2004
+* piecolor naming fix
+* primitive API change to 'filledPie'
+* introduction of some const variables
+
+Ver 2.0.11 - Thu May 13 09:42:34 EDT 2004
+* added pieRGBA/pieColor primitive (non filled pie)
+* added QNX6 build patch
+* use $(includedir)/SDL to automake setup
+* updated README
+* added 2x2 box & pie tests
+* added dynamic font setup routine
+* added sample font files to the Fonts directory
+* added font test program
+* string routines changed to use const char
+* fixed TestRotozoom clear color bug
+
+Ver 2.0.10 - Thu Dec 11 09:40:08 EST 2003
+* updated "missing" script to newer version to avoid build errors
+* fixed filled polygon int32 overflow error in calculation
+* updated RPM spec file for new website path
+* added micro version number to .h file
+
+Ver 2.0.9 - Mon Oct 27 10:03:18 EST 2003
+* Fixed "filled-box width too small by 1 bug" for A=255
+* Wrong versioning in .h file
+
+Ver 2.0.8 - Wed Jul 16 16:18:13 EDT 2003
+* Modified filledPolygon drawing
+  (The edges of a filled polygon and a polyline were 
+   reported to not intersect correctly. With this fix, the
+   edges do still do not intersect 100% due to the difference
+   in the algorithms. But now a polygon will never draw 
+   outside of the area enclosed by a polyline.)
+
+Ver 2.0.7 - Sun Jun  8 08:17:38 EDT 2003
+* Added MacOS X Project Builder code
+* changed SDL include to <SDL/SDL.h>
+* added bezier curve 
+
+Ver 2.0.6 - Sat May 25 15:12:17 EDT 2002
+* Fixed clipping code for most primitives
+* Added clipping code for character
+* Added VC7 project file
+
+Ver 2.0.5 - n/a
+* Removed some unused code
+
+Ver 2.0.4 - Sat Feb  9 22:09:45 EST 2002
+* Fixed rectangle drawing bug on edges for A<255
+* Added trigons (triangles) as wrapper calls to polygon.
+
+Ver 2.0.3 - Sat Jan 26 10:06:16 EST 2002
+* Zipped VisualC directory to avoid EOL problems.
+* Fixed aalineColor call (y2 parameter was y1).
+* Fixed rotozoom bug that caused black or undefined pixels on edges.
+
+Ver 2.0.2 - Sat Jan 19 21:41:28 EST 2002
+* Removed dependency from GL libraries during compile.
+* Added VisualC makefile.
+
+Ver 2.0 - Sat Dec 29 16:27:57 EST 2001
+
+* Initial release of SDL_gfx based on SDL_gfxPrimitives and SDL_rotozoom
+  code.
+* Added framerate code and testprogram.
+* Added imageFilters code and testprogram.
+* New distribution: source code, README, configure system etc.
+
+
+Previous versions
+=================
+
+SDL_gfxPrimitives:
+------------------
+
+Ver 1.5 - Mon Jul  2 11:27:40 EDT 2001
+
+* New alpha blending code for factor 4 speedups if a<255 on all functions.
+* Modified include file for W32 DLL support.
+* Added VC6 project files for DLL and static library building.
+* Added simple AA-circle/-ellipse routine - quality needs improvement.
+* Removed 32bit shift on 64bit number from aaline for better portability
+  across platforms.
+* Removed a couple more compiler warnings (i.e. purely cosmetic fix).
+
+Ver 1.4 - Sun Jun  3 11:52:07 EDT 2001
+
+* Fixed hline, vline and rectangle clipping and result codes.
+* Fixed AA-line arithmetic (was alpha subtraction, should be alpha ratio).
+* More caching on fonts for speedups.
+* More pointer checks in several places.
+* New special cases for ellipses for rx=0/ry=0.
+* Same sanity checks for circles/ellipses.
+* Same return code for polygon/filledpolygon.
+
+Ver 1.3 - Thu May 31 12:41:35 EDT 2001
+
+* Minor cleanups and fixes (gcc -Wall is your friend).
+
+Ver 1.2 again - Thu Apr  5 07:50:57 EDT 2001
+
+* Fixed lineRGBA and aalineRGBA calls (had coordinate-passing mixed up twice,
+  thanks Lion for pointing this out)
+
+Ver 1.2 - Wed Apr  4 08:32:42 EDT 2001
+
+* Changed to a dual, you-have-the-choice(TM) licencing system 
+  to accomodate GPL developments using SDL_gfxPrimitives.
+* Some minor fixes (thanks Karl).
+* All routines return proper result code now.
+* Clipping for aaline, circle and ellipse.
+
+Ver 1.1 - Thu Mar 22 15:28:27 EST 2001
+
+* Added code for Alpha=255 pixel drawing through direct memory writes to all routines
+resulting in a much faster performance (factor 5 to 20) for non transparent pixels.
+* New test and benchmark program with better info and nicer look.
+* More info in README. Proper licence file. Comment cleanup.
+
+Ver 1.0 - Fri Mar 16 08:38:07 EST 2001
+
+* Initial release
+
+
+SDL_rotozoom:
+-------------
+
+Ver 1.6 - Mon Nov 19 21:19:26 EST 2001
+* Added interpolation to alpha channel (simplifies code)
+* Ran the sourcecode through 'indent' for better readability
+
+Ver 1.5 - Sat Jul  7 13:02:07 EDT 2001
+* Added project files (VisualC.zip) and modifications for VC project building.
+* Fixed old versioning in configure.in file.
+* Fixed LICENSE file and LGPL source reference.
+
+Ver 1.4 - Mon Jun  4 12:15:31 EDT 2001
+* Removed SDL_SoftStretch call again in favour of an internal zoom routine.
+* Added new zoomSurface() function with seperate X and Y zoom factors.
+
+Ver 1.3 - Thu May 31 08:37:36 EDT 2001
+* Modified code to handle RGBA or ABGR source surfaces transparently.
+* More error checking, source surface locking.
+* Slighly expanded test program with event handling.
+
+Ver 1.2 - Wed May 30 18:18:05 EDT 2001
+* Fixed the completely broken 32bit routine's pointer arithmetic.
+* Uses SDL_SoftStretch in certain cases (angle=0, smooth=0).
+* Convert source surface on the fly if not 8/32bit.
+* Added license file - was empty before (duh).
+
+Ver 1.1 - Wed May 23 15:04:42 EDT 2001
+* Added automake/autoconf scripts and testprogram.
+
+Ver 1.0 - Fri Mar 16 08:16:06 EST 2001
+* Initial release
+</pre><p>
+</div>
+
+<h3>Thanks</h3>
+
+<div style="margin-left:0.6cm;">
+This library is used in the <i>AppWares Development Group</i>'s IMP product and
+thanks goes out out to them for supporting this project - please 
+visit <a href="http://www.appwares.com">http://www.appwares.com</a>
+for more information.<p>
+</div>
+
+<h3>Contributors</h3>
+
+<div style="margin-left:0.6cm;">
+<p>* Fix for filledbox by Ingo van Lil, inguin at gmx.de - thanks Ingo.
+
+<p>* Non-alpha line drawing code adapted from routine 
+  by Pete Shinners, pete at shinners.org - thanks Pete.
+
+<p>* More fixes by Karl Bartel, karlb at gmx.net - thanks Karl.
+
+<p>* Much testing and suggestions for fixes from Danny van Bruggen,
+  danny at froukepc.dhs.org - thanks Danny.
+
+<p>* AA-circle/-ellipse code idea from Stephane Magnenat, 
+  nct at wg0.ysagoon.com - thanks Stephane.
+
+<p>* Faster blending routines contributed by Anders Lindström,
+  cal at swipnet.se - thanks Anders.
+
+<p>* VisualC makefile contributed by Danny van Bruggen,
+  danny at froukepc.dhs.org - thanks Danny.
+
+<p>* VisualC7 project file contributed by James Turk,
+  jturk at conceptofzero.com - thanks James.
+
+<p>* Project Builder package contributed by Thomas Tongue,
+TTongue at imagiware.com - Thanks Thomas.
+
+<p>* Fix for filledPolygon contributed by Kentaro Fukuchi
+  fukuchi at is.titech.ac.jp - Thanks Kentaro.
+
+<p>* QNX6 patch contributed by Mike Gorchak,
+  mike at malva.ua - Thanks Mike.
+
+<p>* Pie idea contributed by Eike Lange,
+  eike.lange at uni-essen.de - Thanks Eike.
+
+<p>* Dynamic font setup by Todor Prokopov,
+  koprok at dir.bg - Thanks Todor.
+
+<p>* Horizontal/Vertical flipping code by Victor (Haypo) 
+  Stinner, victor.stinner at haypocalc.com - Thanks Victor.
+
+<p>* OSX build fixes by Michael Wybrow, 
+  mjwybrow at cs.mu.oz.au - Thanks Michael.
+
+<p>* gcc3.4 build fixes by Dries Verachtert, 
+  dries at ulyssis.org - Thanks Dries.
+
+</div>
+
+<br>
+<br>
+</td></tr></table>
+
+</body>
+</html>

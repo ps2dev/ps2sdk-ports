@@ -1,0 +1,16 @@
+SDL_gfx for ps2
+
+Then run:
+
+   make
+   make install
+
+there is tests in Test directory,
+and all works Fine (joystick for one : gfxprimitive)
+
+tmator@gmail.com
+thanks to froggies team (evlio, shazz, dingo, 7not6),
+pixel, gawd, neov and all of ps2dev team.
+
+Froggies team 
+http://www.psxdev.org
