@@ -1334,6 +1334,20 @@ Mix_Music *Mix_LoadMUS_RW(SDL_RWops *rw) {
 		}
 	} else
 #endif
+#ifdef MP3_MUSIC
+// gawd
+	if (magic[0]==0xFF && (magic[1]&0xF0)==0xF0) {
+		SMPEG_Info info;
+		music->type = MUS_MP3;
+		music->data.mp3 = SMPEG_new_rwops(rw, &info, 0);
+		if(!info.has_audio){
+			Mix_SetError("MPEG file does not have any audio stream.");
+			music->error = 1;
+		}else{
+			SMPEG_actualSpec(music->data.mp3, &used_mixer);
+		}
+	} else
+#endif
 #if defined(MOD_MUSIC) || defined(LIBMIKMOD_MUSIC)
 	if (1) {
 		music->type=MUS_MOD;
