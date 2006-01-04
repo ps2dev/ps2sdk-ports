@@ -111,7 +111,6 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 	ps2sem.attr = 0;
 
 	ps2id = CreateSema(&ps2sem);
-	printf("CreateSemaphore returned %d\n", ps2id);
 	if (ps2id < 0)
 	{
 		SDL_SetError("Failed to create PS2EE semaphore");
@@ -184,13 +183,20 @@ int SDL_SemWait(SDL_sem *sem)
 
 Uint32 SDL_SemValue(SDL_sem *sem)
 {
+	ee_sema_t p;
+
 	if ( ! sem ) {
 		SDL_SetError("Passed a NULL semaphore");
 		return -1;
 	}
 
-	printf("** SDL_SemValue not implemented **\n");
-	return -1;
+	if (ReferSemaStatus(sem->sem, &p) < 0)
+	{
+		SDL_SetError("ReferSemaStatus failed");
+		return -1;
+	}
+
+	return p.count;
 }
 
 int SDL_SemPost(SDL_sem *sem)
