@@ -1,10 +1,18 @@
 #include <stdio.h>
+#include "mikmod_internals.h"
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_endian.h>
 #include <SDL/SDL_mixer.h>
 
 static volatile int playing = 0;
+
+int __errno()
+{
+	extern int errno;
+	return errno;
+}
+
 
 static void music_finished()
 {
@@ -31,7 +39,7 @@ int main(int argc, char *argv[])
 	Mix_Music *music;
 	SDL_RWops *rw;
 	int position;
-	FILE *fp;
+	FILE *fp, *f;
 
 	if (argc != 2)
 	{
@@ -50,7 +58,7 @@ int main(int argc, char *argv[])
 	atexit(SDL_Quit);
 
 	/* initialize SDL_mixer */
-	if (Mix_OpenAudio(48000, AUDIO_S16, 2, 512) < 0) 
+	if (Mix_OpenAudio(44100, AUDIO_S16, 2, 512) < 0) 
 	{
 		printf("Couldn't open audio: %s\n", SDL_GetError());
 		return 0;
@@ -78,6 +86,8 @@ int main(int argc, char *argv[])
 	sample_size = fread(sample, 1, sample_size, fp);
 	fclose(fp);
 
+	printf("File loaded into memory\n");
+
 	rw = SDL_RWFromMem(sample, sample_size);
 
 	/* load and play music */
@@ -95,13 +105,8 @@ int main(int argc, char *argv[])
 	/* play song once */
 	Mix_PlayMusic(music, 0);
 
-	position = 0;
-	while (playing)
-	{
-		printf("\rPosition: %02d:%02d", position / 60, position % 60);
-		SDL_Delay(1000);
-		position++;
-	}
+	printf("playing for 10 seconds\n");
+	SDL_Delay(10*1000);
 
 	printf("\n");
 	printf("module ended\n");
