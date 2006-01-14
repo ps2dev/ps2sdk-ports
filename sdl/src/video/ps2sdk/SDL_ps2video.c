@@ -286,7 +286,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		Rmask = 0x0000001f;
 		Gmask = 0x000003e0;
 		Bmask = 0x00007c00;
-		Amask = 0x00008000;
+		Amask = 0x00000000;
 		break;
 		
 		case 24:
