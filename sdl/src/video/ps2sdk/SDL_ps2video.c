@@ -131,6 +131,18 @@ void PS2_InitOSKeymap(SDL_VideoDevice *device)
 }
 #endif
 
+static void clear_screens()
+{
+	int i;
+
+	for (i=0; i<2; i++)
+	{
+		/* clear both frames */
+		gsKit_clear(gsGlobal, BLACK_RGBAQ);
+		gsKit_sync_flip(gsGlobal);
+	}
+}
+
 static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 {
 	int pal;
@@ -168,6 +180,8 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 
 	gsKit_init_screen(gsGlobal);
 
+	clear_screens();
+
 #ifdef PS2SDL_USE_INPUT_DEVICES
 	/* initialize keyboard and mouse */
 	initialize_devices(device);
@@ -196,6 +210,7 @@ static SDL_Rect rect_256x256 = {0, 0, 256, 256};
 static SDL_Rect rect_320x200 = {0, 0, 320, 200};
 static SDL_Rect rect_320x240 = {0, 0, 320, 240};
 static SDL_Rect rect_320x256 = {0, 0, 320, 256};
+static SDL_Rect rect_400x256 = {0, 0, 400, 256};
 static SDL_Rect rect_512x448 = {0, 0, 512, 448};
 static SDL_Rect rect_640x200 = {0, 0, 640, 200};
 static SDL_Rect rect_640x400 = {0, 0, 640, 400};
@@ -213,6 +228,7 @@ static SDL_Rect *vesa_modes[] = {
 	&rect_640x400,
 	&rect_640x200,
 	&rect_512x448,
+	&rect_400x256,
 	&rect_320x256,
 	&rect_320x240,
 	&rect_320x200,
@@ -238,22 +254,23 @@ static SDL_Rect **PS2_ListModes(SDL_VideoDevice *device, SDL_PixelFormat *format
 
 static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *current, int width, int height, int bpp, Uint32 flags)
 {
-	int i, psm, size;
+	int psm, size;
 	int Rmask, Gmask, Bmask, Amask;
 	int visible_w, visible_h;
 	float ratio, w_ratio, h_ratio;
 
-	for (i=0; i<2; i++)
+	printf("SDL_SetVideoMode %d x %d x %d\n", width, height, bpp);
+
+	if (gsTexture.Mem != NULL)
 	{
-		/* clear both frames */
-		gsKit_clear(gsGlobal, BLACK_RGBAQ);
-		gsKit_sync_flip(gsGlobal);
+		printf("SDL: Second SetVideoMode\n");
+		free(gsTexture.Mem);
+		gsTexture.Mem = 0;
 	}
 
-	Rmask = 0;
-	Gmask = 0;
-	Bmask = 0;
-	Amask = 0;
+	/* keep gcc happy */
+	Rmask = Gmask = Bmask = Amask = 0x00000000;
+
 	switch(bpp)
 	{
 		case 4:
@@ -269,7 +286,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		Rmask = 0x0000001f;
 		Gmask = 0x000003e0;
 		Bmask = 0x00007c00;
-		//Amask = 0x00008000;
+		Amask = 0x00008000;
 		break;
 		
 		case 24:
@@ -277,6 +294,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		Rmask = 0x000000ff;
 		Gmask = 0x0000ff00;
 		Bmask = 0x00ff0000;
+		Amask = 0x00000000;	
 		break;
 		
 		case 32:
@@ -309,10 +327,13 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	gsTexture.Vram = 0x380000;
 	//removed: gsKit_vram_alloc(gsGlobal, size);
 
+	printf("SDL_Video: local texture allocated at 0x%08x\n", (unsigned)gsTexture.Mem);
+
 	if (bpp <= 8)
 	{
 		gsTexture.Clut = gsClut;
 		gsTexture.VramClut = 0x300000;
+		memset(gsClut, '\0', sizeof(gsClut));
 		//removed: (u32)gsKit_vram_alloc(gsGlobal, 1024);
 	}
 	else
@@ -331,19 +352,20 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	{
 		// FIXME: free GS memory //
 		free(gsTexture.Mem);
+		gsTexture.Mem = 0;
 		SDL_SetError("Couldn't allocate new pixel format for requested mode");
 		return(NULL);
 	}
 
 	/* set framebuffer */
-	current->flags = SDL_FULLSCREEN;
+	current->flags = SDL_FULLSCREEN | SDL_SWSURFACE;
 	current->w = width;
 	current->h = height;
 	current->pitch = SDL_CalculatePitch(current);
 	current->pixels = (unsigned char *)gsTexture.Mem;
 
 	/* full screen, with aspect ratio */
-	visible_h = gsGlobal->Height - gsGlobal->StartY;
+	visible_h = gsGlobal->Height;
 	visible_w = gsGlobal->Width;
 	w_ratio = visible_w / (float)width;
 	h_ratio = visible_h / (float)height;
@@ -355,27 +377,33 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 
 	printf("center_x %d center_y %d\n", device->hidden->center_x, device->hidden->center_y);
 
+	clear_screens();
+	SDL_SetCursor(0);
 	return current;
 }
 
 static int PS2_AllocHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
+	printf("allochwsurface not implemented :)\n");
 	return -1;
 }
 
 static int PS2_LockHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
+	printf("lockhwsurface not implemented :)\n");
 	return 0;
 }
 
 static void PS2_UnlockHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
 	/* do nothing */
+	printf("unlockhwsurface not implemented :)\n");
 }
 
 static void PS2_FreeHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
 	/* do nothing */
+	printf("freehwsurface not implemented :)\n");
 }
 
 static void PS2_PumpEvents(SDL_VideoDevice *device)
@@ -426,7 +454,6 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 	center_y = device->hidden->center_y;
 
 	/* send new texture via dma */
-	gsKit_clear(gsGlobal, BLACK_RGBAQ);
 	gsKit_texture_upload(gsGlobal, &gsTexture);
 
 	/* render portions of texture in the meanwhile */
@@ -453,6 +480,7 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 
 static int PS2_FlipHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
+	printf("not sure fliphw works :)\n");
 	gsKit_sync_flip(gsGlobal);
 	return 0;
 }
