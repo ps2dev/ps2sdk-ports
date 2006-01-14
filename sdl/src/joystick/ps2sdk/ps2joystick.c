@@ -44,7 +44,7 @@ static char rcsid =
 
 #include "libpad.h" ////// FIXME
 
-#define MAX_JOYSTICKS	2
+#define MAX_JOYSTICKS	8
 #define MAX_AXES	4	/* 2 analog sticks x 2 axes each  */
 #define MAX_BUTTONS	12	/* and 12 buttons                  */
 #define	MAX_HATS	2
@@ -55,6 +55,9 @@ static char rcsid =
 
 /* array to hold joystick ID values */
 static char padbufs[MAX_JOYSTICKS*256] __attribute__((aligned(64)));
+
+static int joyports[MAX_JOYSTICKS];
+static int joyslots[MAX_JOYSTICKS];
 
 static const int sdl_buttons[MAX_BUTTONS] = 
 {
@@ -74,13 +77,15 @@ static const int sdl_buttons[MAX_BUTTONS] =
 
 struct joystick_hwdata
 {
+	int port;
+	int slot;
 	int prev_buttons;
 	int prev_ljoy_h;
 	int prev_ljoy_v;
 	int prev_rjoy_h;
 	int prev_rjoy_v;
 };
-
+                    
 static int wait_pad(int port, int slot)
 {
 	int tries;
@@ -119,16 +124,16 @@ static int wait_pad(int port, int slot)
 	return 0;
 }
 
-
 /* Function to scan the system for joysticks.
  * This function should set SDL_numjoysticks to the number of available
  * joysticks.  Joystick 0 should be the system default joystick.
- * It should return 0, or -1 on an unrecoverable fatal error.
+ * It should return number of joysticks, or -1 on an unrecoverable fatal error.
  */
 int SDL_SYS_JoystickInit(void)
 {
 	int ret;
 	int id;
+	int index;
 	int numports, numdevs;
 	int port, slot;
 
@@ -158,61 +163,77 @@ int SDL_SYS_JoystickInit(void)
 		/* multitap not supported yet :| */
 	}
 
-	port = 0;
-	slot = 0;
+	index = 0;
 
-	ret = padPortOpen(port, slot, &padbufs[0]);
-	if (ret < 0)
+	for (port=0; port<numports; port++)
 	{
-		SDL_SetError("padPortOpen %d, %d failed\n", port, slot);
-		return 0;
-	}
+		int maxslots;
 
-	wait_pad(port, slot);
-
-	id = padInfoMode(port, slot, PAD_MODECURID, 0);
-	if (id != 0)
-	{
-		int ext;
-
-		ext = padInfoMode(port, slot, PAD_MODECUREXID, 0);
-		if (ext != 0)
+		maxslots = padGetSlotMax(port);
+		for (slot=0; slot<maxslots; slot++)
 		{
-			id = ext;
-		}
+			ret = padPortOpen(port, slot, &padbufs[256*index]);
+			if (ret < 0)
+			{
+				//SDL_SetError("padPortOpen %d, %d failed\n", port, slot);
+				//return 0;
+				continue;
+			}
 
-		if (id == PAD_TYPE_DIGITAL)
-		{
-			printf("SDL_Joystick: digital pad detected\n");
-		}
-		else if (id == PAD_TYPE_DUALSHOCK)
-		{
-			printf("SDL_Joystick: dualshock detected\n");
-		}
-		else 
-		{
-			printf("SDL_Joystick: unknown identifier %d detected\n", id);
-		}
+			wait_pad(port, slot);
 
+			id = padInfoMode(port, slot, PAD_MODECURID, 0);
+			if (id != 0)
+			{
+				int ext;
 
-		if (id == PAD_TYPE_DIGITAL || id == PAD_TYPE_DUALSHOCK)
-		{
-			ret = padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
-			if (ret == 1) 
-			{ 
-				printf("JoystickInit: Request received\n"); 
-			} 
-			else
-			{ 
-				printf("not received!!!\n"); 
+				ext = padInfoMode(port, slot, PAD_MODECUREXID, 0);
+				if (ext != 0)
+				{
+					id = ext;
+				}
+
+				if (id == PAD_TYPE_DIGITAL)
+				{
+					printf("SDL_Joystick: digital pad detected\n");
+				}
+				else if (id == PAD_TYPE_DUALSHOCK)
+				{
+					printf("SDL_Joystick: dualshock detected\n");
+				}
+				else 
+				{
+					printf("SDL_Joystick: unknown identifier %d detected\n", id);
+				}
+
+				/*
+				if (0)
+				if (id == PAD_TYPE_DIGITAL || id == PAD_TYPE_DUALSHOCK)
+				{
+					ret = padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
+					if (ret == 1) 
+					{ 
+						printf("JoystickInit: Request received\n"); 
+					} 
+					else
+					{ 
+						printf("not received!!!\n"); 
+					}
+				*/
+
+				wait_pad(port, slot);
+
+				printf("Joystick %d at port=%d slot=%d\n", index, port, slot);
+				joyports[index] = port;
+				joyslots[index] = slot;
+				index++;
 			}
 		}
-
-		wait_pad(port, slot);
 	}
  	
-	printf("SDL_Joystick: JoystickInit ends\n");
-	return 1;
+	SDL_numjoysticks = index;
+	printf("SDL_Joystick: JoystickInit ends with %d joysticks\n", SDL_numjoysticks);
+	return SDL_numjoysticks;
 }
 
 /* Function to get the device-dependent name of a joystick */
@@ -242,6 +263,8 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 	joystick->nbuttons = MAX_BUTTONS;
 	joystick->naxes = MAX_AXES;
 	joystick->nhats = MAX_HATS;
+	joystick->hwdata->port = joyports[joystick->index];
+	joystick->hwdata->slot = joyslots[joystick->index];
 	return(0);
 }
 
@@ -262,8 +285,8 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 	u32 old_pad;
 	u32 new_pad;
 
-	port = 0;
-	slot = 0;
+	port = joystick->hwdata->port;
+	slot = joystick->hwdata->slot;
 
 	wait_pad(port, slot);
         ret = padRead(port, slot, &buttons); 
