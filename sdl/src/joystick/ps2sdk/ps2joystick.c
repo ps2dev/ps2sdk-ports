@@ -206,8 +206,6 @@ int SDL_SYS_JoystickInit(void)
 					printf("SDL_Joystick: unknown identifier %d detected\n", id);
 				}
 
-				/*
-				if (0)
 				if (id == PAD_TYPE_DIGITAL || id == PAD_TYPE_DUALSHOCK)
 				{
 					ret = padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
@@ -219,7 +217,7 @@ int SDL_SYS_JoystickInit(void)
 					{ 
 						printf("not received!!!\n"); 
 					}
-				*/
+				}
 
 				wait_pad(port, slot);
 
