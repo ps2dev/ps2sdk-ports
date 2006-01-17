@@ -92,6 +92,10 @@ static u32 gsClut[256] __attribute__ ((aligned(64)));
 static GSGLOBAL *gsGlobal = NULL;
 static GSTEXTURE gsTexture;
 
+/* hacks */
+static float force_ratio = 0.0f;
+static int use_filter = 1;
+
 #ifdef PS2SDL_USE_INPUT_DEVICES
 /** Initialize USB devices
 
@@ -344,7 +348,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	}
 
 	/* enable bilinear */
-	gsTexture.Filter = GS_FILTER_LINEAR;
+	gsTexture.Filter = use_filter ? GS_FILTER_LINEAR : GS_FILTER_NEAREST;
 
 	//printf("vmem 0x%x, vclut 0x%x, diff %d\n", gsTexture.Vram, gsTexture.VramClut, gsTexture.VramClut - gsTexture.Vram);
 	
@@ -367,15 +371,29 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	/* full screen, with aspect ratio */
 	visible_h = gsGlobal->Height;
 	visible_w = gsGlobal->Width;
-	w_ratio = visible_w / (float)width;
-	h_ratio = visible_h / (float)height;
-	ratio = (w_ratio <= h_ratio) ? w_ratio : h_ratio;
+	if (force_ratio == 0.0f)
+	{
+		w_ratio = visible_w / (float)width;
+		h_ratio = visible_h / (float)height;
+		ratio = (w_ratio <= h_ratio) ? w_ratio : h_ratio;
+	}
+	else
+	{
+		ratio = force_ratio;
+		printf("SDL_video: ratio of 1:%.3f was forced\n", ratio);
+	}
 
 	device->hidden->ratio = ratio;
 	device->hidden->center_x = (visible_w - (width * ratio)) / 2;
 	device->hidden->center_y = (visible_h - (height * ratio)) / 2;
 
-	printf("center_x %d center_y %d\n", device->hidden->center_x, device->hidden->center_y);
+	printf("SDL_video: centered surface of (%d, %d) onto a screen of (%d, %d) at (%d, %d)\n",
+		current->w, current->h,
+		gsGlobal->Width, gsGlobal->Height,
+		device->hidden->center_x, device->hidden->center_y);
+	printf("SDL_video: ratio of 1:%.3f, rastered surface is (%d, %d)\n",
+		ratio,
+		(int)(current->w * ratio), (int)(current->h * ratio));
 
 	clear_screens();
 	SDL_SetCursor(0);
@@ -534,3 +552,15 @@ VideoBootStrap PS2SDK_bootstrap = {
 	PS2_Available, 
 	PS2_CreateDevice
 };
+
+/* external hacks! */
+void PS2SDL_ForceRatio(float ratio)
+{
+	printf("forcing ratio %f\n", ratio);
+	force_ratio = ratio;
+}
+
+void PS2SDL_EnableFilter(int toggle)
+{
+	use_filter = (toggle != 0);
+}
