@@ -5,6 +5,9 @@ LIB_SDLMAIN=$(LIBPATH)/libsdlmain.a
 # Enable USB keyboard and mouse (100 KB)
 HAVE_INPUT_DEVICES=0
 
+# Enable FREESD instead of LIBSD
+USE_FREESD=1
+
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
 EE_CFLAGS += -DENABLE_PS2SDK 
 
@@ -12,9 +15,13 @@ ifeq ($(HAVE_INPUT_DEVICES), 1)
 EE_CFLAGS += -DPS2SDL_USE_INPUT_DEVICES
 endif
 
+ifeq ($(USE_FREESD), 1)
+EE_CFLAGS += -DUSE_FREESD
+endif
+
 EE_INCS  = -I../include
 EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
-EE_INCS += -I$(PS2DEV)/gsKit/include
+EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2DEV)/gsKit/include
 EE_LIBS  = 
 
 all: $(LIB_SDL) $(LIB_SDLMAIN)
@@ -51,6 +58,9 @@ SDL_OBJS += joystick/ps2sdk/ps2joystick.o
 
 # embedded objects
 SDL_OBJS += audio/ps2sdk/audsrv_irx.o 
+ifeq ($(USE_FREESD), 1)
+SDL_OBJS += audio/ps2sdk/freesd_irx.o
+endif
 
 ifeq ($(HAVE_INPUT_DEVICES), 1)
 SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
@@ -65,6 +75,12 @@ endif
 SDLMAIN_OBJS = main/arch.o main/ps2sdk/sdl_main.o
 
 # inline
+
+ifeq ($(USE_FREESD), 1)
+audio/ps2sdk/freesd_irx.o: $(PS2SDK)/iop/irx/freesd.irx
+	$(PS2SDK)/bin/bin2o $< $@ freesd_irx
+endif
+
 audio/ps2sdk/audsrv_irx.o: $(PS2SDK)/iop/irx/audsrv.irx
 	$(PS2SDK)/bin/bin2o $< $@ audsrv_irx
 
@@ -79,11 +95,12 @@ video/ps2sdk/ps2usbd_irx.o: $(PS2SDK)/iop/irx/usbd.irx
 
 
 EMBEDDED = \
-	$(PS2SDK)/ee/lib/libpad.a           \
-	$(PS2SDK)/ee/lib/libkbd.a           \
-	$(PS2SDK)/ee/lib/libmouse.a         \
-	$(PS2SDK)/ee/lib/libaudsrv.a        \
-	$(PS2DEV)/gsKit/lib/libdmakit.a     \
+	$(PS2SDK)/ee/lib/libpad.a	\
+	$(PS2SDK)/ee/lib/libkbd.a       \
+	$(PS2SDK)/ee/lib/libmouse.a     \
+	$(PS2SDK)/ee/lib/libaudsrv.a    \
+	$(PS2SDK)/ports/lib/libjpg.a    \
+	$(PS2DEV)/gsKit/lib/libdmakit.a	\
 	$(PS2DEV)/gsKit/lib/libgskit.a
 
 $(LIB_SDL): $(SDL_OBJS)

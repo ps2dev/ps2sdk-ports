@@ -41,6 +41,11 @@ static char rcsid =
 
 #include <audsrv.h>
 
+#ifdef USE_FREESD
+extern int freesd_irx_size;
+extern char freesd_irx_start[];
+#endif
+
 extern int audsrv_irx_size;
 extern char audsrv_irx_start[];
 
@@ -53,13 +58,21 @@ static int spu2_init()
 
 	SifInitRpc(0);
 
+#ifdef USE_FREESD
+	// load freesd (libsd replacement)
+    	SifExecModuleBuffer(freesd_irx_start, freesd_irx_size, 0, NULL, &error);
+    	if (error < 0)
+    	{
+		SDL_SetError("Failed to open FREESD module"); 
+    	} 
+#else
 	error = SifLoadModule("rom0:LIBSD", 0, NULL);
 	if (error < 0)
 	{
 		SDL_SetError("Failed to open LIBSD module");
 		return -1;
 	}
-
+#endif
 	iopbuf = (char *)SifAllocIopHeap(audsrv_irx_size);
 	if (iopbuf == NULL)
 	{
@@ -173,7 +186,7 @@ static void PS2AUD_CloseAudio(_THIS)
 
 static int PS2AUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
 {
-	Uint16 format;
+	//Uint16 format;
 
 	audsrv_fmt_t fmt; 
 	fmt.freq = spec->freq;
