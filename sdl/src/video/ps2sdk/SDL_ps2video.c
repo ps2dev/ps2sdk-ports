@@ -314,7 +314,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		return NULL;
 	}
 
-	size = gsKit_texture_size(width, height, psm);
+	size = gsKit_texture_size(width, height,  GS_PSM_CT32);
 //	if (size < 640*400*2) size = 640*400*2;
 
 	gsTexture.Width = width;
@@ -328,7 +328,11 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	}
 
 	memset((void *)gsTexture.Mem, '\0', size);
-	gsTexture.Vram = 0x380000;
+
+	if(gsTexture.Vram==NULL)
+		gsTexture.Vram = gsKit_vram_alloc(gsGlobal, size, GSKIT_ALLOC_USERBUFFER);
+
+	//gsTexture.Vram = 0x380000;
 	//removed: gsKit_vram_alloc(gsGlobal, size);
 
 	printf("SDL_Video: local texture allocated at 0x%08x\n", (unsigned)gsTexture.Mem);

@@ -5,11 +5,18 @@ LIB_SDLMAIN=$(LIBPATH)/libsdlmain.a
 # Enable USB keyboard and mouse (100 KB)
 HAVE_INPUT_DEVICES=0
 
+# Enable Multitap Support (Uses X* IOP modules)
+ENABLE_MTAP=1
+
 # Enable FREESD instead of LIBSD
 USE_FREESD=1
 
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
-EE_CFLAGS += -DENABLE_PS2SDK 
+EE_CFLAGS += -DENABLE_PS2SDK
+
+ifeq ($(ENABLE_MTAP), 1)
+EE_CFLAGS += -DPS2SDL_ENABLE_MTAP
+endif
 
 ifeq ($(HAVE_INPUT_DEVICES), 1)
 EE_CFLAGS += -DPS2SDL_USE_INPUT_DEVICES
@@ -94,8 +101,18 @@ video/ps2sdk/ps2usbd_irx.o: $(PS2SDK)/iop/irx/usbd.irx
 	$(PS2SDK)/bin/bin2o $< $@ ps2usbd_irx
 
 
+ifeq ($(ENABLE_MTAP), 1)
 EMBEDDED = \
-	$(PS2SDK)/ee/lib/libpad.a	\
+	$(PS2SDK)/ee/lib/libpadx.a           \
+	$(PS2SDK)/ee/lib/libmtap.a
+else
+EMBEDDED = \
+	$(PS2SDK)/ee/lib/libpad.a
+endif
+
+EMBEDDED += \
+	$(PS2SDK)/ee/lib/libcdvd.a	\
+	$(PS2SDK)/ee/lib/libpatches.a       \
 	$(PS2SDK)/ee/lib/libkbd.a       \
 	$(PS2SDK)/ee/lib/libmouse.a     \
 	$(PS2SDK)/ee/lib/libaudsrv.a    \

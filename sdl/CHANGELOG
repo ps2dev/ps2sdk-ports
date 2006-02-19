@@ -1,5 +1,24 @@
 PS2SDL CHANGELOG
 -------------
+17 Feb 2006 Drakonite
+	* Multitap support should now be considered fully operational
+	* Multitap enabled SDL compatible with ps2link 1.41 and newer,
+	  even from memcard
+	* If multitap support is enabled, thus requiring XSIO2MAN, SDL
+	  will now detect if SIO2MAN has been loaded and if so will
+	  reboot the iop. This fixes loading from loaders while not
+	  breaking PS2LINK 1.41 and higher support.
+	* SDL_video now correctly allocs a buffer for display texture
+
+17 Jan 2006 Drakonite
+	* Added multitap support to SDL_Joystick
+	* Bug: Using XSIO2MAN/XPADMAN for mtap support breaks 
+	  compatability with early PS2s. No fix. It's either early units 
+	  or mtap, can't support both.
+	* Bug: Issues may arise when a multitap is used in first 
+	  controller slot
+	* Bug: Using XSIOMAN currently breaks loading if using ps2link 
+	  from memcard.
 
 11 Sep 2005 gawd
 

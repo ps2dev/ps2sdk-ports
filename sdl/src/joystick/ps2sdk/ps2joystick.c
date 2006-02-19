@@ -44,6 +44,10 @@ static char rcsid =
 
 #include "libpad.h" ////// FIXME
 
+#ifdef PS2SDL_ENABLE_MTAP
+#include "libmtap.h"
+#endif
+
 #define MAX_JOYSTICKS	8
 #define MAX_AXES	4	/* 2 analog sticks x 2 axes each  */
 #define MAX_BUTTONS	12	/* and 12 buttons                  */
@@ -139,6 +143,28 @@ int SDL_SYS_JoystickInit(void)
 
 	printf("SDL_Joystick: JoystickInit begins\n");
 
+#ifdef PS2SDL_ENABLE_MTAP
+	ret = SifLoadModule("rom0:XSIO2MAN", 0, NULL);
+	if (ret < 0)
+	{
+		SDL_SetError("Failed to load XSIO2MAN");
+		return 0;
+	}
+
+	ret = SifLoadModule("rom0:XPADMAN", 0, NULL);
+	if (ret < 0)
+	{
+		SDL_SetError("Failed to load XPADMAN");
+		return 0;
+	}
+
+	ret = SifLoadModule("rom0:XMTAPMAN", 0, NULL);
+	if (ret < 0)
+	{
+		SDL_SetError("Failed to load XMTAPMAN");
+		return 0;
+	}
+#else
 	ret = SifLoadModule("rom0:SIO2MAN", 0, NULL);
 	if (ret < 0)
 	{
@@ -152,24 +178,43 @@ int SDL_SYS_JoystickInit(void)
 		SDL_SetError("Failed to load PADMAN");
 		return 0;
 	}
+#endif
 
-	padInit(0);
+	ret = padInit(0);
+	printf("SDL_Joystick: padInit: %d\n", ret);
+
+#ifdef PS2SDL_ENABLE_MTAP
+	ret = mtapInit();
+	printf("SDL_Joystick: mtapInit: %d\n", ret);
+#endif
 
 	numdevs = 0;
 	numports = padGetPortMax();
+	
 	printf("SDL_Joystick: numports %d\n", numports);
-	if (numports > 1)
-	{
-		/* multitap not supported yet :| */
-	}
-
+	
 	index = 0;
 
 	for (port=0; port<numports; port++)
 	{
 		int maxslots;
 
+#ifdef PS2SDL_ENABLE_MTAP
+		ret = mtapPortOpen(port);
+		printf("\nSDL_Joystick: Port: %d  mtapPortOpen: %d\n",port,ret);
+
+		ret = mtapGetConnection(port);
+		printf("SDL_Joystick: Port: %d  mtapGetConnection: %d\n",port,ret);
+
+		if(ret!=1)
+		{
+			mtapPortClose(port);
+		}
+#endif
+
 		maxslots = padGetSlotMax(port);
+		printf("SDL_Joystick: Port %d, MaxSlots: %d\n",port, maxslots);
+
 		for (slot=0; slot<maxslots; slot++)
 		{
 			ret = padPortOpen(port, slot, &padbufs[256*index]);
