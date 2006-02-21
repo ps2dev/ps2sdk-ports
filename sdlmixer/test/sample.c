@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include "mikmod_internals.h"
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_endian.h>
-#include <SDL/SDL_mixer.h>
+#include <SDL_mixer.h>
 
 static volatile int playing = 0;
 
@@ -38,8 +37,7 @@ int main(int argc, char *argv[])
 	int sample_size;
 	Mix_Music *music;
 	SDL_RWops *rw;
-	int position;
-	FILE *fp, *f;
+	FILE *fp;
 
 	if (argc != 2)
 	{
