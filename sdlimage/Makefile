@@ -8,9 +8,9 @@
 # -DLOAD_TIF not supported (no ps2 tiff lib available)
 #------------------------------------------------------------------ 
 
-EE_LIB = lib/libSDL_image.a
+LIB_SDLIMAGE 	= libSDL_image.a
 
-EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
+EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/zlib -I$(PS2SDK)/ports/include/SDL
 EE_LIBS      += -lpng -lz -ljpg -lSDL
 
 EE_CFLAGS    += -DLOAD_BMP \
@@ -24,7 +24,7 @@ EE_CFLAGS    += -DLOAD_BMP \
 		-DLOAD_XCF \
 		-DLOAD_XPM
 
-EE_OBJS =	IMG.o			\
+SDLIMAGE_OBJS =	IMG.o			\
 		IMG_bmp.o		\
 		IMG_gif.o		\
 		IMG_jpg.o		\
@@ -37,16 +37,31 @@ EE_OBJS =	IMG.o			\
 		IMG_xcf.o		\
 		IMG_xpm.o
 
-all: $(EE_LIB)
+EMBEDDED += \
+	$(PS2SDK)/ports/lib/libpng.a \
+	$(PS2SDK)/ports/lib/libjpg.a \
+	$(PS2SDK)/ports/lib/libz.a
+
+$(LIB_SDLIMAGE): $(SDLIMAGE_OBJS)
+	# packing with all embedded libraries
+	rm -rf tmp
+	mkdir tmp
+	$(foreach f, $(EMBEDDED), (cd tmp; $(AR) x $f);)
+	cp $(SDLIMAGE_OBJS) tmp
+	$(EE_AR) cru $(LIB_SDLIMAGE) tmp/*
+	rm -rf tmp
+
+
+all: $(LIB_SDLIMAGE)
 
 install: all
 	mkdir -p $(PS2SDK)/ports/include/SDL
 	mkdir -p $(PS2SDK)/ports/lib
-	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f $(LIB_SDLIMAGE) $(PS2SDK)/ports/lib
 	cp -f include/*.h $(PS2SDK)/ports/include/SDL
 
 clean:
-	/bin/rm -f $(EE_OBJS) $(EE_LIB)
+	/bin/rm -f $(SDLIMAGE_OBJS) $(LIB_SDLIMAGE)
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal 
