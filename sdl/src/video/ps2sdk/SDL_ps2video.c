@@ -95,6 +95,7 @@ static GSTEXTURE gsTexture;
 /* hacks */
 static float force_ratio = 0.0f;
 static int use_filter = 1;
+static int force_signal = -1;
 
 #ifdef PS2SDL_USE_INPUT_DEVICES
 /** Initialize USB devices
@@ -143,6 +144,7 @@ static void clear_screens()
 	{
 		/* clear both frames */
 		gsKit_clear(gsGlobal, BLACK_RGBAQ);
+		gsKit_queue_exec(gsGlobal);
 		gsKit_sync_flip(gsGlobal);
 	}
 }
@@ -159,6 +161,12 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	vformat->Amask = 0x00008000;
 
 	pal = (REG_VIDEO_MODE == MODE_PAL);
+	if (force_signal != -1)
+	{
+		/* 0 PAL, 1 NTSC */
+		pal = (force_signal == 0);
+	}
+
 	printf("SDL: initializing gsKit in %s mode\n", pal ? "PAL" : "NTSC");
 	gsGlobal = gsKit_init_global(pal ? GS_MODE_PAL : GS_MODE_NTSC);
 
@@ -169,8 +177,10 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	}
 
 	/* initialize the DMAC */
-	dmaKit_init(D_CTRL_RELE_ON,D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8);
+	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8);
 	dmaKit_chan_init(DMA_CHANNEL_GIF);
+	dmaKit_chan_init(DMA_CHANNEL_FROMSPR);
+	dmaKit_chan_init(DMA_CHANNEL_TOSPR);
 
 	/* disable zbuffer because we're only doing 2d now */
 	gsGlobal->ZBuffering = GS_SETTING_OFF;
@@ -184,6 +194,7 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 
 	gsKit_init_screen(gsGlobal);
 
+	gsKit_mode_switch(gsGlobal, GS_PERSISTENT); //GS_ONESHOT);
 	clear_screens();
 
 #ifdef PS2SDL_USE_INPUT_DEVICES
@@ -210,6 +221,7 @@ static void PS2_DeleteDevice(SDL_VideoDevice *device)
 }
 
 static SDL_Rect rect_256x224 = {0, 0, 256, 224};
+static SDL_Rect rect_288x224 = {0, 0, 288, 224};
 static SDL_Rect rect_256x256 = {0, 0, 256, 256};
 static SDL_Rect rect_320x200 = {0, 0, 320, 200};
 static SDL_Rect rect_320x240 = {0, 0, 320, 240};
@@ -237,6 +249,7 @@ static SDL_Rect *vesa_modes[] = {
 	&rect_320x240,
 	&rect_320x200,
 	&rect_256x256,
+	&rect_288x224,
 	&rect_256x224,
 	NULL
 };
@@ -314,13 +327,13 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		return NULL;
 	}
 
-	size = gsKit_texture_size(width, height,  GS_PSM_CT32);
+	size = gsKit_texture_size(width, height, psm);
 //	if (size < 640*400*2) size = 640*400*2;
 
 	gsTexture.Width = width;
 	gsTexture.Height = height;
 	gsTexture.PSM = psm;
-	gsTexture.Mem = (void *)malloc(size);
+	gsTexture.Mem = (void *)memalign(128, size);
 	if (gsTexture.Mem == NULL)
 	{
 		SDL_OutOfMemory();
@@ -329,8 +342,10 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 
 	memset((void *)gsTexture.Mem, '\0', size);
 
-	if(gsTexture.Vram==NULL)
+	if (gsTexture.Vram == 0)
+	{
 		gsTexture.Vram = gsKit_vram_alloc(gsGlobal, size, GSKIT_ALLOC_USERBUFFER);
+	}
 
 	//gsTexture.Vram = 0x380000;
 	//removed: gsKit_vram_alloc(gsGlobal, size);
@@ -340,7 +355,8 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	if (bpp <= 8)
 	{
 		gsTexture.Clut = gsClut;
-		gsTexture.VramClut = 0x300000;
+		//gsTexture.VramClut = 0x300000;
+		gsTexture.VramClut = gsKit_vram_alloc(gsGlobal, gsKit_texture_size(16, 16, GS_PSM_CT32), GSKIT_ALLOC_USERBUFFER);
 		memset(gsClut, '\0', sizeof(gsClut));
 		//removed: (u32)gsKit_vram_alloc(gsGlobal, 1024);
 	}
@@ -395,6 +411,7 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		current->w, current->h,
 		gsGlobal->Width, gsGlobal->Height,
 		device->hidden->center_x, device->hidden->center_y);
+
 	printf("SDL_video: ratio of 1:%.3f, rastered surface is (%d, %d)\n",
 		ratio,
 		(int)(current->w * ratio), (int)(current->h * ratio));
@@ -471,6 +488,12 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 		return;
 	}
 
+	if (gsTexture.Mem == NULL || gsTexture.Vram == 0)
+	{
+		SDL_SetError("Null vram");
+		return;
+	}
+
 	ratio = device->hidden->ratio;
 	center_x = device->hidden->center_x;
 	center_y = device->hidden->center_y;
@@ -497,6 +520,7 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 		gsKit_prim_sprite_texture(gsGlobal, &gsTexture, x1, y1, u1, v1, x2, y2, u2, v2, 1.0, TEXTURE_RGBAQ);
 	}
 
+	gsKit_queue_exec(gsGlobal);
 	gsKit_sync_flip(gsGlobal);
 }
 
@@ -560,11 +584,18 @@ VideoBootStrap PS2SDK_bootstrap = {
 /* external hacks! */
 void PS2SDL_ForceRatio(float ratio)
 {
-	printf("forcing ratio %f\n", ratio);
+	printf("PS2SDL: Forcing ratio %f\n", ratio);
 	force_ratio = ratio;
 }
 
 void PS2SDL_EnableFilter(int toggle)
 {
+	printf("PS2SDL: Forcing filter %d\n", toggle);
 	use_filter = (toggle != 0);
+}
+
+void PS2SDL_ForceSignal(int ntsc)
+{
+	printf("PSD2SDL: Forcing signal %d\n", ntsc);
+	force_signal = ntsc;
 }
