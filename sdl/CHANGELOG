@@ -1,5 +1,10 @@
 PS2SDL CHANGELOG
 -------------
+29 Apr 2006 gawd
+	* Added force_signal hack, to lock on NTSC/PAL (good for debugging)
+	* Added 288x224 resolution
+	* Support for gsKit 0.3 'immediate' mode
+
 17 Feb 2006 Drakonite
 	* Multitap support should now be considered fully operational
 	* Multitap enabled SDL compatible with ps2link 1.41 and newer,
@@ -21,7 +26,6 @@ PS2SDL CHANGELOG
 	  from memcard.
 
 11 Sep 2005 gawd
-
 	* fixed SDL_Joystick's wait_pad routine
 	* SDL_Joystick now turns on ANALOG if available
 
