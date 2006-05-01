@@ -17,7 +17,7 @@ ZLIBINC=../zlib/include
 
 
 EE_LDFLAGS   += -L. -L$(PS2SDK)/ports/lib  -L./lib
-EE_INCS      += -I./include -I$(PS2SDK)/ports/include/zlib
+EE_INCS      += -I./include -I$(PS2SDK)/ports/include
 EE_LIBS      += -lpng -lz -lc -lm -lmc
 
 
