@@ -1,0 +1,17 @@
+Mon Sep 21 16:35:33 1998  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* genromfs.c: add support for `-a' and `-A'.
+
+	* genromfs.8: document it.
+
+Tue Aug  5 15:54:47 1997  Janos Farkas  <chexum@shadow.banki.hu>
+
+	* Version 0.2.
+
+	* genromfs.8: the manual page has been initially written by
+ 	Cristoph Lameter, now I reworked it to be less repetitive with
+ 	respect to the comments in the source :)
+
+	* genromfs.c: just helpful help, and process `-h' too.
+
+	* Makefile: add an install target.

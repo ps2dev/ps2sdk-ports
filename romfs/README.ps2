@@ -1,0 +1,40 @@
+#
+#
+# ROMFS : - ROM File System
+#--------------------------------------------------------------------
+#
+#
+# So what is it ? Basically, ROMFS allows to emulate a directory, 
+# that directory being an binary image in memory. It allows to embed 
+# files and external resources directly in the ELF, while keeping the 
+# original i/o routines to access them..
+# 
+# The initial project has been started by Jakub Jelinek on linux, 
+# then gawd reused it for flashback, and this is how I discovered it. 
+# Drakonite also participated in adding functionality, and since the 
+# stuff is starting to be relatively mature (IMHO), it's time to share it ! 
+#   
+# You'll find in the regress directory a good example on how to use it, 
+# but it just consist on globally respecting the following steps :
+#    - include makefile.romfs into your makefile (Adapting path(s),...)
+#    - include <romfs_io.h> in your project
+#    - call rioInit() from your main
+# 
+# All calls to fopen, fread, etc.. Are replaced by calls to ropen, rread... 
+# Thanks to the defines in the makefile (...)
+# 
+# And you're done ! 
+# 
+#   
+# History :
+# ---------
+#
+# v1.0:
+#  - First release.
+#
+#
+#
+#
+# Credits,
+# ---------
+# Gawd, Drakonite, Evilo

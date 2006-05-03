@@ -1,0 +1,106 @@
+.TH GENROMFS 8 "Sep 1998" "Version 0.3"
+.SH NAME
+genromfs \- create a romfs image
+.SH SYNOPSIS
+.B genromfs
+.B \-f device
+[
+.B \-d source
+]
+[
+.B \-V volumename
+]
+[
+.B \-a alignment
+]
+[
+.B \-A alignment,pattern
+]
+[
+.B \-v
+]
+.SH DESCRIPTION
+.B genromfs
+is used to create a romfs file system image, usually directly on
+a block device, or for test purposes, in a plain file.
+It is the
+.I mkfs
+equivalent of other filesystems.
+.PP
+.B genromfs
+will scan the current directory and its subdirectories, build a romfs
+image from the files found, and output it to the file or device you
+specified.
+.SH OPTIONS
+.TP
+.BI -f \ output
+Specifies the file to output the image to.  It must be specified.
+.TP
+.BI -d \ source
+Use the specified directory as the source, not the current directory.
+.TP
+.BI -V \ volumename
+Build the image with the specified volume name.  Currently it is
+not used by the kernel, but it will be recorded in the image.
+.TP
+.BI -a \ alignment
+Align regular files to alignment bytes.
+.B genromfs
+will align data of each regular file in the resulting image to the specified
+alignment, while keeping the image compatible with the original romfs
+definition (by adding pad bytes between last node before the file and file's
+header).  By default,
+.B genromfs
+will guarantee only an alignment of 16 bytes.
+.TP
+.BI -A \ alignment,pattern
+Align objects matching shell wildcard pattern to alignment bytes.
+If one object matches more patterns, then the highest alignment is chosen.
+Alignment has to be a power of two. Patterns either don't contain any
+slashes, in which case files matching those patterns are matched in all
+directories, or start with a leading slash, in which case they are matched
+against absolute paths inside of the romfs filesystem (that is, as if you
+chrooted into the rom filesystem).
+.TP
+.BI -v
+Verbose operation,
+.B genromfs
+will print every file which are included in the image, along with
+its offset.
+.SH EXAMPLES
+
+.EX
+.B
+   genromfs -d root -f /dev/fd0 -V 'Secret labs install disk'
+.EE
+
+All files in the 
+.I root
+directory will be written to 
+.B /dev/fd0
+as a new romfs filesystem image.
+
+.EX
+.B
+   genromfs -d root -f /dev/fd0 -A 2048,/.. -A '4096,*.boot' -a 512 -V 'Bootable floppy'
+.EE
+
+Generate the image and place file data of all regular files on 512 bytes
+boundaries or on 4K boundaries, if they have the .boot extension. Also,
+align the root directories '..' romfs header on 2K boundary.
+.PP
+You can use the generated image (if you have the
+romfs module loaded, or compiled into the kernel) via:
+
+.EX
+.B
+   mount -t romfs /dev/fd0 /mnt
+.EE
+
+.SH AUTHOR
+This manual page was initially written by Christoph Lameter <clameter@debian.org>,
+for the Debian GNU/Linux system.
+.SH SEE ALSO
+.BR mkfs (8),
+.BR mount (8),
+.BR mkisofs (8)
