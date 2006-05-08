@@ -37,8 +37,7 @@ static const char *test_fopen_fclose(void *arg)
 
 static const char *test_fgetc(void *arg)
 {
-	int p;
-	char ch;
+	int p, ch;
 	char *error;
 
 	FILE *fp = fopen((char *)arg, "rt");
@@ -177,21 +176,22 @@ static const char *test_fread(void *arg)
 	}
 
 	/* test of reading one chunk */
-	ret = fread(buf, 1, 3, fp);
-	if (ret != 3 || strncmp(buf, "hel", 3) != 0)
+	ret = fread(buf, 3, 1, fp);
+	if (ret != 1 || strncmp(buf, "hel", 3) != 0)
 	{
-		printf("read %s\n",buf);
+
 		error = "failed to read one block";
 		goto failed;
 	}
 
 	/* three chunks */
-	ret = fread(buf, 1, 6, fp);
-	if (ret != 6 || strncmp(buf, "lo wor", 6) != 0)
+	ret = fread(buf, 2, 3, fp);
+	if (ret != 3 || strncmp(buf, "lo wor", 6) != 0)
 	{
 		error = "failed to read three blocks";
 		goto failed;
 	}
+
 
 	/* until end of file */
 	ret = fread(buf, 1, sizeof(buf), fp);

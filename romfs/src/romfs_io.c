@@ -159,10 +159,15 @@ int	rioLseek( int fd, int off, int whence)
 int	rioGetc(int fd) 
 {
 	int c;
-	if (rioRead(fd,&c,1)==0)
-	   return EOF;
-	else
-	   return (int)c;
+	
+	if ((__offset[fd]) >= __sz[fd])
+  	  return EOF;
+	
+	c = *(__dataptr[fd] + __offset[fd]);
+	__offset[fd]++;
+	return c;
+	
+
 }
 
 
