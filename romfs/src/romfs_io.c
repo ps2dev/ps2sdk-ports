@@ -259,8 +259,11 @@ int     rgetc(FILE *stream)
 }
 char    *rgets(char *buf, int n, FILE *stream)
 {
-	rioGets(stream->fd, buf, n);
-	return (buf);
+	
+	if (rioGets(stream->fd, buf, n)>0)
+		return (buf);
+	else
+		return NULL;
 }
 
 /**************************************************************/
