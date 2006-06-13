@@ -1,0 +1,69 @@
+
+---------------------
+ Lua 5.1 - PS2 Port
+---------------------
+
+ This is a version of LUA 5.1 for PlayStation2, using the ps2sdk.
+
+--------------------
+ Build Instructions
+--------------------
+
+  ## Configure and build the library.
+  make -f makefile.ps2 all
+
+  ## Install the library
+  make -f makefile.ps2 install
+
+
+--------------------
+ Notes
+--------------------
+
+ -) lua_Numbers are floats here, not doubles. (so mathlibf.c replaces mathlib.c)
+    This is because the ps2 is terribly slow with doubles since its cop1 is 
+    only handling floats. Hence, you can't compile a lua source code on PC side 
+    with a common lua compiler. You need a PC-side lua compiler which uses floats 
+    instead of doubles. That, or compiling using your PS2.
+
+ -) the lua's mathlibf is using newlib's math library, which means you need
+    to add -lm if you plan to use it.
+    
+ -) the lua's mathlib is actually using doubles math functions, which means
+    slowness. I've included a mathlibf that uses the float counterparts. That
+    is, you have to use luaopen_mathf instead of luaopen_math, and everything
+    should be okay.
+ 
+ -) Several missing functions have been stubbed, you can find them in the 
+    ps2_stub.c file.
+    
+ -) Every Lua script should start with a blank line, this is a bug in the current 
+    release that should be fixed in the futur.
+
+--------------------
+ Samples 
+--------------------
+
+ The test directory, contains a simple interpreter along with short and simple 
+ examples on how lua should be used with that package.
+
+--------------------
+ Want more ?
+--------------------
+
+ Be sure to drop by the ps2dev forum , for any comment and bug report about this
+ first release.
+
+ Find more details about LUA at the LUA website: http://www.lua.org
+ Find more details about the free homebrew PlayStation2 toolkit at the ps2dev
+ 
+ Find more details about the froggies at the www.psxdev.org site :)
+
+
+--------------------
+ Credits
+--------------------
+
+ 5.0.2 patch by 'Pixel'
+ Porting to 5.1 by 'Evilo' and 'Tmator'
+ Help by 'SSpeare' on fixing weird stuff !
