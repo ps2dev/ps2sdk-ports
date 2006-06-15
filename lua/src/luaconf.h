@@ -60,6 +60,18 @@
 
 
 /*
+@@ LUA_PATH and LUA_CPATH are the names of the environment variables that
+@* Lua check to set its paths.
+@@ LUA_INIT is the name of the environment variable that Lua
+@* checks for initialization code.
+** CHANGE them if you want different names.
+*/
+#define LUA_PATH        "LUA_PATH"
+#define LUA_CPATH       "LUA_CPATH"
+#define LUA_INIT	"LUA_INIT"
+
+
+/*
 @@ LUA_PATH_DEFAULT is the default path that Lua uses to look for
 @* Lua libraries.
 @@ LUA_CPATH_DEFAULT is the default path that Lua uses to look for

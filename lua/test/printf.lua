@@ -1,4 +1,3 @@
-
 -- an implementation of printf
 
 function printf(...)

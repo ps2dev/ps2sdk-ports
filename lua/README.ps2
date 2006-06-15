@@ -1,6 +1,6 @@
 
 ---------------------
- Lua 5.1 - PS2 Port
+ Lua 5.1.1 - PS2 Port
 ---------------------
 
  This is a version of LUA 5.1 for PlayStation2, using the ps2sdk.
@@ -36,9 +36,7 @@
  
  -) Several missing functions have been stubbed, you can find them in the 
     ps2_stub.c file.
-    
- -) Every Lua script should start with a blank line, this is a bug in the current 
-    release that should be fixed in the futur.
+   
 
 --------------------
  Samples 

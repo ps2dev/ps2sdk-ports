@@ -1,4 +1,3 @@
-
 -- trace assigments to global variables
 
 do

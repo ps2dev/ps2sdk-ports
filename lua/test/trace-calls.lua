@@ -1,4 +1,3 @@
-
 -- trace calls
 -- example: lua -ltrace-calls bisect.lua
 

@@ -1,4 +1,3 @@
-
 -- bare-bones luac in Lua
 -- usage: lua luac.lua file.lua
 

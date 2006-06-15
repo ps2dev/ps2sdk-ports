@@ -1,4 +1,3 @@
-
 -- hex dump
 -- usage: lua xd.lua < file
 
