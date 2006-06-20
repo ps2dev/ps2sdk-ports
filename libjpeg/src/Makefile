@@ -20,6 +20,7 @@ install: all
 	mkdir -p $(PS2SDK)/ports/lib
 	cp -f ../lib/$(EE_LIB) $(PS2SDK)/ports/lib
 	cp -f ../include/*.h $(PS2SDK)/ports/include
+	cp -f ../src/jerror.h $(PS2SDK)/ports/include
 
 clean:
 	rm -f $(EE_LIB) $(EE_OBJS)
