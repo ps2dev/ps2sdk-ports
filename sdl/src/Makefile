@@ -10,7 +10,7 @@ SDL_USE_HW_SURFACE=1
 HAVE_INPUT_DEVICES=0
 
 # Enable Multitap Support (Uses X* IOP modules)
-ENABLE_MTAP=0
+ENABLE_MTAP=1
 
 # Enable FREESD instead of LIBSD
 USE_FREESD=1
