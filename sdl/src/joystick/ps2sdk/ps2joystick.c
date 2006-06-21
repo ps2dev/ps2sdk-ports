@@ -83,6 +83,7 @@ struct joystick_hwdata
 {
 	int port;
 	int slot;
+	int deviceid;
 	int prev_buttons;
 	int prev_ljoy_h;
 	int prev_ljoy_v;
@@ -90,22 +91,20 @@ struct joystick_hwdata
 	int prev_rjoy_v;
 };
                     
-static int wait_pad(int port, int slot)
+static int wait_pad(int port, int slot, int tries)
 {
-	int tries;
 	int state, last_state;
 	char state_string[16];
 
 	state = padGetState(port, slot);
 	if (state == PAD_STATE_DISCONN)
 	{
-		printf("SDL_Joystick: pad (%d, %d) is disconnected\n", port, slot);
+		/* printf("SDL_Joystick: pad (%d, %d) is disconnected\n", port, slot); */
 		return -1;
 	}
 
 	last_state = -1;
 
-	tries = 65536;
 	while ((state != PAD_STATE_STABLE) && (state != PAD_STATE_FINDCTP1)) 
 	{
 		if (state != last_state) 
@@ -136,7 +135,7 @@ static int wait_pad(int port, int slot)
 int SDL_SYS_JoystickInit(void)
 {
 	int ret;
-	int id;
+	int mtap_enabled;
 	int index;
 	int numports, numdevs;
 	int port, slot;
@@ -195,25 +194,55 @@ int SDL_SYS_JoystickInit(void)
 	
 	index = 0;
 
+#ifdef PS2SDL_ENABLE_MTAP
+	/* gawd: look for mtap connection on one of the ports. if it's there,
+	 * then don't support the only interface.
+	 */
+	if (mtapPortOpen(0) == 1 && mtapGetConnection(0) == 1)
+	{
+		/* found on port 0 */
+		mtap_enabled = 1;
+		mtapPortClose(0);
+		printf("SDL_Joystick: found mtap on port 0\n");
+	}
+	else if (mtapPortOpen(1) == 1 && mtapGetConnection(1) == 1)
+	{
+		/* found on port 1 */
+		mtap_enabled = 1;
+		mtapPortClose(1);
+		printf("SDL_Joystick: found mtap on port 1\n");
+	}
+	else
+	{
+		mtap_enabled = 0;
+		printf("SDL_Joystick: mtap adapter not found on either ports\n");
+	}
+#endif
+
 	for (port=0; port<numports; port++)
 	{
 		int maxslots;
 
 #ifdef PS2SDL_ENABLE_MTAP
-		ret = mtapPortOpen(port);
-		printf("\nSDL_Joystick: Port: %d  mtapPortOpen: %d\n",port,ret);
-
-		ret = mtapGetConnection(port);
-		printf("SDL_Joystick: Port: %d  mtapGetConnection: %d\n",port,ret);
-
-		if(ret!=1)
+		if (mtap_enabled)
 		{
-			mtapPortClose(port);
+			ret = mtapPortOpen(port);
+			printf("\nSDL_Joystick: Port: %d, mtapPortOpen: %d\n", port, ret);
+
+			ret = mtapGetConnection(port);
+			printf("SDL_Joystick: Port: %d, mtapGetConnection: %d\n", port, ret);
+
+			if (ret != 1)
+			{
+				/* failed */
+				mtapPortClose(port);
+				continue;
+			}
 		}
 #endif
 
 		maxslots = padGetSlotMax(port);
-		printf("SDL_Joystick: Port %d, MaxSlots: %d\n",port, maxslots);
+		printf("SDL_Joystick: Port %d, MaxSlots: %d\n", port, maxslots);
 
 		for (slot=0; slot<maxslots; slot++)
 		{
@@ -225,52 +254,10 @@ int SDL_SYS_JoystickInit(void)
 				continue;
 			}
 
-			wait_pad(port, slot);
-
-			id = padInfoMode(port, slot, PAD_MODECURID, 0);
-			if (id != 0)
-			{
-				int ext;
-
-				ext = padInfoMode(port, slot, PAD_MODECUREXID, 0);
-				if (ext != 0)
-				{
-					id = ext;
-				}
-
-				if (id == PAD_TYPE_DIGITAL)
-				{
-					printf("SDL_Joystick: digital pad detected\n");
-				}
-				else if (id == PAD_TYPE_DUALSHOCK)
-				{
-					printf("SDL_Joystick: dualshock detected\n");
-				}
-				else 
-				{
-					printf("SDL_Joystick: unknown identifier %d detected\n", id);
-				}
-
-				if (id == PAD_TYPE_DIGITAL || id == PAD_TYPE_DUALSHOCK)
-				{
-					ret = padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
-					if (ret == 1) 
-					{ 
-						printf("JoystickInit: Request received\n"); 
-					} 
-					else
-					{ 
-						printf("not received!!!\n"); 
-					}
-				}
-
-				wait_pad(port, slot);
-
-				printf("Joystick %d at port=%d slot=%d\n", index, port, slot);
-				joyports[index] = port;
-				joyslots[index] = slot;
-				index++;
-			}
+			printf("Joystick %d at port=%d slot=%d\n", index, port, slot);
+			joyports[index] = port;
+			joyslots[index] = slot;
+			index++;
 		}
 	}
  	
@@ -308,6 +295,7 @@ int SDL_SYS_JoystickOpen(SDL_Joystick *joystick)
 	joystick->nhats = MAX_HATS;
 	joystick->hwdata->port = joyports[joystick->index];
 	joystick->hwdata->slot = joyslots[joystick->index];
+	joystick->hwdata->deviceid = -1;
 	return(0);
 }
 
@@ -331,7 +319,63 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 	port = joystick->hwdata->port;
 	slot = joystick->hwdata->slot;
 
-	wait_pad(port, slot);
+	if (wait_pad(port, slot, 10) < 0)
+	{
+		/* no pad information available */
+		return;
+	}
+
+	if (joystick->hwdata->deviceid < 0)
+	{
+		int id;
+
+		/* see if we can probe the MODECURID now */
+		id = padInfoMode(port, slot, PAD_MODECURID, 0);
+		if (id != 0)
+		{
+			int ext;
+
+        		ext = padInfoMode(port, slot, PAD_MODECUREXID, 0);
+			if (ext != 0)
+			{
+				id = ext;
+			}
+
+			if (id == PAD_TYPE_DIGITAL)
+			{
+				printf("SDL_Joystick: digital pad detected\n");
+			}
+			else if (id == PAD_TYPE_DUALSHOCK)
+			{
+				printf("SDL_Joystick: dualshock detected\n");
+			}
+			else 
+			{
+				printf("SDL_Joystick: unknown identifier %d detected\n", id);
+			}
+
+			if (id == PAD_TYPE_DIGITAL || id == PAD_TYPE_DUALSHOCK)
+			{
+				ret = padSetMainMode(port, slot, PAD_MMODE_DUALSHOCK, PAD_MMODE_LOCK);
+				if (ret == 1) 
+				{ 
+					printf("JoystickInit: Request received\n"); 
+				} 
+				else
+				{ 
+					printf("JoystickInit: padSetMainMode failed\n"); 
+				}
+			}
+
+			joystick->hwdata->deviceid = id;
+			if (wait_pad(port, slot, 10) < 0)
+			{
+				/* no pad information available */
+				return;
+			}
+		}
+	}
+
         ret = padRead(port, slot, &buttons); 
 	if (ret != 0)
 	{
@@ -419,10 +463,6 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 			joystick->hwdata->prev_rjoy_v = rjoy_v;
 		}
 	} 
-	else
-	{
-		SDL_SetError("JoystickUpdate failed\n");
-	}
 }
 
 /* Function to close a joystick after use */
