@@ -194,7 +194,7 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 
 	gsKit_init_screen(gsGlobal);
 
-	gsKit_mode_switch(gsGlobal, GS_PERSISTENT); //GS_ONESHOT);
+	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
 	clear_screens();
 
 #ifdef PS2SDL_USE_INPUT_DEVICES
@@ -481,16 +481,14 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 	int i;
 	float ratio;
 	int center_x, center_y;
-	
+
 	if (gsGlobal == NULL)
 	{
-		SDL_SetError("Null gsGlobal");
 		return;
 	}
 
 	if (gsTexture.Mem == NULL || gsTexture.Vram == 0)
 	{
-		SDL_SetError("Null vram");
 		return;
 	}
 
