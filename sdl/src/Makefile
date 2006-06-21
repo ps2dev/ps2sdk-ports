@@ -2,14 +2,19 @@ LIBPATH=../lib
 LIB_SDL=$(LIBPATH)/libsdl.a
 LIB_SDLMAIN=$(LIBPATH)/libsdlmain.a
 
+
+# Simulate haRdware Surface
+SDL_USE_HW_SURFACE=1
+
 # Enable USB keyboard and mouse (100 KB)
 HAVE_INPUT_DEVICES=0
 
 # Enable Multitap Support (Uses X* IOP modules)
-ENABLE_MTAP=1
+ENABLE_MTAP=0
 
 # Enable FREESD instead of LIBSD
 USE_FREESD=1
+
 
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
 EE_CFLAGS += -DENABLE_PS2SDK
@@ -25,6 +30,16 @@ endif
 ifeq ($(USE_FREESD), 1)
 EE_CFLAGS += -DUSE_FREESD
 endif
+
+ifeq ($(ENABLE_VSYNC_CB), 1)
+EE_CFLAGS += -DENABLE_VSYNC_CB
+endif
+
+ifeq ($(SDL_USE_HW_SURFACE), 1)
+EE_CFLAGS += -DSDL_USE_HW_SURFACE
+endif
+
+
 
 EE_INCS  = -I../include
 EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom

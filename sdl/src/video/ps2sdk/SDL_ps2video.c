@@ -97,6 +97,7 @@ static float force_ratio = 0.0f;
 static int use_filter = 1;
 static int force_signal = -1;
 
+
 #ifdef PS2SDL_USE_INPUT_DEVICES
 /** Initialize USB devices
 
@@ -194,9 +195,15 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 
 	gsKit_init_screen(gsGlobal);
 
+#ifdef SDL_USE_HW_SURFACE
+	gsKit_mode_switch(gsGlobal, GS_PERSISTENT);
+#else
 	gsKit_mode_switch(gsGlobal, GS_ONESHOT);
-	clear_screens();
+#endif	
+	
 
+	clear_screens();
+	
 #ifdef PS2SDL_USE_INPUT_DEVICES
 	/* initialize keyboard and mouse */
 	initialize_devices(device);
@@ -382,7 +389,11 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 	}
 
 	/* set framebuffer */
-	current->flags = SDL_FULLSCREEN | SDL_SWSURFACE;
+#ifdef SDL_USE_HW_SURFACE
+	current->flags = SDL_FULLSCREEN | SDL_HWSURFACE | SDL_DOUBLEBUF;
+#else
+	current->flags = SDL_FULLSCREEN | SDL_SWSURFACE ;
+#endif
 	current->w = width;
 	current->h = height;
 	current->pitch = SDL_CalculatePitch(current);
@@ -417,32 +428,61 @@ static SDL_Surface *PS2_SetVideoMode(SDL_VideoDevice *device, SDL_Surface *curre
 		(int)(current->w * ratio), (int)(current->h * ratio));
 
 	clear_screens();
+
+#ifdef SDL_USE_HW_SURFACE
+	
+	printf ("SDL: HW Surface Flipping !\n");
+	
+	gsKit_texture_upload(gsGlobal, &gsTexture);
+	/*
+	printf ("tex coords\n");
+	printf ("x1,y1 : %d, %d\n", device->hidden->center_x, device->hidden->center_y);
+	printf ("u1,v1 : 0, 0\n");
+	printf ("x2,y2 : %d, %d\n", (int)((current->w * ratio) + device->hidden->center_x), (int)((current->h * ratio) + device->hidden->center_y));
+	printf ("u2,v2 : %d, %d\n", gsTexture.Width , gsTexture.Height);
+	*/
+
+	gsKit_prim_sprite_striped_texture(gsGlobal, &gsTexture, device->hidden->center_x, device->hidden->center_y, // x1,y1
+								0, 0, // u1,v1
+						    		(int)((current->w * ratio) + device->hidden->center_x), (int)((current->h * ratio) + device->hidden->center_y), //x2,y2
+						    		gsTexture.Width , gsTexture.Height,
+						    		1.0, TEXTURE_RGBAQ);
+							 
+#endif		
+
 	SDL_SetCursor(0);
 	return current;
 }
 
 static int PS2_AllocHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
+#ifdef SDL_USE_HW_SURFACE
+	return (0);
+#else
 	printf("allochwsurface not implemented :)\n");
 	return -1;
+#endif
 }
 
 static int PS2_LockHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
+#ifdef SDL_USE_HW_SURFACE
+	return (0);
+#else
 	printf("lockhwsurface not implemented :)\n");
-	return 0;
+	return -1;
+#endif
+
 }
 
 static void PS2_UnlockHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
-	/* do nothing */
-	printf("unlockhwsurface not implemented :)\n");
+	return;
 }
 
 static void PS2_FreeHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
-	/* do nothing */
-	printf("freehwsurface not implemented :)\n");
+	return;
 }
 
 static void PS2_PumpEvents(SDL_VideoDevice *device)
@@ -476,8 +516,10 @@ static int PS2_SetColors(SDL_VideoDevice *device, int firstcolor, int ncolors, S
 	return 0;
 }
 
+
 static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rects)
 {
+#ifndef SDL_USE_HW_SURFACE
 	int i;
 	float ratio;
 	int center_x, center_y;
@@ -515,16 +557,34 @@ static void PS2_UpdateRects(SDL_VideoDevice *device, int numrects, SDL_Rect *rec
 		x2 = ((rects[i].x + rects[i].w) * ratio) + center_x;
 		y2 = ((rects[i].y + rects[i].h) * ratio) + center_y;
 
-		gsKit_prim_sprite_texture(gsGlobal, &gsTexture, x1, y1, u1, v1, x2, y2, u2, v2, 1.0, TEXTURE_RGBAQ);
+		gsKit_prim_sprite_striped_texture(gsGlobal, &gsTexture, x1, y1, u1, v1, x2, y2, u2, v2, 1.0, TEXTURE_RGBAQ);
 	}
 
 	gsKit_queue_exec(gsGlobal);
 	gsKit_sync_flip(gsGlobal);
+	
+#endif
 }
 
 static int PS2_FlipHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 {
-	printf("not sure fliphw works :)\n");
+#ifdef SDL_USE_HW_SURFACE
+	
+	//printf("flipping HW surface\n");	
+	if (gsGlobal == NULL)
+	{
+		return (0);
+	}
+	
+	if (gsTexture.Mem == NULL || gsTexture.Vram == 0)
+	{
+		return (0);
+	}
+
+	/* send new texture via dma */
+	gsKit_texture_upload(gsGlobal, &gsTexture);
+	gsKit_queue_exec(gsGlobal);
+#endif
 	gsKit_sync_flip(gsGlobal);
 	return 0;
 }
