@@ -1,0 +1,28 @@
+
+EE_BIN     = example.elf
+
+EE_LIBS   += -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib/ 
+EE_LIBS   += -lmikmod -lgskit -ldmakit
+EE_INCS   += -I../include -Isrc -I$(PS2SDK)/ports/include -I$(PS2DEV)/gsKit/include
+
+
+
+# -- PS2 specific source code --
+EE_OBJS   = example.o
+
+all:    $(EE_BIN)
+	$(EE_STRIP) $(EE_BIN)
+
+clean:
+	rm -f $(EE_BIN) $(EE_OBJS)
+
+run:
+	ps2client -h 192.168.0.100 execee host:$(EE_BIN)
+
+reset:
+	ps2client -h 192.168.0.100 reset
+
+
+include Makefile.pref
+include Makefile.eeglobal
+
