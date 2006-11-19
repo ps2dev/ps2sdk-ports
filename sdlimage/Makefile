@@ -2,11 +2,9 @@
 #------------------------------------------------------------------
 # Review README & LICENSE files for further details.
 #------------------------------------------------------------------
-# GCC 3.2.2 / PS2SDK 1.2 / GSKIT / SDL / ZLIB / PNG / JPG
+# GCC 3.2.2 / PS2SDK / SDL / ZLIB / PNG / JPG / TIFF
 #------------------------------------------------------------------
-# Compilation Flags info
-# -DLOAD_TIF not supported (no ps2 tiff lib available)
-#------------------------------------------------------------------ 
+
 
 LIB_SDLIMAGE 	= libSDL_image.a
 
@@ -22,7 +20,8 @@ EE_CFLAGS    += -DLOAD_BMP \
 		-DLOAD_PNM \
 		-DLOAD_TGA \
 		-DLOAD_XCF \
-		-DLOAD_XPM
+		-DLOAD_XPM \
+		-DLOAD_TIF
 
 SDLIMAGE_OBJS =	IMG.o			\
 		IMG_bmp.o		\
@@ -40,6 +39,7 @@ SDLIMAGE_OBJS =	IMG.o			\
 EMBEDDED += \
 	$(PS2SDK)/ports/lib/libpng.a \
 	$(PS2SDK)/ports/lib/libjpg.a \
+	$(PS2SDK)/ports/lib/libtiff.a \
 	$(PS2SDK)/ports/lib/libz.a
 
 $(LIB_SDLIMAGE): $(SDLIMAGE_OBJS)
