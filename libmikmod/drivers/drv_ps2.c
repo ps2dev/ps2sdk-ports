@@ -20,10 +20,10 @@
 
 /*==============================================================================
 
-  Output data to PS2 audio device
+  PS2 audio device driver for libmilmod
   Freesd & Audsrv Powered !
-
-==============================================================================*/
+  
+ ==============================================================================*/
 
 
 #ifdef HAVE_CONFIG_H
@@ -64,10 +64,8 @@ static ee_thread_t currentThread;
 // default thread priority 
 static int th_attr_priority = 64;
 
-// some status flag
+// playing flag
 static volatile int playing = 0;
-
-
 
 
 static int spu2_init()
@@ -101,26 +99,22 @@ static int spu2_init()
 
 static void PS2_Update(void)
 {	
-	ULONG done = 0;
+	// void function
+}
+
+static void sound_callback(void)
+{	
+	static ULONG done = 0;
 	
 	while (1)
 	{	
 	   if (playing)
            {
    	      done = VC_WriteBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+   	      audsrv_wait_audio( done);
+	      audsrv_play_audio( (char *)mikmod_sndbuf, done);
 	   }
-	   else
-           {
-              done = VC_SilenceBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
-           }
-           audsrv_wait_audio( done);
-	   audsrv_play_audio( (char *)mikmod_sndbuf, done);
-           
 	}
-	
-	audsrv_stop_audio();
-	WakeupThread ( ee_mainThreadID );
-
 }
 
 
@@ -139,7 +133,7 @@ static BOOL PS2_Init(void)
 	
 	if (spu2_init() < 0)
 	{
-		return 1;
+		return -1;
 	}
 	
 	fmt.freq = md_mixfreq;
@@ -149,7 +143,7 @@ static BOOL PS2_Init(void)
 	if (audsrv_set_format(&fmt) != AUDSRV_ERR_NOERROR)
 	{
 		printf("libmikmod : Audsrv unsupported audio format");
-		return 1;
+		return -1;
 	}
 	
 	// set software mode for music & sound fx
@@ -158,7 +152,7 @@ static BOOL PS2_Init(void)
 	playing = 0;
 	
 	// setup the driver thread
-	th_attr.func = (void *)PS2_Update;
+	th_attr.func = (void *)sound_callback;
 	th_attr.stack = (void *)malloc(STACK_SIZE);
 	if (th_attr.stack == NULL)
 	{
@@ -169,14 +163,21 @@ static BOOL PS2_Init(void)
         ee_mainThreadID  = GetThreadId ();
         ReferThreadStatus ( ee_mainThreadID, &currentThread );
         
-        // set a higher priority that the main thread
-        th_attr_priority = currentThread.current_priority;
-        if (th_attr_priority>0) th_attr_priority--;
-
-	th_attr.stack_size = STACK_SIZE;
-	th_attr.gp_reg = (void *)&_gp;
+        // if main thread priority is the highest possible
+        // lower it a little bit
+        if (currentThread.current_priority == 0)
+        {
+           ChangeThreadPriority ( ee_mainThreadID, currentThread.current_priority + 1);
+           // refresh thread status
+           ReferThreadStatus ( ee_mainThreadID, &currentThread );
+        }
+        
+        // setup thread
+        th_attr_priority 	 = currentThread.current_priority - 1;
+        th_attr.stack_size 	 = STACK_SIZE;
+	th_attr.gp_reg 		 = (void *)&_gp;
 	th_attr.initial_priority = th_attr_priority;
-	th_attr.option = 0;
+	th_attr.option 		 = 0;
 
 	ee_threadID = CreateThread(&th_attr);
 	if (ee_threadID < 0) 
@@ -184,35 +185,32 @@ static BOOL PS2_Init(void)
 		printf("libmikmod: Not enough resources to create update thread");
 		return(-1);
 	}
-
 	StartThread(ee_threadID, 0);
 	printf("libmikmod : thread started with priority 0x%x\n",th_attr_priority);
-	// suspend it for now
-	SuspendThread(ee_threadID);
-	
+
 	printf("libmikmod: Init done\n");
-	
 	return 0;
 
 }
 
 static void PS2_Exit(void)
 {
-        // who kill Dr thread...?
+        VC_Exit();
         TerminateThread(ee_threadID);
+        audsrv_stop_audio();
 }
 
 
 static BOOL PS2_Reset(void)
 {
-	return 0;
+	VC_Exit();
+	return VC_Init();
 }
 
 static BOOL PS2_PlayStart(void)
 {
 	VC_PlayStart();
 	playing = 1;
-	ResumeThread(ee_threadID);
 	return 0;
 }
 
@@ -220,8 +218,6 @@ static void PS2_PlayStop(void)
 {
 	playing = 0;
 	VC_PlayStop();
-        SuspendThread(ee_threadID); 
-        audsrv_stop_audio();
 }
 
 MIKMODAPI MDRIVER drv_ps2 =
@@ -231,7 +227,6 @@ MIKMODAPI MDRIVER drv_ps2 =
 	"PS2 Output Driver v1.0 - by Evilo and the Froggies !",
 	0,255,
 	"ps2drv",
-
 	NULL,
 	PS2_IsThere,
 	VC_SampleLoad,
@@ -241,14 +236,12 @@ MIKMODAPI MDRIVER drv_ps2 =
   	PS2_Init,
 	PS2_Exit,
 	PS2_Reset,
-  
-	VC_SetNumVoices,
+  	VC_SetNumVoices,
 	PS2_PlayStart,
 	PS2_PlayStop,
 	PS2_Update,
   	NULL,
-  
-	VC_VoiceSetVolume,
+  	VC_VoiceSetVolume,
 	VC_VoiceGetVolume,
 	VC_VoiceSetFrequency,
 	VC_VoiceGetFrequency,
