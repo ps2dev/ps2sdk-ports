@@ -836,19 +836,19 @@ png_init_read_transformations(png_structp png_ptr)
                }
                else
                {
-                  back.red = (png_byte)(pow(
+                  back.red = (png_byte)(powf(
                      (double)png_ptr->background.red/255, gs) * 255.0 + .5);
-                  back.green = (png_byte)(pow(
+                  back.green = (png_byte)(powf(
                      (double)png_ptr->background.green/255, gs) * 255.0 + .5);
-                  back.blue = (png_byte)(pow(
+                  back.blue = (png_byte)(powf(
                      (double)png_ptr->background.blue/255, gs) * 255.0 + .5);
                }
 
-               back_1.red = (png_byte)(pow(
+               back_1.red = (png_byte)(powf(
                   (double)png_ptr->background.red/255, g) * 255.0 + .5);
-               back_1.green = (png_byte)(pow(
+               back_1.green = (png_byte)(powf(
                   (double)png_ptr->background.green/255, g) * 255.0 + .5);
-               back_1.blue = (png_byte)(pow(
+               back_1.blue = (png_byte)(powf(
                   (double)png_ptr->background.blue/255, g) * 255.0 + .5);
             }
             for (i = 0; i < num_palette; i++)
@@ -909,9 +909,9 @@ png_init_read_transformations(png_structp png_ptr)
                   break;
             }
 
-            png_ptr->background_1.gray = (png_uint_16)(pow(
+            png_ptr->background_1.gray = (png_uint_16)(powf(
                (double)png_ptr->background.gray / m, g) * m + .5);
-            png_ptr->background.gray = (png_uint_16)(pow(
+            png_ptr->background.gray = (png_uint_16)(powf(
                (double)png_ptr->background.gray / m, gs) * m + .5);
 
             if ((png_ptr->background.red != png_ptr->background.green) ||
@@ -919,17 +919,17 @@ png_init_read_transformations(png_structp png_ptr)
                 (png_ptr->background.red != png_ptr->background.gray))
             {
                /* RGB or RGBA with color background */
-               png_ptr->background_1.red = (png_uint_16)(pow(
+               png_ptr->background_1.red = (png_uint_16)(powf(
                   (double)png_ptr->background.red / m, g) * m + .5);
-               png_ptr->background_1.green = (png_uint_16)(pow(
+               png_ptr->background_1.green = (png_uint_16)(powf(
                   (double)png_ptr->background.green / m, g) * m + .5);
-               png_ptr->background_1.blue = (png_uint_16)(pow(
+               png_ptr->background_1.blue = (png_uint_16)(powf(
                   (double)png_ptr->background.blue / m, g) * m + .5);
-               png_ptr->background.red = (png_uint_16)(pow(
+               png_ptr->background.red = (png_uint_16)(powf(
                   (double)png_ptr->background.red / m, gs) * m + .5);
-               png_ptr->background.green = (png_uint_16)(pow(
+               png_ptr->background.green = (png_uint_16)(powf(
                   (double)png_ptr->background.green / m, gs) * m + .5);
-               png_ptr->background.blue = (png_uint_16)(pow(
+               png_ptr->background.blue = (png_uint_16)(powf(
                   (double)png_ptr->background.blue / m, gs) * m + .5);
             }
             else
@@ -2442,26 +2442,26 @@ png_correct_palette(png_structp png_ptr, png_colorp palette,
          else
          {
             back.red =
-               (png_byte)(pow((double)png_ptr->background.red/255, g) *
+               (png_byte)(powf((double)png_ptr->background.red/255, g) *
                 255.0 + 0.5);
             back.green =
-               (png_byte)(pow((double)png_ptr->background.green/255, g) *
+               (png_byte)(powf((double)png_ptr->background.green/255, g) *
                 255.0 + 0.5);
             back.blue =
-               (png_byte)(pow((double)png_ptr->background.blue/255, g) *
+               (png_byte)(powf((double)png_ptr->background.blue/255, g) *
                 255.0 + 0.5);
          }
 
          g = 1.0 / png_ptr->background_gamma;
 
          back_1.red =
-            (png_byte)(pow((double)png_ptr->background.red/255, g) *
+            (png_byte)(powf((double)png_ptr->background.red/255, g) *
              255.0 + 0.5);
          back_1.green =
-            (png_byte)(pow((double)png_ptr->background.green/255, g) *
+            (png_byte)(powf((double)png_ptr->background.green/255, g) *
              255.0 + 0.5);
          back_1.blue =
-            (png_byte)(pow((double)png_ptr->background.blue/255, g) *
+            (png_byte)(powf((double)png_ptr->background.blue/255, g) *
              255.0 + 0.5);
       }
 
@@ -3923,7 +3923,7 @@ png_build_gamma_table(png_structp png_ptr)
 
       for (i = 0; i < 256; i++)
       {
-         png_ptr->gamma_table[i] = (png_byte)(pow((double)i / 255.0,
+         png_ptr->gamma_table[i] = (png_byte)(powf((double)i / 255.0,
             g) * 255.0 + .5);
       }
 
@@ -3939,7 +3939,7 @@ png_build_gamma_table(png_structp png_ptr)
 
          for (i = 0; i < 256; i++)
          {
-            png_ptr->gamma_to_1[i] = (png_byte)(pow((double)i / 255.0,
+            png_ptr->gamma_to_1[i] = (png_byte)(powf((double)i / 255.0,
                g) * 255.0 + .5);
          }
 
@@ -3954,7 +3954,7 @@ png_build_gamma_table(png_structp png_ptr)
 
          for (i = 0; i < 256; i++)
          {
-            png_ptr->gamma_from_1[i] = (png_byte)(pow((double)i / 255.0,
+            png_ptr->gamma_from_1[i] = (png_byte)(powf((double)i / 255.0,
                g) * 255.0 + .5);
 
          }
@@ -4025,7 +4025,7 @@ png_build_gamma_table(png_structp png_ptr)
          for (i = 0; i < 256; i++)
          {
             fout = ((double)i + 0.5) / 256.0;
-            fin = pow(fout, g);
+            fin = powf(fout, g);
             max = (png_uint_32)(fin * (double)((png_uint_32)num << 8));
             while (last <= max)
             {
@@ -4053,7 +4053,7 @@ png_build_gamma_table(png_structp png_ptr)
             for (j = 0; j < 256; j++)
             {
                png_ptr->gamma_16_table[i][j] =
-                  (png_uint_16)(pow((double)(ig + ((png_uint_32)j << 8)) /
+                  (png_uint_16)(powf((double)(ig + ((png_uint_32)j << 8)) /
                      65535.0, g) * 65535.0 + .5);
             }
          }
@@ -4079,7 +4079,7 @@ png_build_gamma_table(png_structp png_ptr)
             for (j = 0; j < 256; j++)
             {
                png_ptr->gamma_16_to_1[i][j] =
-                  (png_uint_16)(pow((double)(ig + ((png_uint_32)j << 8)) /
+                  (png_uint_16)(powf((double)(ig + ((png_uint_32)j << 8)) /
                      65535.0, g) * 65535.0 + .5);
             }
          }
@@ -4102,7 +4102,7 @@ png_build_gamma_table(png_structp png_ptr)
             for (j = 0; j < 256; j++)
             {
                png_ptr->gamma_16_from_1[i][j] =
-                  (png_uint_16)(pow((double)(ig + ((png_uint_32)j << 8)) /
+                  (png_uint_16)(powf((double)(ig + ((png_uint_32)j << 8)) /
                      65535.0, g) * 65535.0 + .5);
             }
          }
