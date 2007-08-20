@@ -12,12 +12,11 @@ PNGVER = $(PNGMAJ).$(PNGMIN)
 EE_BIN = pngtest.elf
 
 # Where the zlib library and include files are located.
-ZLIBLIB=../zlib/lib
-ZLIBINC=../zlib/include
+ZLIBINC= $(PS2SDK)/ports/include/zlib
 
 
 EE_LDFLAGS   += -L. -L$(PS2SDK)/ports/lib  -L./lib
-EE_INCS      += -I./include -I$(PS2SDK)/ports/include
+EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(ZLIBINC)
 EE_LIBS      += -lpng -lz -lc -lm -lmc
 
 
@@ -31,6 +30,8 @@ EE_OBJS = pngtest.o
 
 
 all: $(EE_LIB) $(EE_BIN)
+	@ECHO ".LIBPNG Built."
+
 
 pngtest: $(EE_BIN)
 
