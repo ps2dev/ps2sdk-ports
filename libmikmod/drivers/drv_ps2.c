@@ -104,16 +104,17 @@ static void PS2_Update(void)
 
 static void sound_callback(void)
 {	
-	static ULONG done = 0;
+	ULONG done = 0;
 	
 	while (1)
-	{	
+	{
 	   if (playing)
-           {
-   	      done = VC_WriteBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
-   	      audsrv_wait_audio( done);
-	      audsrv_play_audio( (char *)mikmod_sndbuf, done);
-	   }
+	      done = VC_WriteBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+	   else
+	      done = VC_SilenceBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+
+	   audsrv_wait_audio( done);
+	   audsrv_play_audio( (char *)mikmod_sndbuf, done);
 	}
 }
 
@@ -163,6 +164,7 @@ static BOOL PS2_Init(void)
         ee_mainThreadID  = GetThreadId ();
         ReferThreadStatus ( ee_mainThreadID, &currentThread );
         
+
         // if main thread priority is the highest possible
         // lower it a little bit
         if (currentThread.current_priority == 0)
@@ -171,9 +173,10 @@ static BOOL PS2_Init(void)
            // refresh thread status
            ReferThreadStatus ( ee_mainThreadID, &currentThread );
         }
-        
+       
         // setup thread
         th_attr_priority 	 = currentThread.current_priority - 1;
+
         th_attr.stack_size 	 = STACK_SIZE;
 	th_attr.gp_reg 		 = (void *)&_gp;
 	th_attr.initial_priority = th_attr_priority;

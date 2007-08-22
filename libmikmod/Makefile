@@ -50,6 +50,8 @@ LIBMIKMOD_OBJS += drivers/freesd_irx.o
 endif
 
 all: $(LIB_LIBMIKMOD) $(EE_BIN)
+	@ECHO ".LIBMIKMOD Built."
+	@ECHO ".Use Makefile.sample to compile & run the sample."
 
 EMBEDDED += \
         $(PS2SDK)/ee/lib/libaudsrv.a
