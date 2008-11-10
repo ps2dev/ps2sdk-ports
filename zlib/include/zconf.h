@@ -1,5 +1,5 @@
 /* zconf.h -- configuration of the zlib compression library
- * Copyright (C) 1995-2003 Jean-loup Gailly.
+ * Copyright (C) 1995-2005 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -23,15 +23,17 @@
 #  define deflateSetDictionary z_deflateSetDictionary
 #  define deflateCopy   z_deflateCopy
 #  define deflateReset  z_deflateReset
-#  define deflatePrime  z_deflatePrime
 #  define deflateParams z_deflateParams
 #  define deflateBound  z_deflateBound
+#  define deflatePrime          z_deflatePrime
 #  define inflateInit2_ z_inflateInit2_
 #  define inflateSetDictionary z_inflateSetDictionary
 #  define inflateSync   z_inflateSync
 #  define inflateSyncPoint z_inflateSyncPoint
 #  define inflateCopy   z_inflateCopy
 #  define inflateReset  z_inflateReset
+#  define inflateBack           z_inflateBack
+#  define inflateBackEnd        z_inflateBackEnd
 #  define compress      z_compress
 #  define compress2     z_compress2
 #  define compressBound z_compressBound
@@ -39,7 +41,12 @@
 #  define adler32       z_adler32
 #  define crc32         z_crc32
 #  define get_crc_table z_get_crc_table
+#  define zError                z_zError
 
+#  define alloc_func            z_alloc_func
+#  define free_func             z_free_func
+#  define in_func               z_in_func
+#  define out_func              z_out_func
 #  define Byte          z_Byte
 #  define uInt          z_uInt
 #  define uLong         z_uLong
@@ -61,8 +68,10 @@
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS
 #endif
-#if (defined(_WIN32) || defined(__WIN32__)) && !defined(WIN32)
+#if defined(_WIN32) || defined(_WIN32_WCE) || defined(__WIN32__)
+#  ifndef WIN32
 #  define WIN32
+#  endif
 #endif
 #if (defined(MSDOS) || defined(OS2) || defined(WINDOWS)) && !defined(WIN32)
 #  if !defined(__GNUC__) && !defined(__FLAT__) && !defined(__386__)
@@ -275,7 +284,7 @@ typedef uLong FAR uLongf;
    typedef Byte       *voidp;
 #endif
 
-#if 1           /* HAVE_UNISTD_H -- this line is updated by ./configure */
+#if 0           /* HAVE_UNISTD_H -- this line is updated by ./configure */
 #  include <sys/types.h> /* for off_t */
 #  include <unistd.h>    /* for SEEK_* and off_t */
 #  ifdef VMS
@@ -293,7 +302,7 @@ typedef uLong FAR uLongf;
 #endif
 
 #if defined(__OS400__)
-#define NO_vsnprintf
+#  define NO_vsnprintf
 #endif
 
 #if defined(__MVS__)

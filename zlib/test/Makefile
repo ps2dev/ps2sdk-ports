@@ -1,4 +1,4 @@
-EE_CFLAGS =
+EE_CFLAGS = -DTARGET_PS2
 EE_LIBS = -L../lib -lz 
 EE_OBJS = example.o 
 EE_BIN = example.elf

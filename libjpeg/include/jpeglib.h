@@ -13,8 +13,9 @@
 #ifndef JPEGLIB_H
 #define JPEGLIB_H
 
-#include <stdio.h>
-#include <malloc.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
  * First we include the configuration files that record how this
@@ -1094,6 +1095,10 @@ struct jpeg_color_quantizer { long dummy; };
 #ifdef JPEG_INTERNALS
 #include "jpegint.h"		/* fetch private declarations */
 #include "jerror.h"		/* fetch error codes too */
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* JPEGLIB_H */
