@@ -1,0 +1,19 @@
+The following patchs has been applied to the headers files:
+
+--- jpeglib.h: Add extern "C" {} if __cplusplus is defined.
+
+This should be harmless.
+
+--- jconfig.h: Remove unused symbol HAVE_STDDEF_H and HAVE_STDLIB_H since
+they are not used by the installed headers files and cause problem with
+autoconf.
+
+This can theoretically cause problems if your software relies on theses symbols
+being defined by this header. If it ever happens, please define them manually.
+
+Note: this is not Debian-specific, others distributions apply similar patches.
+
+Thanks for using Debian!
+
+---
+Bill Allombert <ballombe@debian.org> Mon, 20 May 2002 11:58:07 +0200

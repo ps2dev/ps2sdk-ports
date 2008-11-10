@@ -1,0 +1,230 @@
+libjpeg6b (6b-14) unstable; urgency=low
+
+  * The "Lino" release.
+  * exifautotran:
+    - fix typo in manpage. closes: #376371, thanks Reuben Thomas.
+    - preserve file mode. closes: #383379, thanks Vincent Arkesteijn.
+  * debian/control, debian/rules, debian/compat:
+    + switch to debhelper v5
+    + add libjpeg-dbg debugging package.
+  * debian/rules: remove - before "make clean" rules.
+  * Add patch 204_jpegtran_man to improve readability of manpage.
+    closes: #437453. Thanks Jorgen Grahn.
+  * jpegexiforient.1: Apply patch from Jorgen Grahn to improve formatting.
+    closes: #437446.
+
+ -- Bill Allombert <ballombe@debian.org>  Thu, 16 Aug 2007 22:59:21 +0200
+
+libjpeg6b (6b-13) unstable; urgency=low
+
+  * The "If at first you don't succeed..." release. 
+  * Change --enable-maxmem to 1024, following Guido advice.
+    This should fix the slowdowns with large files (for large < 1Gb):
+    closes: #356556, #365025, Thanks Nicolas.
+    If you hit performance problems, please set the JPEGMEM variable to
+    about half your available RAM, see jpegtran(1).
+  * Update libjpeg-progs README.Debian to reflect the new patch set and
+    the JPEGMEM feature.
+  * Bump standard version to 3.7.2.
+
+ -- Bill Allombert <ballombe@debian.org>  Fri,  5 May 2006 19:14:25 +0200
+
+libjpeg6b (6b-12) unstable; urgency=low
+
+  * The "vote for me" release
+  * Bump standard version to 3.6.2.
+  * Run  'make test' instead of home-made test-suite.
+  * Switch to debhelper v4.
+  * libjpeg is now configured with --enable-maxmem=32. This limits the memory
+    usage to 32Mb and it can be overrided by JPEGMEM. Without this flag
+    JPEGMEM is ignored and there were no limits.
+    closes: #346023. Thanks C. Scott Ananian.
+
+ -- Bill Allombert <ballombe@debian.org>  Thu,  2 Mar 2006 18:52:44 +0100
+
+libjpeg6b (6b-11) unstable; urgency=high
+
+  * The "Silencio" release
+  * exifautotran: Apply patch by Uwe Zeisberger to fix bad temporary file
+    handling.  closes: #340079
+
+ -- Bill Allombert <ballombe@debian.org>  Sun, 20 Nov 2005 20:57:07 +0100
+
+libjpeg6b (6b-10) unstable; urgency=low
+
+  * The "timeout" release.
+  * Rebuild with current toolchain.
+  * Depends on libc-dev instead of libc6-dev. closes: #294696
+    Thanks Joel Aelwyn for discussing thoroughly the matter.
+  * Instead of copying /usr/bin/libtool, we replace it by a script that
+    call libtool (using standard path search). Remarked by Jesus Climent.
+  * debian/control: remove pre-hamm cruft.
+  * Add jpegexiforient and jpegautotran by Guido Vollbeding
+    <http://sylvana.net/jpegcrop/exif_orientation.html> as proposed by Philip
+    Armstrong. closes: #257061. 
+  * Run the test-suite at build time instead of shipping it in the package:
+    - /usr/share/doc/libjpeg-progs/tests: removed.
+    - debian/control: Add Build-Depends on sharutils for uuencode.
+    - debian/libjpeg-progs.dirs: removed.
+    - debian/libjpeg-progs.test: removed.
+
+ -- Bill Allombert <ballombe@debian.org>  Tue,  1 Mar 2005 19:43:26 +0100
+
+libjpeg6b (6b-9) unstable; urgency=low
+
+  * The "I'm all for aggressive goals" release.
+  * Rebuild with new libtool. closes: #201943.
+  * patch 100_crop: Updated from Guido Vollbeding <guido@jpegclub.org>
+    to include patches 203_jpegtran_errmsg,204_perfect.
+  * patch 200_crop_man: Include 205_perfect_man.
+  * patches 203_jpegtran_errmsg, 204_perfect, 205_perfect_man: removed
+  * Add patch 203_rdppm: fix cjpeg issue with 16-bit PPM files. closes: #208937
+  * Bump standard version to 3.6.1.
+  * Update debian/edit-patch.
+
+ -- Bill Allombert <ballombe@debian.org>  Mon,  8 Sep 2003 16:22:08 +0200
+
+libjpeg6b (6b-8) unstable; urgency=low
+
+  * The "I *hate* when that happens" release.
+  * Move libjpeg62-dev to libdevel section.
+  * See debian/README.sources for detail about the (d)patch system.
+  * debian/rules: avoid to run configure twice.
+  * Add patches 204_perfect and 205_perfect_man. They implement the
+    -perfect jpegtran option as proposed by Mark W. Eichin. closes: #189027
+  * Bump standard version to 3.5.10.
+  * Use /usr/bin/libtool instead of ldconfig-generated libtool, and remove
+    various libtool related kludges, including patch 301_configure.
+    closes: #195281. Thanks Robert Millan for the suggestion.
+  * Remove patch 302_makefile. Fix debian/rules instead.
+
+ -- Bill Allombert <ballombe@debian.org>  Sat, 31 May 2003 16:16:59 +0200
+
+libjpeg6b (6b-7) unstable; urgency=low
+
+  * Rebuild with new gcc/new glibc/new debhelper.
+  * Add -g to build options according to new policy.
+  * Add support for DEB_BUILD_OPTIONS noopt. nostrip is handled by dh_strip.
+  * Bump standard version to 3.5.9.
+  * Extend description a bit (If you have a better one please email me!).
+  * Use dpatch to handle the patches.
+
+ -- Bill Allombert <ballombe@debian.org>  Sun, 16 Mar 2003 12:19:36 +0100
+
+libjpeg6b (6b-6) unstable; urgency=low
+
+  * The "Try to break sarge before it even got a name" release
+  * jpegtran: better error messages when opening files.
+    closes: #147516 Thanks Mark W. Eichin.
+  * Add debian/patch dir with my patches.
+  * Add extern "C" if we are under C++. 
+    closes: #113167 Thanks, Fredrik Jagenheim.
+  * Remove HAVE_STD{LIB,DEF}_H from jconfig.h since they are not used and
+    conflict with autoconf. closes: #109516 Thanks <Benedikt.Roth@gmx.net>
+  * Add README.Debian in /usr/share/libjpeg62-dev
+
+ -- Bill Allombert <ballombe@debian.org>  Mon,  3 Jun 2002 19:34:08 +0200
+
+libjpeg6b (6b-5) unstable; urgency=low
+
+  * jpeg-->JPEG in libjpeg-progs description.
+  * Add lib path to dh_shlibdeps to avoid warning.
+  * Apply patch from <http://sylvana.net/jpegcrop/croppatch.tar.gz> by
+    <guido@jpegclub.org> closes: #129412 Thanks, Colin Marquardt.
+
+ -- Bill Allombert <ballombe@debian.org>  Mon, 20 May 2002 11:55:22 +0200
+
+libjpeg6b (6b-4) unstable; urgency=low
+
+  * Avoid bashism in debian/rules.
+  * Update libtool to 1.3.5. (1.4 will break). 
+    closes: #52095 Thanks, <Marcus.Brinkmann@ruhr-uni-bochum.de>
+  * Patch config.guess to use version in the autotools-dev package. 
+  * Correct Section: field of libjpeg62 and libjpeg62-dev.
+
+ -- Bill Allombert <ballombe@debian.org>  Tue, 20 Nov 2001 10:23:47 +0100
+
+libjpeg6b (6b-3) unstable; urgency=low
+
+  * The "Where is ltconfig ?" release.
+  * Remove jconfig.h in debian/rules clean and do some clean up.
+  * Install libjpeg.la per Policy 11.2.
+  * Remove duplicate wizard.doc file in libjpeg62-dev. 
+  * Use dpkg-architecture instead of config.guess.
+  * Patch config.sub to use version in the autotools-dev package. 
+    closes: #85558, #120039
+  * Patch rdjpgcom.c to use locales for isprint check on comment chars.
+    closes: #116589 Thanks, Neal H Walfield <neal@cs.uml.edu>
+  * Apply patch from <http://sylvana.net/jpegcrop/transupp.c> by
+    <guido@jpegclub.org> closes: #114415 Thanks, <Jean-Marc.Notin@loria.fr>
+    
+ -- Bill Allombert <ballombe@debian.org>  Tue, 13 Nov 2001 21:41:49 +0000
+
+libjpeg6b (6b-2) unstable; urgency=low
+
+  * New Maintainer. Mark, If you want back the package, just ask!
+  * Acknowledge previous NMU: 
+    Jordi: closes: #74087, #24330, #24291
+    Colin: closes: #80752
+    Joel: closes: #25324, #27033, #28341
+  * Write source location as a valid URL in debian/copyright. 
+    closes: #118628 Thanks, Doug Porter <dsp@debian.org>.
+  * Fix formating of description of libjpeg-progs. 
+    closes: #114378 Thanks, Colin Watson <cjwatson@flatline.org.uk>.
+  * Install jpegint.h header needed by some apps. closes: #100171
+  * Remove unused/empty debian/postrm.
+    closes: #24849 Thanks, Adrian Bridgett <adrian.bridgett@zetnet.co.uk>.
+  * Install wizard.doc file. closes: #64807 Thanks <amc@arwen.cs.berkeley.edu>.
+  * Fix libjpeg-progs test.sh.
+  * Fix lintian bugs: typo in copyright, emacs user info in changelog.
+  * Fix false lintian bug: unsafe ldconfig in postinst, by reformatting.
+  * Remove "-g" from CFLAGS per Policy 11.1, hoping m68k is fixed now.
+  * Remove libtool and Makefile in debian/rules clean.
+  * Fix the test system. As a side effect, 
+    closes: #109195 Thanks Daniel Schepler <schepler@math.berkeley.edu>
+  * Standards-Version is now 3.5.6.
+
+ -- Bill Allombert <ballombe@debian.org>  Fri,  9 Nov 2001 22:40:16 +0100
+
+libjpeg6b (6b-1.3) frozen unstable; urgency=low
+
+  * Non-Maintainer Upload.
+  * Added Build-Depends.
+  * Gil Bahat <coutal@netvision.net.il> did the rest of the changes.
+  * Close bug regarding non-standard jpegs not being processed 
+    (closes: #74087).
+  * The output gifs are uncompressed, so have no UNISYS patent issues.
+    (closes: #24330, #24291).
+  * Standards-Version is now 3.0.0.
+
+ -- Jordi Mallach <jordi@debian.org>  Sat, 24 Feb 2001 22:17:38 +0100
+
+libjpeg6b (6b-1.2) frozen unstable; urgency=low (HIGH for m68k)
+
+  * Non-maintainer release.
+  * Recompile for m68k since existing djpeg binary claims all jpegs I have
+    are invalid (yet hamm djpeg has no problem with them).
+    Specifically, added "-O2 -g -Wall" to CFLAGS -- possible gcc bug?
+
+ -- Chris Lawrence <lawrencc@debian.org>  Tue, 10 Nov 1998 20:57:38 -0600
+
+libjpeg6b (6b-1.1) frozen unstable; urgency=high
+
+  * Non-maintainer release.
+  * Use upstream library soname (62).
+  * Removed libjpeg-gif package, as the source notes
+    that the GIF reading has been removed, and the GIFs written
+    do not infringe on the LZW patent.
+
+ -- Joel Klecker <espy@debian.org>  Thu, 22 Oct 1998 05:49:48 -0700
+
+libjpeg6b (6b-1) unstable; urgency=low
+
+  * New binary packages for 6b
+  * New upstream release
+
+ -- Mark Mickan <mmickan@debian.org>  Tue,  7 Jul 1998 22:27:10 +0930
+
+Local variables:
+mode: debian-changelog
+End:
