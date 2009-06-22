@@ -1,0 +1,37 @@
+
+libconfig 1.3.2 - PS2SDK port
+by misfire <misfire@xploderfreax.de>
+
+
+DESCRIPTION
+
+libconfig is a simple library for manipulating structured configuration files.
+This file format is more compact and more readable than XML.
+
+Home of libconfig:
+http://www.hyperrealm.com/libconfig/
+
+
+BUILD
+
+Build the PS2 version of libconfig:
+$ make -f Makefile.PS2
+
+To install it:
+# make -f Makefile.PS2 install
+
+
+USAGE
+
+A manual (PDF and HTML) is available at the official homepage of libconfig.
+
+
+LICENSE
+
+libconfig is distributed under the terms of the GNU Lesser General Public
+License.  See file COPYING.LESSER for more information.
+
+
+PS2SDK PORT
+
+Note, that 64-bit integers aren't supported yet.

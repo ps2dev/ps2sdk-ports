@@ -1,0 +1,16 @@
+
+LONGER-TERM STUFF:
+
+- Add a += operator, so that additional elements can be appended to a list or
+  array
+
+- Add support for #include's; a patch was submitted for this previously, but it
+  is not reentrant (uses static global variables), so can't be used as-is. I
+  just haven't gotten around to implementing this because it's not a trivial
+  change, and free time being in limited supply as it is...
+
+- Add limited support for preserving comments?
+
+- Add support for unicode strings? A bit problematic, since flex doesn't
+  support unicode input, AFAICT. But maybe a way to convert between
+  parsed UTF-8 strings and std::wstring.
