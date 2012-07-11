@@ -1,0 +1,3 @@
+[submodule "libtap"]
+	path = libtap
+	url = git://github.com/mlafeldt/libtap.git
