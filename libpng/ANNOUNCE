@@ -1,5 +1,5 @@
 
-Libpng 1.2.33 - October 31, 2008
+Libpng 1.5.16 - May 23, 2013
 
 This is a public release of libpng, intended for use in production codes.
 
@@ -8,51 +8,53 @@ Files available for download:
 Source files with LF line endings (for Unix/Linux) and with a
 "configure" script
 
-   libpng-1.2.33.tar.gz
-   libpng-1.2.33.tar.lzma
-     (Get the lzma codec from <http://tukaani.org/lzma>).
-   libpng-1.2.33.tar.bz2
-
-Source files with LF line endings (for Unix/Linux) without the
-"configure" script
-
-   libpng-1.2.33-no-config.tar.gz
-   libpng-1.2.33-no-config.tar.lzma
-   libpng-1.2.33-no-config.tar.bz2
+   libpng-1.5.16.tar.xz (LZMA-compressed, recommended)
+   libpng-1.5.16.tar.gz
+   libpng-1.5.16.tar.bz2
 
 Source files with CRLF line endings (for Windows), without the
 "configure" script
 
-   lpng1233.zip
-   lpng1233.7z
-   lpng1233.tar.bz2
-
-Project files
-
-   libpng-1.2.33-project-netware.zip
-   libpng-1.2.33-project-wince.zip
+   lpng1516.7z  (LZMA-compressed, recommended)
+   lpng1516.zip
 
 Other information:
 
-   libpng-1.2.33-README.txt
-   libpng-1.2.33-KNOWNBUGS.txt
-   libpng-1.2.33-LICENSE.txt
-   libpng-1.2.33-Y2K-compliance.txt
-   libpng-1.2.33-[previous version]-diff.txt
+   libpng-1.5.16-README.txt
+   libpng-1.5.16-LICENSE.txt
 
-Changes since the last public release (1.2.32):
+Changes since the last public release (1.5.15):
 
-version 1.2.33 [October 31, 2008]
-
-  Revised makefile.darwin to fix shared library numbering.
-  Change png_set_gray_1_2_4_to_8() to png_set_expand_gray_1_2_4_to_8()
-    in example.c (debian bug report)
-  Changed remaining "key" to "png_ptr->chunkdata" in png_handle_tEXt()
-    to avoid memory leak after memory failure while reading tEXt chunk.`
+  Corrected a misplaced closing bracket in contrib/libtests/pngvalid.c
+    (Flavio Medeiros).
+  Revised stack marking in arm/filter_neon.S and configure.ac
+  Ensure that NEON filter stuff is completely disabled when switched 'off'.
+    Previously the ARM NEON specific files were still built if the option
+    was switched 'off' as opposed to being explicitly disabled.
+  Avoid a compiler warning about unused png_ptr in translate_gamma_flags()
+  Revise pngtest.c to skip tests of unsupported features.
+  Test for 'arm*' not just 'arm' in the host_cpu configure variable.
+  Rebuilt the configure scripts.
+  Expanded manual paragraph about writing private chunks, particularly
+    the need to call png_set_keep_unknown_chunks() when writing them.
+  Updated contrib/pngminus/pnm2png.c (Paul Stewart):
+    Check for EOF
+    Ignore "#" delimited comments in input file to pnm2png.c.
+    Fixed whitespace handling
+    Added a call to png_set_packing()
+    Initialize dimension values so if sscanf fails at least we have known
+      invalid values.
+  Allow contrib/pnminus/pnm2png.c to compile without WRITE_INVERT and WRITE_PACK
+    supported (writes error message that it can't read P1 or P4 PBM files).
+  Revised contrib/pngminim/*/makefile to separate CPPFLAGS and CFLAGS, and
+    to generate pnglibconf.h with the right zlib header files.
+  Ported contrib/pngminus/pnm2png.c changes back from libpng-1.6.3beta06,
+    to use unsigned long, not png_uint_32 arguments to sscanf().
 
 Send comments/corrections/commendations to png-mng-implement at lists.sf.net
-(subscription required; visit 
+(subscription required; visit
 https://lists.sourceforge.net/lists/listinfo/png-mng-implement
-to subscribe) or to glennrp at users.sourceforge.net
+to subscribe)
+or to glennrp at users.sourceforge.net
 
 Glenn R-P
