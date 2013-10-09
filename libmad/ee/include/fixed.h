@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: fixed.h,v 1.38 2004/02/17 02:02:03 rob Exp $
  */
 
 # ifndef LIBMAD_FIXED_H

@@ -34,6 +34,7 @@
 #include "sjpcm.h"
 #include "sbv_patches.h"
 #include "cdvd_rpc.h"
+#include "libcdvd.h"
 #include "bstdfile.h"
 #include "rmalloc.h"
 #include "libpad.h"
@@ -183,7 +184,7 @@ int readDirectory(char *ext, int media)
 	iox_dirent_t directory;
 	int size;
 	char folderName[255];
-	unsigned int numToc, index;
+	unsigned int numToc = 0, index;
 	char *extcmp;
 	folder.fIndex = 0;
 	struct TocEntry cdDirectory[255];

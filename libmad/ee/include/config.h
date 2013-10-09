@@ -37,6 +37,10 @@ extern "C" {
 #define _LIB
 #define OPT_SPEED
 #define HAVE_MADD_ASM
+#define HAVE_SYS_TYPES_H 1
+#define HAVE_ERRNO_H 1
+#define HAVE_UNISTD_H 1
+#define HAVE_FCNTL_H 1
 
 #ifdef __cplusplus
 }

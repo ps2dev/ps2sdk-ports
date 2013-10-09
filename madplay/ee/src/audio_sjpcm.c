@@ -58,7 +58,7 @@ int current_buffer __attribute__((aligned (16))); // total number of ticks playe
 int buffered __attribute__((aligned (16))); // total number of ticks buffered
 
 ee_thread_t thread __attribute__((aligned (16)));
-static char userThreadStack[16*1024] __attribute__((aligned(16)));
+//static char userThreadStack[16*1024] __attribute__((aligned(16)));
 
 volatile int mainPid __attribute__((aligned(16))) = 0; // pid of this thread
 volatile int outputPid __attribute__((aligned(16))) = 0; // pid of output thread

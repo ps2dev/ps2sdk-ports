@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: util.c,v 1.9 2004/01/23 09:41:32 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -96,7 +96,7 @@ id3_length_t id3_util_deunsynchronise(id3_byte_t *data, id3_length_t length)
 id3_byte_t *id3_util_compress(id3_byte_t const *data, id3_length_t length,
 			      id3_length_t *newlength)
 {
-  id3_byte_t *compressed = NULL;
+  id3_byte_t *compressed;
 
   *newlength  = length + 12;
   *newlength += *newlength / 1000;

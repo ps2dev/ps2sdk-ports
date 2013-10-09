@@ -1,3 +1,4 @@
+
 /* Generate a ROMFS file system
  *
  * Copyright (C) 1997,1998	Janos Farkas <chexum@shadow.banki.hu>
@@ -12,8 +13,7 @@
  *	2 Jan 1997				Initial release
  *      6 Aug 1997				Second release
  *     11 Sep 1998				Alignment support
- *     21 Feb 2001				Cygwin build fixes
- *						(Florian Schulze, Brian Peek)
+ *     11 Jan 2001		special files of name @name,[cpub],major,minor
  */
 
 /*
@@ -57,52 +57,30 @@
  * Sorry about that.  Feel free to contact me if you have problems.
  */
 
-#ifdef __CYGWIN__
-#define _WIN32
-#endif
-
-#include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include <fcntl.h>
+#include <stdio.h>  /* Userland pieces of the ANSI C standard I/O package  */
+#include <stdlib.h> /* Userland prototypes of the ANSI C std lib functions */
+#include <string.h> /* Userland prototypes of the string handling funcs    */
+#include <unistd.h> /* Userland prototypes of the Unix std system calls    */
+#include <fcntl.h>  /* Flag value for file handling functions              */
 #include <time.h>
-#ifdef _WIN32
-#	include <getopt.h>
-#else
-#	include <fnmatch.h>
-#endif /* _WIN32 */
-#include <sys/time.h>
-#include <netinet/in.h>
-#if !defined(__FreeBSD__) && !defined(__NetBSD__)
-#	include <sys/sysmacros.h>
+#include <fnmatch.h>
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#include <netinet/in.h>	/* Consts & structs defined by the internet system */
+
+/* good old times without autoconf... */
+#if defined(__linux__) || defined(__sun__) || defined(__CYGWIN__)
+#include <sys/sysmacros.h>
 #endif
 
-#ifdef _WIN32
-typedef unsigned short umode_t;
-typedef signed char __s8;
-typedef unsigned char __u8;
-typedef signed short __s16;
-typedef unsigned short __u16;
-typedef signed int __s32;
-typedef unsigned int __u32;
-#else
-typedef unsigned short umode_t;
-typedef __signed__ char __s8;
-typedef unsigned char __u8;
-typedef __signed__ short __s16;
-typedef unsigned short __u16;
-typedef __signed__ int __s32;
-typedef unsigned int __u32;
-#endif
 
 struct romfh {
-	int nextfh;
-	int spec;
-	int size;
-	int checksum;
+	int32_t nextfh;
+	int32_t spec;
+	int32_t size;
+	int32_t checksum;
 };
 
 #define ROMFS_MAXFN 128
@@ -119,14 +97,20 @@ struct romfh {
 struct filenode;
 
 struct filehdr {
+	/* leave h, t, tp at front, this is a linked list header */
 	struct filenode *head;
 	struct filenode *tail;
 	struct filenode *tailpred;
+	/* end fragile header */
+	struct filenode *owner;
 };
 
 struct filenode {
+	/* leave n, p at front, this is a linked list item */
 	struct filenode *next;
 	struct filenode *prev;
+	/* end fragile header */
+	struct filenode *parent;
 	struct filehdr dirlist;
 	struct filenode *orig_link;
 	char *name;
@@ -141,16 +125,22 @@ struct filenode {
 };
 
 struct aligns {
-	int align;
 	struct aligns *next;
+	int align;
 	char pattern[0];
 };
 
-void initlist(struct filehdr *fh)
+struct excludes {
+	struct excludes *next;
+	char pattern[0];
+};
+
+void initlist(struct filehdr *fh, struct filenode *owner)
 {
 	fh->head = (struct filenode *)&fh->tail;
 	fh->tail = NULL;
 	fh->tailpred = (struct filenode *)&fh->head;
+	fh->owner = owner;
 }
 
 int listisempty(struct filehdr *fh)
@@ -164,16 +154,21 @@ void append(struct filehdr *fh, struct filenode *n)
 
 	n->next = tail; n->prev = tail->prev;
 	tail->prev = n; n->prev->next =n;
+	n->parent = fh->owner;
 }
 
 void shownode(int level, struct filenode *node, FILE *f)
 {
 	struct filenode *p;
-	fprintf(f, "%-4d %-20s [0x%-8x, 0x%-8x] %07o, sz %5u, at 0x%-6x", level, node->name,
-		(int)node->ondev, (int)node->onino, node->modes, node->size, node->offset);
+	fprintf(f, "%-4d %-20s [0x%-8x, 0x%-8x] %07o, sz %5u, at 0x%-6x",
+		level, node->name,
+		(int)node->ondev, (int)node->onino, node->modes, node->size,
+		node->offset);
+
 	if (node->orig_link)
 		fprintf(f, " [link to 0x%-6x]", node->orig_link->offset);
 	fprintf(f, "\n");
+
 	p = node->dirlist.head;
 	while (p->next) {
 		shownode(level+1, p, f);
@@ -188,36 +183,30 @@ static char fixbuf[512];
 static int atoffs = 0;
 static int align = 16;
 struct aligns *alignlist = NULL;
+struct excludes *excludelist = NULL;
 int realbase;
+
+/* helper function to match an exclusion or align pattern */
+
+int nodematch(char *pattern, struct filenode *node)
+{
+	char *start = node->name;
+	/* XXX: ugly realbase is global */
+	if (pattern[0] == '/') start = node->realname + realbase;
+	return fnmatch(pattern,start,FNM_PATHNAME|FNM_PERIOD);
+}
 
 int findalign(struct filenode *node)
 {
 	struct aligns *pa;
 	int i;
 	
-	if (S_ISREG(node->modes))
-		i = align;
-	else
-		i = 16;
+	if (S_ISREG(node->modes)) i = align;
+	else i = 16;
+
 	for (pa = alignlist; pa; pa = pa->next) {
 		if (pa->align > i) {
-			if (pa->pattern[0] == '/') {
-#ifndef _WIN32
-				if (!fnmatch(pa->pattern, node->realname + realbase, FNM_PATHNAME|FNM_PERIOD))
-					i = pa->align;
-#else
-				printf("pa->pattern: %s\n", pa->pattern);
-				printf("node->realname + realbase: %s\n", node->realname + realbase);
-#endif
-			} else {
-#ifndef _WIN32
-				if (!fnmatch(pa->pattern, node->name, FNM_PATHNAME|FNM_PERIOD))
-					i = pa->align;
-#else
-				printf("pa->pattern: %s\n", pa->pattern);
-				printf("node->name: %s\n", node->name);
-#endif
-			}
+			if (!nodematch(pa->pattern,node)) i = pa->align;
 		}
 	}
 	return i;
@@ -225,12 +214,13 @@ int findalign(struct filenode *node)
 
 int romfs_checksum(void *data, int size)
 {
-        __s32 sum, *ptr;
+        int32_t sum, word, *ptr;
 
         sum = 0; ptr = data;
         size>>=2;
         while (size>0) {
-                sum += htonl(*ptr++);
+                word = *ptr++;
+                sum += ntohl(word);
                 size--;
         }
         return sum;
@@ -239,7 +229,7 @@ int romfs_checksum(void *data, int size)
 void fixsum(struct romfh *ri, int size)
 {
 	ri->checksum = 0;
-	ri->checksum = ntohl(-romfs_checksum(ri, size));
+	ri->checksum = htonl(-romfs_checksum(ri, size));
 }
 
 void dumpdata(void *addr, int len, FILE *f)
@@ -327,43 +317,43 @@ void dumpnode(struct filenode *node, FILE *f)
 	if (node->pad)
 		dumpzero(node->pad, f);
 	if (node->next && node->next->next)
-		ri.nextfh = ntohl(node->next->offset);
+		ri.nextfh = htonl(node->next->offset);
 	if ((node->modes & 0111) &&
 	    (S_ISDIR(node->modes) || S_ISREG(node->modes)))
-		ri.nextfh |= ntohl(ROMFH_EXEC);
+		ri.nextfh |= htonl(ROMFH_EXEC);
 
 	if (node->orig_link) {
-		ri.nextfh |= ntohl(ROMFH_HRD);
+		ri.nextfh |= htonl(ROMFH_HRD);
 		/* Don't allow hardlinks to convey attributes */
-		ri.nextfh &= ~ntohl(ROMFH_EXEC);
-		ri.spec = ntohl(node->orig_link->offset);
+		ri.nextfh &= ~htonl(ROMFH_EXEC);
+		ri.spec = htonl(node->orig_link->offset);
 		dumpri(&ri, node, f);
 	} else if (S_ISDIR(node->modes)) {
-		ri.nextfh |= ntohl(ROMFH_DIR);
+		ri.nextfh |= htonl(ROMFH_DIR);
 		if (listisempty(&node->dirlist)) {
-			ri.spec = ntohl(node->offset);
+			ri.spec = htonl(node->offset);
 		} else {
-			ri.spec = ntohl(node->dirlist.head->offset);
+			ri.spec = htonl(node->dirlist.head->offset);
 		}
 		dumpri(&ri, node, f);
 	} else if (S_ISLNK(node->modes)) {
-		ri.nextfh |= ntohl(ROMFH_LNK);
+		ri.nextfh |= htonl(ROMFH_LNK);
 		dumpri(&ri, node, f);
 		memset(bigbuf, 0, sizeof(bigbuf));
 		readlink(node->realname, bigbuf, node->size);
 		dumpdataa(bigbuf, node->size, f);
 	} else if (S_ISREG(node->modes)) {
 		int offset, len, fd, max, avail;
-		ri.nextfh |= ntohl(ROMFH_REG);
+		ri.nextfh |= htonl(ROMFH_REG);
 		dumpri(&ri, node, f);
 		offset = 0;
 		max = node->size;
 		/* XXX warn about size mismatch */
-#ifdef _WIN32
-		fd = open(node->realname, O_RDONLY | O_BINARY);
-#else
-		fd = open(node->realname, O_RDONLY);
+		fd = open(node->realname, O_RDONLY
+#ifdef O_BINARY
+| O_BINARY
 #endif
+);
 		if (fd) {
 			while(offset < max) {
 				avail = max-offset < sizeof(bigbuf) ? max-offset : sizeof(bigbuf);
@@ -378,22 +368,23 @@ void dumpnode(struct filenode *node, FILE *f)
 		max = (max+15)&~15;
 		while (offset < max) {
 			avail = max-offset < sizeof(bigbuf) ? max-offset : sizeof(bigbuf);
+			memset(bigbuf, 0, avail);
 			dumpdata(bigbuf, avail, f);
 			offset+=avail;
 		}
 	} else if (S_ISCHR(node->modes)) {
-		ri.nextfh |= ntohl(ROMFH_CHR);
-		ri.spec = ntohl(major(node->devnode)<<16|minor(node->devnode));
+		ri.nextfh |= htonl(ROMFH_CHR);
+		ri.spec = htonl(major(node->devnode)<<16|minor(node->devnode));
 		dumpri(&ri, node, f);
 	} else if (S_ISBLK(node->modes)) {
-		ri.nextfh |= ntohl(ROMFH_BLK);
-		ri.spec = ntohl(major(node->devnode)<<16|minor(node->devnode));
+		ri.nextfh |= htonl(ROMFH_BLK);
+		ri.spec = htonl(major(node->devnode)<<16|minor(node->devnode));
 		dumpri(&ri, node, f);
 	} else if (S_ISFIFO(node->modes)) {
-		ri.nextfh |= ntohl(ROMFH_FIF);
+		ri.nextfh |= htonl(ROMFH_FIF);
 		dumpri(&ri, node, f);
 	} else if (S_ISSOCK(node->modes)) {
-		ri.nextfh |= ntohl(ROMFH_SCK);
+		ri.nextfh |= htonl(ROMFH_SCK);
 		dumpri(&ri, node, f);
 	}
 
@@ -478,7 +469,8 @@ struct filenode *newnode(const char *base, const char *name, int curroffset)
 
 	node->realname = str;
 	node->next = node->prev = NULL;
-	initlist(&node->dirlist);
+	node->parent = NULL;
+	initlist(&node->dirlist, node);
 
 	node->ondev = -1;
 	node->onino = -1;
@@ -536,6 +528,7 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 	DIR *dirfd;
 	struct dirent *dp;
 	struct filenode *n, *link;
+	struct excludes *pe;
 
 	if (level <= 1) {
 		/* Ok, to make sure . and .. are handled correctly
@@ -546,8 +539,15 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 		if (!lstat(link->realname, sb)) {
 			setnode(link, sb->st_dev, sb->st_ino, sb->st_mode);
 			append(&dir->dirlist, link);
+
+			/* special case for root node - '..'s in subdirs should link to
+			 *   '.' of root node, not root node itself.
+			 */
+			dir->dirlist.owner = link;
+
 			curroffset = alignnode(link, curroffset, 0) + spaceneeded(link);
 			n = newnode(base, "..", curroffset);
+
 			if (!lstat(n->realname, sb)) {
 				setnode(n, sb->st_dev, sb->st_ino, sb->st_mode);
 				append(&dir->dirlist, n);
@@ -558,26 +558,96 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 	}
 
 	dirfd = opendir(dir->realname);
-	while((dp = readdir(dirfd))) {
+	if (dirfd == NULL) {
+		perror(dir->realname);
+	}
+	while(dirfd && (dp = readdir(dirfd))) {
 		/* don't process main . and .. twice */
 		if (level <= 1 &&
 		    (strcmp(dp->d_name, ".") == 0
 		     || strcmp(dp->d_name, "..") == 0))
 			continue;
 		n = newnode(base, dp->d_name, curroffset);
+
+		/* Process exclude list. */
+		for (pe = excludelist; pe; pe = pe->next) {
+			if (!nodematch(pe->pattern, n)) { freenode(n); break; }
+		}
+		if (pe) continue;
+
 		if (lstat(n->realname, sb)) {
 			fprintf(stderr, "ignoring '%s' (lstat failed)\n", n->realname);
 			freenode(n); continue;
 		}
+
+		/* Handle special names */
+		if ( n->name[0] == '@' ) {
+			if (S_ISLNK(sb->st_mode)) {
+				/* this is a link to follow at build time */
+				n->name = n->name + 1; /* strip off the leading @ */
+				memset(bigbuf, 0, sizeof(bigbuf));
+				readlink(n->realname, bigbuf, sizeof(bigbuf));
+				n->realname = strdup(bigbuf);
+
+				if (lstat(n->realname, sb)) {
+					fprintf(stderr, "ignoring '%s' (lstat failed)\n",
+						n->realname);
+					freenode(n); continue;
+				}
+			} else if (S_ISREG(sb->st_mode) && sb->st_size == 0) {
+				/*
+				 *        special file @name,[bcp..],major,minor
+				 */
+				char      devname[32];
+				char      type;
+				int       major;
+				int       minor;
+						
+				if (sscanf(n->name, "@%[a-zA-Z0-9_+-],%c,%d,%d",
+					   devname, &type, &major, &minor) == 4 ) {
+					strcpy(n->name, devname);
+					sb->st_rdev = makedev(major, minor);
+					sb->st_mode &= ~S_IFMT;
+					switch (type) {
+					case 'c':
+					case 'u':
+						sb->st_mode |= S_IFCHR;
+						break;
+					case 'b':
+						sb->st_mode |= S_IFBLK;
+						break;
+					case 'p':
+						sb->st_mode |= S_IFIFO;
+						break;
+					default:
+						fprintf(stderr, "Invalid special device type '%c' "
+							"for file %s\n", type, n->realname);
+						freenode(n);
+						continue;
+					}
+				}
+			}
+		}
+
 		setnode(n, sb->st_dev, sb->st_ino, sb->st_mode);
 		/* Skip unreadable files/dirs */
 		if (!S_ISLNK(n->modes) && access(n->realname, R_OK)) {
 			fprintf(stderr, "ignoring '%s' (access failed)\n", n->realname);
 			freenode(n); continue;
 		}
+
 		/* Look up old links */
-		link = findnode(root, n->ondev, n->onino);
-		append(&dir->dirlist, n);
+		if ( strcmp(n->name, ".") == 0 ) {
+			append(&dir->dirlist, n);
+			link = n->parent;
+		} else if (strcmp(n->name, "..") == 0) {
+			append(&dir->dirlist, n);
+			link = n->parent->parent;
+		} else {
+			link = findnode(root, n->ondev, n->onino);
+			append(&dir->dirlist, n);
+		}
+
 		if (link) {
 			n->orig_link = link;
 			curroffset = alignnode(n, curroffset, 0) + spaceneeded(n);
@@ -595,16 +665,24 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 		if (S_ISCHR(sb->st_mode) || S_ISBLK(sb->st_mode)) {
 			n->devnode = sb->st_rdev;
 		}
+
 		if (S_ISDIR(sb->st_mode)) {
-			curroffset = processdir(level+1, n->realname, dp->d_name, sb, n, root, curroffset);
+			if (!strcmp(n->name, "..")) {
+				curroffset = processdir(level+1, dir->realname, dp->d_name,
+							sb, dir, root, curroffset);
+			} else {
+				curroffset = processdir(level+1, n->realname, dp->d_name,
+							sb, n, root, curroffset);
+			}
 		}
 	}
-	closedir(dirfd);
+	if (dirfd) closedir(dirfd);
 	return curroffset;
 }
 
 void showhelp(const char *argv0)
 {
+	printf("genromfs %s\n",VERSION);
 	printf("Usage: %s [OPTIONS] -f IMAGE\n",argv0);
 	printf("Create a romfs filesystem image from a directory\n");
 	printf("\n");
@@ -613,7 +691,8 @@ void showhelp(const char *argv0)
 	printf("  -v                     (Too) verbose operation\n");
 	printf("  -V VOLUME              Use the specified volume name\n");
 	printf("  -a ALIGN               Align regular file data to ALIGN bytes\n");
-	printf("  -A ALIGN,PATTERN	 Align all objects matching pattern to at least ALIGN bytes\n");
+	printf("  -A ALIGN,PATTERN       Align all objects matching pattern to at least ALIGN bytes\n");
+	printf("  -x PATTERN             Exclude all objects matching pattern\n");
 	printf("  -h                     Show this help\n");
 	printf("\n");
 	printf("Report bugs to chexum@shadow.banki.hu\n");
@@ -633,9 +712,10 @@ int main(int argc, char *argv[])
 	int i;
 	char *p;
 	struct aligns *pa, *pa2;
+	struct excludes *pe, *pe2;
 	FILE *f;
 
-	while ((c = getopt(argc, argv, "V:vd:f:ha:A:")) != EOF) {
+	while ((c = getopt(argc, argv, "V:vd:f:ha:A:x:")) != EOF) {
 		switch(c) {
 		case 'd':
 			dir = optarg;
@@ -655,20 +735,21 @@ int main(int argc, char *argv[])
 		case 'a':
 			align = strtoul(optarg, NULL, 0);
 			if (align < 16 || (align & (align - 1))) {
-				fprintf(stderr, "Align has to be at least 16 bytes nad a power of two\n");
+				fprintf(stderr, "Align has to be at least 16 bytes and a power of two\n");
 				exit(1);
 			}
 			break;
 		case 'A':
 			i = strtoul(optarg, &p, 0);
 			if (i < 16 || (i & (i - 1))) {
-				fprintf(stderr, "Align has to be at least 16 bytes nad a power of two\n");
+				fprintf(stderr, "Align has to be at least 16 bytes and a power of two\n");
 				exit(1);
 			}
 			if (*p != ',' || !p[1]) {
 				fprintf(stderr, "-A takes N,PATTERN format of argument, where N is a number\n");
 				exit(1);
 			}
+			/* strlen(p+1) + 1 eq strlen(p) */
 			pa = (struct aligns *)malloc(sizeof(*pa) + strlen(p));
 			pa->align = i;
 			pa->next = NULL;
@@ -676,8 +757,21 @@ int main(int argc, char *argv[])
 			if (!alignlist)
 				alignlist = pa;
 			else {
-				for (pa2 = alignlist; pa2->next; pa2 = pa2->next);
+				for (pa2 = alignlist; pa2->next; pa2 = pa2->next)
+					;
 				pa2->next = pa;
+			}
+			break;
+		case 'x':
+			pe = (struct excludes *)malloc(sizeof(*pe) + strlen(optarg) + 1);
+			pe->next = NULL;
+			strcpy(pe->pattern, optarg);
+			if (!excludelist)
+				excludelist = pe;
+			else {
+				for (pe2 = excludelist; pe2->next; pe2 = pe2->next)
+					;
+				pe2->next = pe;
 			}
 			break;
 		default:
@@ -695,17 +789,9 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 	if (strcmp(outf, "-") == 0) {
-#ifdef _WIN32
-		f = fdopen(1, "wb");
-#else
-		f = fdopen(1,"w");
-#endif
+		f = fdopen(1,"wb");
 	} else
-#ifdef _WIN32
 		f = fopen(outf, "wb");
-#else
-		f = fopen(outf, "w");
-#endif
 
 	if (!f) {
 		perror(outf);
@@ -714,6 +800,7 @@ int main(int argc, char *argv[])
 	
 	realbase = strlen(dir);
 	root = newnode(dir, volname, 0);
+	root->parent = root;
 	lastoff = processdir (1, dir, dir, &sb, root, root, spaceneeded(root));
 	if (verbose)
 		shownode(0, root, stderr);

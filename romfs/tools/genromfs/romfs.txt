@@ -107,7 +107,7 @@ offset	    content
 Since the file headers begin always at a 16 byte boundary, the lowest
 4 bits would be always zero in the next filehdr pointer.  These four
 bits are used for the mode information.  Bits 0..2 specify the type of
-the file; while bit 4 shows if the file is executable or not.  The
+the file; while bit 3 shows if the file is executable or not.  The
 permissions are assumed to be world readable, if this bit is not set,
 and world executable if it is; except the character and block devices,
 they are never accessible for other than owner.  The owner of every
@@ -156,6 +156,10 @@ traffic, so you are welcome to join it to discuss your ideas. :)
 It's run by ezmlm, so you can subscribe to it by sending a message
 to romfs-subscribe@shadow.banki.hu, the content is irrelevant.
 
+There is a web page about romfs at:
+
+  http://romfs.sourceforge.net
+
 Pending issues:
 
 - Permissions and owner information are pretty essential features of a
@@ -181,7 +185,6 @@ limiting factor in my eyes.
 - Where it is used?
 
 - Does it work on other architectures than intel and motorola?
-
 
 Have fun,
 Janos Farkas <chexum@shadow.banki.hu>

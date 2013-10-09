@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: audio.h,v 1.38 2004/01/23 09:41:31 rob Exp $
  */
 
 # ifndef AUDIO_H

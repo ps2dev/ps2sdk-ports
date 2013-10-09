@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: player.c,v 1.69 2004/02/23 21:34:53 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -88,6 +88,7 @@
 # include "rgain.h"
 
 # include "bstdfile.h"
+# include "file.h"
 
 # define MPEG_BUFSZ	80000	/* 5.0 s at 128 kbps; 2 s at 320 kbps */
 # define FREQ_TOLERANCE	2	/* percent sampling frequency tolerance */
@@ -1648,17 +1649,10 @@ enum mad_flow decode_output(void *data, struct mad_header const *header,
   control.play.mode  = output->mode;
   control.play.stats = &player->stats.audio;
 
-// printf ("player: executing output->command(&control) \n");
-// printf ("player: %p\n", output);
-// printf ("player: %p\n", output->command);
-// printf ("player: %p\n", &control);
-
   if (output->command(&control) == -1) {
     error("output", audio_error);
     return MAD_FLOW_BREAK;
   }
-
-// printf ("player: going well \n");
 
   ++player->stats.play_framecount;
   mad_timer_add(&player->stats.play_timer, header->duration);

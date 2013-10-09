@@ -25,13 +25,13 @@ all: $(EE_BIN)
 
 install: $(EE_BIN)
 	mkdir -p $(PS2SDK)/ports/bin
-	cp $(EE_BIN) $(PS2SDK)/ports/bin/
+	cp -f $(EE_BIN) $(PS2SDK)/ports/bin/
 
 isjpcm.s:
 	bin2s $(PS2DEV)/isjpcm/bin/isjpcm.irx isjpcm.s isjpcm_irx
 
 clean:
-	rm -f *.elf *.o *.a *.s $(EE_BIN)
+	rm -f $(EE_OBJS) isjpcm.s $(EE_BIN)
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal

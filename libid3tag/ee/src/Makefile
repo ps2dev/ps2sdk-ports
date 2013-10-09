@@ -21,5 +21,5 @@ EE_LDFLAGS += -L$(PS2SDK)/ports/lib
 all: $(EE_LIB)
 
 clean:
-	rm -f *.elf *.o $(EE_LIB)
+	rm -f $(EE_OBJS) $(EE_LIB)
 

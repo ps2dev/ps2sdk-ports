@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: madplay.c,v 1.86 2004/02/23 21:34:53 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -761,9 +761,7 @@ int main(int argc, char *argv[])
   player_init(&player);
 
 # if !defined(__CYGWIN__)  /* Cygwin support for this is currently buggy */
-
   /* check for default tty control */
-
   if (isatty(STDIN_FILENO))
     player.options |= PLAYER_OPTION_TTYCONTROL;
 # endif
@@ -814,10 +812,12 @@ int main(int argc, char *argv[])
 # endif
 
   /* run the player */
+
   if (player_run(&player, argc - optind, (char const **) &argv[optind]) == -1)
     result = 4;
 
   /* finish up */
+
   player_finish(&player);
 
   return result;

@@ -17,7 +17,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 dnl
-AC_REVISION([$Id$])dnl
+AC_REVISION([$Id: configure.ac,v 1.17 2004/02/23 21:34:53 rob Exp $])dnl
 
 dnl Process this file with autoconf to produce a configure script.
 

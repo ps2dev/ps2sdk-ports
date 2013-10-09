@@ -16,7 +16,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * $Id$
+ * $Id: tag.c,v 1.2 2004/02/23 21:34:53 rob Exp $
  */
 
 # ifdef HAVE_CONFIG_H
@@ -158,7 +158,7 @@ int parse_lame(struct tag_lame *lame,
    */
   if (magic == LAME_MAGIC) {
     char str[6];
-    unsigned major = 0, minor = 0, patch = 0;
+    unsigned major = 0, minor = 0;//, patch = 0;
     int i;
 
     memcpy(str, version, 5);

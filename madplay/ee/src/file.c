@@ -341,7 +341,7 @@ void Reset()
 	SifLoadFileExit();
 	SifExitRpc();
 	SifExitCmd();
-	EI;
+//	EI;
 	SifInitRpc(0);
 	FlushCache(0);
 	FlushCache(2);

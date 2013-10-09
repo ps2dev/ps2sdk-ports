@@ -17,5 +17,5 @@ EE_CFLAGS += -DHAVE_CONFIG_H -DHAVE_SYS_TYPES_H -DHAVE_ERRNO_H -DHAVE_UNISTD_H \
 all: $(EE_LIB)
 
 clean:
-	rm -f *.elf *.o $(EE_LIB)
+	rm -f $(EE_LIB) $(EE_OBJS)
 
