@@ -19,6 +19,8 @@ int SDL_HasMMX()
 int main(int argc, char *argv[])
 {
 #ifdef PS2SDL_ENABLE_MTAP
+	SifInitRpc(0); 
+
 	smod_mod_info_t info;
 	if(smod_get_mod_by_name("sio2man",&info)!=0)
 	{
@@ -28,8 +30,8 @@ int main(int argc, char *argv[])
 		SifLoadFileExit();
 		SifExitRpc();
 
-		SifIopReset("rom0:UDNL rom0:EELOADCNF", 0);
-		while (SifIopSync()) ;
+		SifIopReset(NULL, 0);
+		while (!SifIopSync()) {};
 	}
 #endif
 	SifInitRpc(0); 

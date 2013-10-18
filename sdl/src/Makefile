@@ -15,6 +15,8 @@ ENABLE_MTAP=1
 # Enable FREESD instead of LIBSD
 USE_FREESD=1
 
+# Enable FREESIO2 instead of XSIO2MAN
+USE_FREESIO2=1
 
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
 EE_CFLAGS += -DENABLE_PS2SDK
@@ -29,6 +31,10 @@ endif
 
 ifeq ($(USE_FREESD), 1)
 EE_CFLAGS += -DUSE_FREESD
+endif
+
+ifeq ($(USE_FREESIO2), 1)
+EE_CFLAGS += -DUSE_FREESIO2
 endif
 
 ifeq ($(ENABLE_VSYNC_CB), 1)
@@ -83,6 +89,9 @@ SDL_OBJS += audio/ps2sdk/audsrv_irx.o
 ifeq ($(USE_FREESD), 1)
 SDL_OBJS += audio/ps2sdk/freesd_irx.o
 endif
+ifeq ($(USE_FREESIO2), 1)
+SDL_OBJS += joystick/ps2sdk/sio2man_irx.o joystick/ps2sdk/padman_irx.o joystick/ps2sdk/mtapman_irx.o
+endif
 
 ifeq ($(HAVE_INPUT_DEVICES), 1)
 SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
@@ -101,6 +110,17 @@ SDLMAIN_OBJS = main/arch.o main/ps2sdk/sdl_main.o
 ifeq ($(USE_FREESD), 1)
 audio/ps2sdk/freesd_irx.o: $(PS2SDK)/iop/irx/freesd.irx
 	$(PS2SDK)/bin/bin2o $< $@ freesd_irx
+endif
+
+ifeq ($(USE_FREESIO2), 1)
+joystick/ps2sdk/sio2man_irx.o: $(PS2SDK)/iop/irx/freesio2.irx
+	$(PS2SDK)/bin/bin2o $< $@ sio2man_irx
+
+joystick/ps2sdk/padman_irx.o: $(PS2SDK)/iop/irx/freepad.irx
+	$(PS2SDK)/bin/bin2o $< $@ padman_irx
+
+joystick/ps2sdk/mtapman_irx.o: $(PS2SDK)/iop/irx/freemtap.irx
+	$(PS2SDK)/bin/bin2o $< $@ mtapman_irx
 endif
 
 audio/ps2sdk/audsrv_irx.o: $(PS2SDK)/iop/irx/audsrv.irx

@@ -22,7 +22,7 @@
 
 /* $Id$ */
 
-/* This is a PNG image file loading framework */
+/* This is a PNG image file loading framework. Updated to support libpng v1.5.x. */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -100,7 +100,8 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_uint_32 width, height;
-	int bit_depth, color_type, interlace_type;
+	png_colorp png_palette;
+	int bit_depth, color_type, interlace_type, channels, num_palette;
 	Uint32 Rmask;
 	Uint32 Gmask;
 	Uint32 Bmask;
@@ -138,7 +139,7 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 	 * the normal method of doing things with libpng).  REQUIRED unless you
 	 * set up your own error handlers in png_create_read_struct() earlier.
 	 */
-	if ( setjmp(png_ptr->jmpbuf) ) {
+	if ( setjmp( png_jmpbuf(png_ptr) ) ) {
 		IMG_SetError("Error reading the PNG file.");
 		goto done;
 	}
@@ -200,6 +201,8 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth,
 			&color_type, &interlace_type, NULL, NULL);
 
+	channels = png_get_channels(png_ptr, info_ptr);
+
 	/* Allocate the SDL surface to hold the image */
 	Rmask = Gmask = Bmask = Amask = 0 ; 
 	if ( color_type != PNG_COLOR_TYPE_PALETTE ) {
@@ -207,9 +210,9 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 			Rmask = 0x000000FF;
 			Gmask = 0x0000FF00;
 			Bmask = 0x00FF0000;
-			Amask = (info_ptr->channels == 4) ? 0xFF000000 : 0;
+			Amask = (channels == 4) ? 0xFF000000 : 0;
 		} else {
-		        int s = (info_ptr->channels == 4) ? 0 : 8;
+		        int s = (channels == 4) ? 0 : 8;
 			Rmask = 0xFF000000 >> s;
 			Gmask = 0x00FF0000 >> s;
 			Bmask = 0x0000FF00 >> s;
@@ -217,7 +220,7 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 		}
 	}
 	surface = SDL_AllocSurface(SDL_SWSURFACE, width, height,
-			bit_depth*info_ptr->channels, Rmask,Gmask,Bmask,Amask);
+			bit_depth*channels, Rmask,Gmask,Bmask,Amask);
 	if ( surface == NULL ) {
 		IMG_SetError("Out of memory");
 		goto done;
@@ -257,6 +260,8 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 	png_read_end(png_ptr, info_ptr);
 	*/
 
+	png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette);
+
 	/* Load the palette, if any */
 	palette = surface->format->palette;
 	if ( palette ) {
@@ -267,12 +272,12 @@ SDL_Surface *IMG_LoadPNG_RW(SDL_RWops *src)
 		    palette->colors[i].g = i;
 		    palette->colors[i].b = i;
 		}
-	    } else if (info_ptr->num_palette > 0 ) {
-		palette->ncolors = info_ptr->num_palette; 
-		for( i=0; i<info_ptr->num_palette; ++i ) {
-		    palette->colors[i].b = info_ptr->palette[i].blue;
-		    palette->colors[i].g = info_ptr->palette[i].green;
-		    palette->colors[i].r = info_ptr->palette[i].red;
+	    } else if (num_palette > 0 ) {
+		palette->ncolors = num_palette; 
+		for( i=0; i<num_palette; ++i ) {
+		    palette->colors[i].b = png_palette[i].blue;
+		    palette->colors[i].g = png_palette[i].green;
+		    palette->colors[i].r = png_palette[i].red;
 		}
 	    }
 	}

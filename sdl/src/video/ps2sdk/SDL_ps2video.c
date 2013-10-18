@@ -46,9 +46,6 @@ static char rcsid =
  "@(#) $Id$";
 #endif
 
-#define REG_VIDEO_MODE   (* (u8 *)0x1fc7ff52)
-#define MODE_PAL                        'E'
-
 static int clut_xlut[256] =
 {
 	0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
@@ -161,15 +158,17 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	vformat->Bmask = 0x00007c00;
 	vformat->Amask = 0x00008000;
 
-	pal = (REG_VIDEO_MODE == MODE_PAL);
+	gsGlobal = gsKit_init_global();
+
 	if (force_signal != -1)
 	{
 		/* 0 PAL, 1 NTSC */
 		pal = (force_signal == 0);
+		gsGlobal->Mode = pal ? GS_MODE_PAL : GS_MODE_NTSC;
 	}
+	else pal = -1;
 
-	printf("SDL: initializing gsKit in %s mode\n", pal ? "PAL" : "NTSC");
-	gsGlobal = gsKit_init_global(pal ? GS_MODE_PAL : GS_MODE_NTSC);
+	printf("SDL: initializing gsKit in %s mode\n", force_signal!=-1?(pal ? "PAL" : "NTSC") : "AUTO");
 
 	if (gsGlobal == NULL)
 	{
@@ -180,8 +179,6 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 	/* initialize the DMAC */
 	dmaKit_init(D_CTRL_RELE_OFF, D_CTRL_MFD_OFF, D_CTRL_STS_UNSPEC, D_CTRL_STD_OFF, D_CTRL_RCYC_8, 1 << DMA_CHANNEL_GIF);
 	dmaKit_chan_init(DMA_CHANNEL_GIF);
-	dmaKit_chan_init(DMA_CHANNEL_FROMSPR);
-	dmaKit_chan_init(DMA_CHANNEL_TOSPR);
 
 	/* disable zbuffer because we're only doing 2d now */
 	gsGlobal->ZBuffering = GS_SETTING_OFF;

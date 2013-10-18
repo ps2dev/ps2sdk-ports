@@ -51,10 +51,7 @@ extern char audsrv_irx_start[];
 
 static int spu2_init()
 {
-	int id;
 	int error;
-	char *iopbuf;
-	struct t_SifDmaTransfer sdt;
 
 	SifInitRpc(0);
 
@@ -63,7 +60,7 @@ static int spu2_init()
     	SifExecModuleBuffer(freesd_irx_start, freesd_irx_size, 0, NULL, &error);
     	if (error < 0)
     	{
-		SDL_SetError("Failed to open FREESD module"); 
+		SDL_SetError("Failed to load FREESD module"); 
     	} 
 #else
 	error = SifLoadModule("rom0:LIBSD", 0, NULL);
@@ -73,31 +70,10 @@ static int spu2_init()
 		return -1;
 	}
 #endif
-	iopbuf = (char *)SifAllocIopHeap(audsrv_irx_size);
-	if (iopbuf == NULL)
-	{
-		SDL_SetError("Failed to allocate IOP memory");
-		return -1;
-	}
-
-	sdt.src = (void *)audsrv_irx_start;
-	sdt.dest = (void *)iopbuf;
-	sdt.size = audsrv_irx_size;
-	sdt.attr = 0;
-
-	/* start DMA transfer */
-	FlushCache(0);
-	id = SifSetDma(&sdt, 1);
-	while (SifDmaStat(id) >= 0)
-	{
-		/* wait until completion */
-		nopdelay();
-	}
-
-	error = SifLoadModuleBuffer(iopbuf, 0, NULL);
+    	SifExecModuleBuffer(audsrv_irx_start, audsrv_irx_size, 0, NULL, &error);
 	if (error < 0)
 	{
-		SDL_SetError("Failed to open audsrv module");
+		SDL_SetError("Failed to load audsrv module");
 		return -1;
 	}
 

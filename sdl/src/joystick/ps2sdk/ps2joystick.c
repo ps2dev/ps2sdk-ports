@@ -42,10 +42,21 @@ static char rcsid =
 #include <sifrpc.h>
 #include <loadfile.h>
 
-#include "libpad.h" ////// FIXME
+#include <libpad.h>
 
 #ifdef PS2SDL_ENABLE_MTAP
-#include "libmtap.h"
+#include <libmtap.h>
+#endif
+
+#ifdef USE_FREESIO2
+extern unsigned char sio2man_irx_start[];
+extern unsigned int sio2man_irx_size;
+
+extern unsigned char padman_irx_start[];
+extern unsigned int padman_irx_size;
+
+extern unsigned char mtapman_irx_start[];
+extern unsigned int mtapman_irx_size;
 #endif
 
 #define MAX_JOYSTICKS	8
@@ -143,6 +154,28 @@ int SDL_SYS_JoystickInit(void)
 	printf("SDL_Joystick: JoystickInit begins\n");
 
 #ifdef PS2SDL_ENABLE_MTAP
+#ifdef USE_FREESIO2
+	SifExecModuleBuffer(sio2man_irx_start, sio2man_irx_size, 0, NULL, &ret);
+	if (ret < 0)
+	{
+		SDL_SetError("Failed to load SIO2MAN");
+		return 0;
+	}
+
+	SifExecModuleBuffer(padman_irx_start, padman_irx_size, 0, NULL, &ret);
+	if (ret < 0)
+	{
+		SDL_SetError("Failed to load PADMAN");
+		return 0;
+	}
+
+	SifExecModuleBuffer(mtapman_irx_start, mtapman_irx_size, 0, NULL, &ret);
+	if (ret < 0)
+	{
+		SDL_SetError("Failed to load MTAPMAN");
+		return 0;
+	}
+#else
 	ret = SifLoadModule("rom0:XSIO2MAN", 0, NULL);
 	if (ret < 0)
 	{
@@ -163,6 +196,7 @@ int SDL_SYS_JoystickInit(void)
 		SDL_SetError("Failed to load XMTAPMAN");
 		return 0;
 	}
+#endif
 #else
 	ret = SifLoadModule("rom0:SIO2MAN", 0, NULL);
 	if (ret < 0)
