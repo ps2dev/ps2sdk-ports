@@ -1,0 +1,46 @@
+
+PS2SDK Port of libtiff
+==========================================
+
+This is the libtiff port to PS2SDK!
+
+Use TIFFReadPS2Image to get a texture converted+prepared to be sent to
+VRAM and used as a texture.
+
+You should set the LIBTIFF environment variable to the path where you have
+extracted libtiff. (and this readme file!)
+
+gsKit 0.3 supports TIFF textures via this port. The gsKit_texture_tiff
+routine in ee/gs/gsTexture.c shows a simple use case for this library on PS2.
+
+Notes:
+-----
+JPEG, Pixar, and NeXT compression are disabled!
+
+Current release uses doubles... this is extremely crappy and
+slow so please don't use this for anything performance sensitive.
+
+CXX library support disabled. (It's slow/bloated enough as is ffs!)
+
+Note: I do some hard "orientation" flipping manually before you get
+the bytes from me when doing TIFF->RGBA conversion.
+
+So by default, the orientation will be correct for the PS2's texture format.
+If you fiddle with orientations yourself, remember they will be mirrored
+on the Y axis as a result!
+
+Also, I am scaling the alpha component from 0x00-0xFF to 0x00-0x80.
+
+(This is required since on PS2 0x80 is 1.0f)
+
+If you do not desire that, you can use TIFFReadRGBAImage or the like.
+
+Enjoy!
+
+Changelog:
+---------
+v0.1:
+ * Initial Port
+
+Ported by Chris "Neovanglist" Gilbert <Chris@LainOS.org>
+
