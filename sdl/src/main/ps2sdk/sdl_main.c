@@ -10,22 +10,22 @@
 
 #include "SDL_main.h"
 
-int SDL_HasMMX() 
-{ 
-	return 0; 
+int SDL_HasMMX()
+{
+	return 0;
 }
 
 #undef main
 int main(int argc, char *argv[])
 {
 #ifdef PS2SDL_ENABLE_MTAP
-	SifInitRpc(0); 
+	SifInitRpc(0);
 
 	smod_mod_info_t info;
 	if(smod_get_mod_by_name("sio2man",&info)!=0)
 	{
 		printf("PS2SDL: sio2man detected, resetting iop\n");
-		cdInit(CDVD_INIT_EXIT);
+		sceCdInit(SCECdEXIT);
 		SifExitIopHeap();
 		SifLoadFileExit();
 		SifExitRpc();
@@ -34,6 +34,6 @@ int main(int argc, char *argv[])
 		while (!SifIopSync()) {};
 	}
 #endif
-	SifInitRpc(0); 
+	SifInitRpc(0);
 	return(SDL_main(argc, argv));
 }

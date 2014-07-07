@@ -60,8 +60,8 @@ static int spu2_init()
     	SifExecModuleBuffer(freesd_irx_start, freesd_irx_size, 0, NULL, &error);
     	if (error < 0)
     	{
-		SDL_SetError("Failed to load FREESD module"); 
-    	} 
+		SDL_SetError("Failed to load FREESD module");
+    	}
 #else
 	error = SifLoadModule("rom0:LIBSD", 0, NULL);
 	if (error < 0)
@@ -96,7 +96,7 @@ static void PS2AUD_DeleteDevice(SDL_AudioDevice *device)
 	free(device);
 }
 
-static int fillbuf_callback(void *arg)
+/* static int fillbuf_callback(void *arg)
 {
 	SDL_AudioDevice *device = (SDL_AudioDevice *)arg;
 
@@ -106,7 +106,7 @@ static int fillbuf_callback(void *arg)
 	}
 
 	return 0;
-}	
+} */
 
 /* block until can write a full sound buffer */
 static void PS2AUD_WaitAudio(_THIS)
@@ -164,7 +164,7 @@ static int PS2AUD_OpenAudio(_THIS, SDL_AudioSpec *spec)
 {
 	//Uint16 format;
 
-	audsrv_fmt_t fmt; 
+	audsrv_fmt_t fmt;
 	fmt.freq = spec->freq;
 	fmt.bits = spec->format & 0xff;
 	fmt.channels = spec->channels;
@@ -218,13 +218,13 @@ static SDL_AudioDevice *PS2AUD_CreateDevice(int devindex)
 
 	/* Initialize all variables that we clean on shutdown */
 	this = (SDL_AudioDevice *)malloc(sizeof(SDL_AudioDevice));
-	if (this != NULL)	 
+	if (this != NULL)
 	{
 		memset(this, 0, (sizeof *this));
 		this->hidden = (struct SDL_PrivateAudioData *)malloc((sizeof *this->hidden));
 	}
 
-	if ((this == NULL) || (this->hidden == NULL)) 
+	if ((this == NULL) || (this->hidden == NULL))
 	{
 		SDL_OutOfMemory();
 		return 0;
@@ -244,8 +244,8 @@ static SDL_AudioDevice *PS2AUD_CreateDevice(int devindex)
 }
 
 AudioBootStrap PS2AUD_bootstrap = {
-	"ps2audio", 
+	"ps2audio",
 	"Playstation 2 SPU2 audio",
-	PS2AUD_Available, 
+	PS2AUD_Available,
 	PS2AUD_CreateDevice
 };
