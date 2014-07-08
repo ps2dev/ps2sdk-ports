@@ -40,10 +40,10 @@ clean:
 	rm -f $(EE_LIB) $(EE_OBJS)
 
 install:
-	mkdir -p $(PS2SDK)/ports/include/
-	mkdir -p $(PS2SDK)/ports/lib/
-	cp *.h $(PS2SDK)/ports/include/
-	cp $(EE_LIB) $(PS2SDK)/ports/lib/
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib/
+	cp *.h $(DESTDIR)$(PS2SDK)/ports/include/
+	cp $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib/
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal
