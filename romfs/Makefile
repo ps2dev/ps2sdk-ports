@@ -14,6 +14,7 @@ all: $(EE_LIB)
 
 
 install: all
+	mkdir -p $(DESTDIR)$(PS2SDK)/bin/
 	mkdir -p $(PS2SDK)/ports/include/
 	mkdir -p $(PS2SDK)/ports/lib
 	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
