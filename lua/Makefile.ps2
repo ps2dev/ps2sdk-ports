@@ -30,10 +30,10 @@ clean:
 	rm -f $(TARGET_LIB) $(LIBLUA_OBJS) $(EXTRA_TARGETS) $(LIBLUALIB_OBJS)
 
 install: all
-	mkdir -p $(PS2SDK)/ports/include  
-	mkdir -p $(PS2SDK)/ports/lib
-	cp src/lua.h src/luaconf.h src/lualib.h src/lauxlib.h etc/lua.hpp  $(PS2SDK)/ports/include
-	cp *.a  $(PS2SDK)/ports/lib
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
+	cp src/lua.h src/luaconf.h src/lualib.h src/lauxlib.h etc/lua.hpp $(DESTDIR)$(PS2SDK)/ports/include
+	cp *.a $(DESTDIR)$(PS2SDK)/ports/lib
 
 
 # DO NOT DELETE
