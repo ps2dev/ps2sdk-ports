@@ -47,6 +47,7 @@ all: $(EE_LIB)
 
 install: all
 	mkdir -p $(PS2SDK)/ports/lib
+	mkdir -p $(PS2SDK)/ports/include/SDL
 	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
 	cp -f ../include/*.h $(PS2SDK)/ports/include/SDL
 
