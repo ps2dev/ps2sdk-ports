@@ -38,7 +38,7 @@ SDLIMAGE_OBJS =	IMG.o			\
 
 EMBEDDED += \
 	$(PS2SDK)/ports/lib/libpng.a \
-	$(PS2SDK)/ports/lib/libjpg.a \
+	$(PS2SDK)/ports/lib/libjpeg.a \
 	$(PS2SDK)/ports/lib/libtiff.a \
 	$(PS2SDK)/ports/lib/libz.a
 
