@@ -12,9 +12,7 @@ clean :
 	$(MAKE) -C test clean
 
 install:
-	mkdir -p $(DESTDIR)$(DESTDIR)$(PS2SDK)/ports/include/
-	mkdir -p $(DESTDIR)$(DESTDIR)$(PS2SDK)/ports/lib/
-	cp -f include/* $(DESTDIR)$(DESTDIR)$(PS2SDK)/ports/include/
-	cp -f lib/* $(DESTDIR)$(DESTDIR)$(PS2SDK)/ports/lib/
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib/
 	cp -f include/* $(DESTDIR)$(PS2SDK)/ports/include/
 	cp -f lib/* $(DESTDIR)$(PS2SDK)/ports/lib/
