@@ -1,4 +1,4 @@
-BINS = \
+EE_BINS = \
 	test_ode.elf \
 	test_buggy.elf \
 	test_chain1.elf \
@@ -18,23 +18,17 @@ BINS = \
 	test_I.elf 
 
 
-OBJS = 
+EE_OBJS = 
 EE_INCS = -I../include
 EE_LIBS = -lode -lopcode -lice -ldrawstuff -lm -ldreamgl -lpad
 EE_LDFLAGS = -L$(PS2DEV)/dreamgl/lib 
 
-all: $(BINS)
+all: $(EE_BINS)
 
 install:
 
-%.elf : %.o $(PS2SDK)/ee/startup/crt0.o
-	$(EE_CC) -mno-crt0 -T$(PS2SDK)/ee/startup/linkfile $(EE_LDFLAGS) \
-		-o $@ $(PS2SDK)/ee/startup/crt0.o  $< $(EE_LIBS)
-	ee-strip $@
-
 clean:
-	rm -f $(BINS) $(OBJS)
+	rm -f $(EE_BINS) $(EE_OBJS)
 
-include ../../Makefile.pref
-include ../../Makefile.eeglobal
-
+include $(PS2SDK)/Defs.make
+include ../../../Makefile.eeglobal
