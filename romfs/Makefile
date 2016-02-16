@@ -19,7 +19,7 @@ install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f include/*.h $(DESTDIR)$(PS2SDK)/ports/include/
-	cp -f tools/genromfs/genromfs $(PS2SDK)/bin/
+	cp -f tools/genromfs/genromfs $(DESTDIR)$(PS2SDK)/bin/
 
 clean:
 	rm -f $(EE_OBJS) $(EE_LIB)
