@@ -15,10 +15,10 @@ $(LIB_DRAWSTUFF): $(DRAWSTUFF_OBJS)
 	$(EE_AR) cru $(LIB_DRAWSTUFF) $(DRAWSTUFF_OBJS)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/drawstuff
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(LIB_DRAWSTUFF) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f ../../include/drawstuff/*.h $(DESTDIR)$(PS2SDK)/ports/include/drawstuff
+	mkdir -p $(PS2SDK)/ports/include/drawstuff
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(LIB_DRAWSTUFF) $(PS2SDK)/ports/lib
+	cp -f ../../include/drawstuff/*.h $(PS2SDK)/ports/include/drawstuff
 
 clean:
 	rm -f $(LIB_DRAWSTUFF) $(LIB_DRAWSTUFFMAIN) $(DRAWSTUFF_OBJS)

@@ -21,9 +21,9 @@ $(LIB_OPCODE): $(OPCODE_OBJS)
 	$(EE_AR) cru $(LIB_OPCODE) $(OPCODE_OBJS)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/ode
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(LIB_OPCODE) $(DESTDIR)$(PS2SDK)/ports/lib
+	mkdir -p $(PS2SDK)/ports/include/ode
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(LIB_OPCODE) $(PS2SDK)/ports/lib
 
 clean:
 	rm -f $(LIB_OPCODE) $(OPCODE_OBJS)

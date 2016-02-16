@@ -18,10 +18,10 @@ clean:
 	rm -f $(EE_OBJS) $(EE_LIB)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/ucl
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f ucl/*.h $(DESTDIR)$(PS2SDK)/ports/include/ucl
+	mkdir -p $(PS2SDK)/ports/include/ucl
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f ucl/*.h $(PS2SDK)/ports/include/ucl
 
 .c.o :
 	$(EE_CC) $(EE_CFLAGS) $(EE_INC) -c $< -o $@

@@ -14,10 +14,10 @@ EE_LIBS =
 all: $(EE_LIB)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f include/*.h $(DESTDIR)$(PS2SDK)/ports/include
+	mkdir -p $(PS2SDK)/ports/include
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f include/*.h $(PS2SDK)/ports/include
 
 clean:
 	rm -f $(EE_LIB) $(EE_OBJS)

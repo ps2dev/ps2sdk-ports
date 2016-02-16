@@ -55,10 +55,10 @@ $(LIB_SDLIMAGE): $(SDLIMAGE_OBJS)
 all: $(LIB_SDLIMAGE)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(LIB_SDLIMAGE) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
+	mkdir -p $(PS2SDK)/ports/include/SDL
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(LIB_SDLIMAGE) $(PS2SDK)/ports/lib
+	cp -f include/*.h $(PS2SDK)/ports/include/SDL
 
 clean:
 	/bin/rm -f $(SDLIMAGE_OBJS) $(LIB_SDLIMAGE)

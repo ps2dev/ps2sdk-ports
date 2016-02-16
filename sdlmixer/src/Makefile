@@ -46,10 +46,10 @@ EE_LIBS  =
 all: $(EE_LIB)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
-	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f ../include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
+	mkdir -p $(PS2SDK)/ports/lib
+	mkdir -p $(PS2SDK)/ports/include/SDL
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f ../include/*.h $(PS2SDK)/ports/include/SDL
 
 clean:
 	rm -f $(EE_LIB) $(EE_BIN) $(EE_OBJS)

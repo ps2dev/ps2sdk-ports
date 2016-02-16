@@ -17,11 +17,11 @@ $(ZLIB_TEST_BIN) : $(ZLIB_TEST_OBJS) $(PS2SDK)/ee/startup/crt0.o
 	$(EE_CC) -mno-crt0 -T$(PS2SDK)/ee/startup/linkfile $(ZLIB_TEST_CFLAGS) \
 		-o $(ZLIB_TEST_BIN) $(PS2SDK)/ee/startup/crt0.o $(ZLIB_TEST_OBJS) $(ZLIB_TEST_LDFLAGS) $(ZLIB_TEST_LIBS)
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(LIB_Z) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f zlib.h $(DESTDIR)$(PS2SDK)/ports/include
-	cp -f zconf.h $(DESTDIR)$(PS2SDK)/ports/include
+	mkdir -p $(PS2SDK)/ports/include
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(LIB_Z) $(PS2SDK)/ports/lib
+	cp -f zlib.h $(PS2SDK)/ports/include
+	cp -f zconf.h $(PS2SDK)/ports/include
 
 clean:
 	rm -f $(EE_LIB) $(EE_OBJS) 

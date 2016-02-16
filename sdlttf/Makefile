@@ -17,10 +17,10 @@ EE_OBJS = SDL_ttf.o
 all: $(EE_LIB)
 
 install: all
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
-	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f ./include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
+	mkdir -p $(PS2SDK)/ports/include/SDL
+	mkdir -p $(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
+	cp -f ./include/*.h $(PS2SDK)/ports/include/SDL
 
 clean:
 	/bin/rm -f $(EE_OBJS) $(EE_LIB)
