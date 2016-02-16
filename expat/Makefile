@@ -9,10 +9,10 @@ EE_OBJS = lib/xmlparse.o lib/xmlrole.o lib/xmltok.o
 all: $(EE_LIB)
 
 install: all
-	mkdir -p $(PS2SDK)/ports/include
-	mkdir -p $(PS2SDK)/ports/lib
-	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
-	cp -f lib/expat*.h $(PS2SDK)/ports/include
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
+	cp -f lib/expat*.h $(DESTDIR)$(PS2SDK)/ports/include
 
 clean:
 	/bin/rm -f $(EE_OBJS) $(EE_LIB)

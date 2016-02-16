@@ -24,12 +24,12 @@ $(TEST_BIN) : $(TEST_OBJS) $(PS2SDK)/ee/startup/crt0.o
 		-o $(TEST_BIN) $(PS2SDK)/ee/startup/crt0.o $(TEST_OBJS) $(TEST_LDFLAGS) $(TEST_LIBS)
 
 install: all
-	mkdir -p $(PS2SDK)/ports/include
-	mkdir -p $(PS2SDK)/ports/lib
-	cp -f $(EE_LIB) $(PS2SDK)/ports/lib
-	cp -f png.h $(PS2SDK)/ports/include
-	cp -f pngconf.h $(PS2SDK)/ports/include
-	cp -f pnglibconf.h $(PS2SDK)/ports/include
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
+	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
+	cp -f png.h $(DESTDIR)$(PS2SDK)/ports/include
+	cp -f pngconf.h $(DESTDIR)$(PS2SDK)/ports/include
+	cp -f pnglibconf.h $(DESTDIR)$(PS2SDK)/ports/include
 
 clean:
 	/bin/rm -f pnglibconf.h $(EE_OBJS_LIB) $(EE_OBJS) $(EE_BIN) $(EE_LIB) $(TEST_BIN) $(TEST_OBJS)

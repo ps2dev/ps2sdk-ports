@@ -18,9 +18,9 @@ $(LIB_ICE): $(ICE_OBJS)
 	$(EE_AR) cru $(LIB_ICE) $(ICE_OBJS)
 
 install: all
-	mkdir -p $(PS2SDK)/ports/include/ode
-	mkdir -p $(PS2SDK)/ports/lib
-	cp -f $(LIB_ICE) $(PS2SDK)/ports/lib
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/ode
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
+	cp -f $(LIB_ICE) $(DESTDIR)$(PS2SDK)/ports/lib
 
 clean:
 	rm -f $(LIB_ICE) $(LIB_ICEMAIN) $(ICE_OBJS)
