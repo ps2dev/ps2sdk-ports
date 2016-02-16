@@ -5,8 +5,8 @@
 #
 # compiler
 #
-CC = ee-gcc 
-CXX = ee-g++ -fexceptions
+CC = mips64r5900el-ps2-elf-gcc 
+CXX = mips64r5900el-ps2-elf-g++ -fexceptions
 
 #
 # Basename for libraries
@@ -17,9 +17,9 @@ LIB_BASENAME = libstlport
 # guts for common stuff
 #
 #
-LINK=ee-ar cr
+LINK=mips64r5900el-ps2-elf-ar cr
 # 2.95 flag
-DYN_LINK=ee-g++ -pthread -fexceptions -shared -o
+DYN_LINK=mips64r5900el-ps2-elf-g++ -pthread -fexceptions -shared -o
 
 OBJEXT=o
 DYNEXT=so

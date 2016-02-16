@@ -9,7 +9,7 @@ all: $(BINS)
 install:
 
 %.elf : %.o $(PS2SDK)/ee/startup/crt0.o
-	$(EE_CXX) -mno-crt0 -T$(PS2SDK)/ee/startup/linkfile $(EE_LDFLAGS) \
+	$(EE_CXX) -nostartfiles -T$(PS2SDK)/ee/startup/linkfile $(EE_LDFLAGS) \
 		-o $@ $(PS2SDK)/ee/startup/crt0.o $< $(EE_LIBS)
 
 clean:

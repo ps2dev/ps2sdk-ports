@@ -14,7 +14,7 @@
 
 # Compiler command line name
 #
-CC := ee-gcc
+CC := mips64r5900el-ps2-elf-gcc
 
 # The object file extension (for standard and static libraries).  This can be
 # .o, .tco, .obj, etc., depending on the platform.
