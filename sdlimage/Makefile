@@ -63,6 +63,5 @@ install: all
 clean:
 	/bin/rm -f $(SDLIMAGE_OBJS) $(LIB_SDLIMAGE)
 
-include $(PS2SDK)/samples/Makefile.pref
-include $(PS2SDK)/samples/Makefile.eeglobal 
-
+include $(PS2SDK)/Defs.make
+include ../Makefile.eeglobal

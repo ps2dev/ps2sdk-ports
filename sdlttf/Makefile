@@ -25,5 +25,5 @@ install: all
 clean:
 	/bin/rm -f $(EE_OBJS) $(EE_LIB)
 
-include $(PS2SDK)/samples/Makefile.pref
-include $(PS2SDK)/samples/Makefile.eeglobal 
+include $(PS2SDK)/Defs.make
+include ../Makefile.eeglobal

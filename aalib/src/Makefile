@@ -45,6 +45,5 @@ clean:
 	rm -f $(EE_OBJS)
 	rm -f $(LIBAA)
 
-include ../Makefile.pref
-include ../Makefile.eeglobal
-
+include $(PS2SDK)/Defs.make
+include ../../Makefile.eeglobal

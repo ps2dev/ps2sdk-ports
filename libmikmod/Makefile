@@ -88,6 +88,5 @@ drivers/audsrv_irx.o : $(PS2SDK)/iop/irx/audsrv.irx
 	$(PS2SDK)/bin/bin2o $< $@ audsrv_irx
 
 
-include Makefile.pref
-include Makefile.eeglobal 
-
+include $(PS2SDK)/Defs.make
+include ../Makefile.eeglobal

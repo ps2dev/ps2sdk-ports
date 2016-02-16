@@ -1,7 +1,11 @@
-all: ucl-test.elf
+EE_BIN = ucl-test.elf
+EE_OBJS = ucl-test.o n2e.o
+EE_LDFLAGS += -lucl
 
-ucl-test.elf: ucl-test.c n2e.S
-	ee-gcc -D_EE -o ucl-test.elf ucl-test.c n2e.S -I ../ -L ../ -L $(PS2SDK)/ee/lib -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -lucl -lc -lkernel -T $(PS2SDK)/ee/startup/linkfile
+all: $(EE_BIN)
 
 clean:
-	rm -f ucl-test.elf
+	rm -f $(EE_BIN) $(EE_OBJS)
+
+include $(PS2SDK)/Defs.make
+include ../../Makefile.eeglobal

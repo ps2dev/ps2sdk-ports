@@ -23,6 +23,5 @@ install: all
 clean:
 	rm -f $(LIB_DRAWSTUFF) $(LIB_DRAWSTUFFMAIN) $(DRAWSTUFF_OBJS)
 
-include ../../Makefile.pref
-include ../../Makefile.eeglobal
-
+include $(PS2SDK)/Defs.make
+include ../../../Makefile.eeglobal

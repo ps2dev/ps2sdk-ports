@@ -176,6 +176,5 @@ install: all
 clean:
 	rm -f $(LIB_SDL) $(LIB_SDLMAIN) $(SDL_OBJS)
 
-include ../Makefile.pref
-include ../Makefile.eeglobal
-
+include $(PS2SDK)/Defs.make
+include ../../Makefile.eeglobal

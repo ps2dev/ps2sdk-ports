@@ -28,6 +28,5 @@ install: all
 clean:
 	rm -f $(LIB_OPCODE) $(OPCODE_OBJS)
 
-include ../Makefile.pref
-include ../Makefile.eeglobal
-
+include $(PS2SDK)/Defs.make
+include ../../Makefile.eeglobal

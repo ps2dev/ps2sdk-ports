@@ -21,5 +21,5 @@ reset:
 	ps2client -h 192.168.0.100 reset  
 
 include Makefile.romfs
-include Makefile.pref
-include Makefile.eeglobal
+include $(PS2SDK)/Defs.make
+include ../../Makefile.eeglobal

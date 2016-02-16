@@ -3,8 +3,8 @@ EE_OBJS = compat.o crc.o debug.o field.o file.o frame.o frametype.o \
 	genre.o latin1.o parse.o render.o tag.o ucs4.o utf16.o utf8.o \
 	util.o version.o
 
-include $(PS2SDK)/samples/Makefile.pref
-include $(PS2SDK)/samples/Makefile.eeglobal
+include $(PS2SDK)/Defs.make
+include ../../../Makefile.eeglobal
 
 install: all
 	mkdir -p $(PS2SDK)/ports/include

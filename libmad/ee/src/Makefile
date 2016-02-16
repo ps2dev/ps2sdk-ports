@@ -2,8 +2,8 @@ EE_LIB = ../lib/libmad.a
 EE_OBJS = bit.o decoder.o fixed.o frame.o huffman.o layer12.o layer3.o \
 	stream.o synth.o timer.o version.o 
 
-include $(PS2SDK)/samples/Makefile.pref
-include $(PS2SDK)/samples/Makefile.eeglobal
+include $(PS2SDK)/Defs.make
+include ../../../Makefile.eeglobal
 
 install: all
 	mkdir -p $(PS2SDK)/ports/include

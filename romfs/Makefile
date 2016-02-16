@@ -25,5 +25,5 @@ clean:
 	rm -f $(EE_OBJS) $(EE_LIB)
 	$(MAKE) -C tools/genromfs clean
 
-include Makefile.pref
-include Makefile.eeglobal 
+include $(PS2SDK)/Defs.make
+include ../Makefile.eeglobal

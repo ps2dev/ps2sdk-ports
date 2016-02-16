@@ -34,5 +34,5 @@ install: all
 clean:
 	/bin/rm -f pnglibconf.h $(EE_OBJS_LIB) $(EE_OBJS) $(EE_BIN) $(EE_LIB) $(TEST_BIN) $(TEST_OBJS)
 
-include $(PS2SDK)/samples/Makefile.pref
-include $(PS2SDK)/samples/Makefile.eeglobal
+include $(PS2SDK)/Defs.make
+include ../Makefile.eeglobal
