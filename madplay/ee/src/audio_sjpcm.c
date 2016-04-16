@@ -248,7 +248,7 @@ int output(unsigned short const *leftptr, unsigned short const *rightptr, signed
 
 			} else {
 
-				SjPCM_Enqueue(leftptr, rightptr, TICK_SIZE, 1); 
+				SjPCM_Enqueue((short int *)leftptr, (short int *)rightptr, TICK_SIZE, 1); 
 
 			}
 

@@ -55,7 +55,7 @@ int main(int argc, char** argv)
 		while (Player_Active()) 
 		{
 		        /* we're playing */
-			gsKit_vsync();
+			gsKit_vsync_wait();
 		}
 	
 		Player_Stop();

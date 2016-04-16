@@ -7,7 +7,15 @@ BINS = \
 	testver.elf \
 	checkkeys.elf
 
-OBJS = 
+OBJS = \
+	testtimer.o \
+	testcdrom.o \
+	testendian.o \
+	testerror.o \
+	testjoystick.o \
+	testver.o \
+	checkkeys.o
+
 EE_INCS = -I../include
 EE_LIBS = -L. -lc -L$(PS2DEV)/gsKit/lib -L../lib -lsdl -lcdvd
 

@@ -1,5 +1,5 @@
-LIBPATH = ../lib
-EE_LIB = $(LIBPATH)/libsdlmixer.a
+EE_LIB_DIR = ../lib/
+EE_LIB = $(EE_LIB_DIR)libsdlmixer.a
 
 EE_CFLAGS   = -DMOD_MUSIC -DWAV_MUSIC -DUSE_RWOPS
 EE_CXXFLAGS = -DNOCONTROLS
@@ -52,7 +52,7 @@ install: all
 	cp -f ../include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
-	rm -f $(EE_LIB) $(EE_BIN) $(EE_OBJS)
+	rm -f -r $(EE_LIB_DIR) $(EE_OBJS)
 
 include $(PS2SDK)/Defs.make
-include ../../../Makefile.eeglobal
+include ../../Makefile.eeglobal

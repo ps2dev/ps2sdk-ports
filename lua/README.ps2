@@ -10,10 +10,10 @@
 --------------------
 
   ## Configure and build the library.
-  make -f makefile.ps2 all
+  make all
 
   ## Install the library
-  make -f makefile.ps2 install
+  make install
 
 
 --------------------

@@ -1,16 +1,17 @@
 libs:
+	mkdir -p lib
 	make -C OPCODE
 	make -C OPCODE/Ice
 	make -C ode/src 
 	make -C drawstuff/src 
 
-install:
+install: libs
 	make -C OPCODE install
 	make -C OPCODE/Ice install
 	make -C ode/src install
 	make -C drawstuff/src install
 
-test:
+sample: libs
 	make -C ode/test
 
 clean:
@@ -19,3 +20,4 @@ clean:
 	make -C ode/src clean
 	make -C drawstuff/src clean
 	make -C ode/test clean
+	rm -r -f lib/

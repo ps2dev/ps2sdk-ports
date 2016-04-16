@@ -109,9 +109,9 @@ static void sound_callback(void)
 	while (1)
 	{
 	   if (playing)
-	      done = VC_WriteBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+	      done = VC_WriteBytes((SBYTE *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
 	   else
-	      done = VC_SilenceBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+	      done = VC_SilenceBytes((SBYTE *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
 
 	   audsrv_wait_audio( done);
 	   audsrv_play_audio( (char *)mikmod_sndbuf, done);

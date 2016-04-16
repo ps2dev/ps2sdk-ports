@@ -1225,7 +1225,7 @@ void process_id3(struct id3_tag const *tag, struct player *player)
 	 * in milliseconds, represented as a numeric string."
 	 */
 
-	ms = atol(latin1);
+	ms = atol((const char *)latin1);
 	if (ms > 0)
 	  mad_timer_set(&player->stats.total_time, 0, ms, 1000);
 
@@ -1922,7 +1922,7 @@ int play_one(struct player *player)
 
     player->input.path = file;
 //    player->input.fd   = open(file, O_RDONLY | O_BINARY);
-    player->input.fd   = OpenFile(file, O_RDONLY, mediaMode);
+    player->input.fd   = OpenFile((char *)file, O_RDONLY, mediaMode);
 
 	if (mediaMode == 4) // host
 	{

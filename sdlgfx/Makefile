@@ -7,19 +7,33 @@
 # ps2port : brice rouanet <tmator@gmail.com>
 # http://www.psxdev.org => froggies team
 # -----------------------------------------------------------------
+EE_OBJS_DIR = obj/
+EE_LIB_DIR = lib/
 
-EE_LIB = lib/libSDL_gfx.a
+EE_LIB = $(EE_LIB_DIR)libSDL_gfx.a
 
 EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
 EE_LIBS      += -lSDL
 
-EE_OBJS = 	SDL_framerate.o 	\
+EE_OBJS =	SDL_framerate.o	\
 		SDL_gfxPrimitives.o	\
 		SDL_imageFilter.o	\
 		SDL_rotozoom.o
+EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
-all: $(EE_LIB)
-	$(MAKE) -C  Test all
+all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
+
+$(EE_OBJS_DIR):
+	mkdir -p $(EE_OBJS_DIR)
+
+$(EE_LIB_DIR):
+	mkdir -p $(EE_LIB_DIR)
+
+$(EE_OBJS_DIR)%.o : %.c
+	$(EE_C_COMPILE) -c $< -o $@
+
+sample: all
+	$(MAKE) -C Test all
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
@@ -28,8 +42,8 @@ install: all
 	cp -f *.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
-	/bin/rm -f $(EE_OBJS) $(EE_LIB)
-	$(MAKE) -C  Test clean
+	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
+	$(MAKE) -C Test clean
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal

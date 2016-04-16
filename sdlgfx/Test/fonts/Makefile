@@ -13,7 +13,7 @@ EE_OBJS = TestFonts.o
 
 EE_INCS = -I../../ -I$(PS2SDK)/ports/include/SDL
 EE_LDFLAGS = -L../../lib/ -L$(PS2SDK)/ports/lib -L$(PS2DEV)/gsKit/lib
-EE_LIBS = -lSDL_gfx -lsdl -lgskit -ldmakit -lm
+EE_LIBS = -lSDL_gfx -lsdl -lgsKit -ldmakit -lm
 
 all: $(EE_BIN)
 

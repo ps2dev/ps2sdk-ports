@@ -1,6 +1,6 @@
-LIBPATH=../lib
-LIB_SDL=$(LIBPATH)/libsdl.a
-LIB_SDLMAIN=$(LIBPATH)/libsdlmain.a
+LIBPATH=../lib/
+LIB_SDL=$(LIBPATH)libsdl.a
+LIB_SDLMAIN=$(LIBPATH)libsdlmain.a
 
 
 # Simulate haRdware Surface
@@ -47,10 +47,10 @@ endif
 
 
 
-EE_INCS  = -I../include
+EE_INCS += -I../include
 EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
 EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2DEV)/gsKit/include
-EE_LIBS  = 
+EE_LIBS =
 
 all: $(LIB_SDL) $(LIB_SDLMAIN)
 
@@ -151,7 +151,7 @@ EMBEDDED += \
 	$(PS2SDK)/ee/lib/libkbd.a       \
 	$(PS2SDK)/ee/lib/libmouse.a     \
 	$(PS2SDK)/ee/lib/libaudsrv.a    \
-	$(PS2SDK)/ports/lib/libjpg.a    \
+	$(PS2SDK)/ports/lib/libjpeg.a    \
 	$(PS2DEV)/gsKit/lib/libdmakit.a	\
 	$(PS2DEV)/gsKit/lib/libgskit.a
 
@@ -174,7 +174,7 @@ install: all
 	cp -f ../include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
-	rm -f $(LIB_SDL) $(LIB_SDLMAIN) $(SDL_OBJS)
+	rm -f $(LIB_SDL) $(LIB_SDLMAIN) $(SDL_OBJS) $(SDLMAIN_OBJS)
 
 include $(PS2SDK)/Defs.make
 include ../../Makefile.eeglobal
