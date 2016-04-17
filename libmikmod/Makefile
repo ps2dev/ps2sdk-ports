@@ -75,7 +75,7 @@ install: all
 	cp $(EE_LIBMIKMOD) $(DESTDIR)$(PS2SDK)/ports/lib
 
 clean:
-	rm -f -r $(EE_OBJS) $(EE_LIB_DIR)
+	rm -f -r $(EE_OBJS) $(EE_LIB_DIR) drivers/freesd_irx.s drivers/audsrv_irx.s
 	make -f Makefile.sample clean
 
 # inline
