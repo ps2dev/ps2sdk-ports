@@ -6,15 +6,19 @@
 #------------------------------------------------------------------
 # ps2port : brice rouanet <tmator@gmail.com>
 # -----------------------------------------------------------------
+EE_LIB_DIR = lib/
 
-EE_LIB = lib/libSDL_ttf.a
+EE_LIB = $(EE_LIB_DIR)libSDL_ttf.a
 
 EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
 EE_LIBS      += -lSDL
 
 EE_OBJS = SDL_ttf.o
 
-all: $(EE_LIB)
+all: $(EE_LIB_DIR) $(EE_LIB)
+
+$(EE_LIB_DIR):
+	mkdir -p $(EE_LIB_DIR)
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
@@ -23,7 +27,9 @@ install: all
 	cp -f ./include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
-	/bin/rm -f $(EE_OBJS) $(EE_LIB)
+	rm -f -r $(EE_OBJS) $(EE_LIB_DIR)
+
+sample:
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal

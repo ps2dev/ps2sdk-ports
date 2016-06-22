@@ -5,8 +5,8 @@
 #
 # compiler
 #
-CC = ee-gcc 
-CXX = ee-g++ -fexceptions
+CC = $(EE_CC)
+CXX = $(EE_CXX) # -fexceptions
 
 #
 # Basename for libraries
@@ -17,9 +17,9 @@ LIB_BASENAME = libstlport
 # guts for common stuff
 #
 #
-LINK=ee-ar cr
+LINK=$(EE_AR) cru
 # 2.95 flag
-DYN_LINK=ee-g++ -pthread -fexceptions -shared -o
+DYN_LINK=$(EE_CXX) -pthread -fexceptions -shared -o
 
 OBJEXT=o
 DYNEXT=so
@@ -37,7 +37,7 @@ include common_macros.mak
 WARNING_FLAGS= -Wall -W -Wno-sign-compare -Wno-unused -Wno-uninitialized
 #-ftemplate-depth-32 -frtti
 
-CXXFLAGS_COMMON = -I${STLPORT_DIR} ${WARNING_FLAGS} -I${PS2SDK}/common/include -I${PS2SDK}/ee/include -I${PS2DEV}/ee/include/c++/3.2.2 -I${PS2DEV}/ee/include/c++/3.2.2/ee
+CXXFLAGS_COMMON = -I${STLPORT_DIR} ${WARNING_FLAGS} -I${PS2SDK}/common/include -I${PS2SDK}/ee/include -I${PS2DEV}/ee/include/c++/3.2.3 -I${PS2DEV}/ee/include/c++/3.2.3/ee
 
 CXXFLAGS_RELEASE_static = $(CXXFLAGS_COMMON) -O2
 
@@ -48,7 +48,8 @@ CXXFLAGS_STLDEBUG_dynamic = $(CXXFLAGS_DEBUG_dynamic) -D_STLP_DEBUG
 
 include common_percent_rules.mak
 include common_rules.mak
-
+include $(PS2SDK)/Defs.make
+include ../../Makefile.eeglobal
 
 #install: all
 #	cp -p $(LIB_TARGET) ${D_LIB_TARGET} ../lib

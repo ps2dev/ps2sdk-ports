@@ -3,17 +3,18 @@
 # tmator@gmail.com
 # GPL V2
 #
+EE_LIB_DIR = ../lib/
 
-EE_INCS = -I../include -I$(PS2SDK)/ee/include
+EE_INCS += -I../include -I$(PS2SDK)/ee/include
 EE_BIN = aafire.elf
 EE_OBJS = aafire.o
-EE_LDFLAGS = -L../lib/
-EE_LIBS = -lc -lkernel ../lib/libaa.a -ldebug -lm
+EE_LDFLAGS = -L$(EE_LIB_DIR)
+EE_LIBS = -lc -lkernel $(EE_LIB_DIR)libaa.a -ldebug -lm
 
 all: $(EE_BIN)
 
 clean:
-	rm -f *.elf *.o *.a
+	rm -f $(EE_BIN) $(EE_OBJS)
 
 include $(PS2SDK)/Defs.make
 include ../../Makefile.eeglobal

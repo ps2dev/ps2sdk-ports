@@ -1,0 +1,64 @@
+zlib:	all is working
+	original sources moved into orig/ folder
+	sample working
+libpng:	all is working
+	original sources moved into orig/ folder
+	updated to version 1.5.27beta02
+	depends on zlib
+	sample working
+freetype2:
+	all is working
+	original sources moved into orig/ folder
+libtiff:
+	updated to version 3.8.2
+	all is working
+	sample can be taken from gsKit
+libjpeg:
+	all is working
+	sample can be taken from gsKit
+libmad:
+	all is working
+libid3tag:
+	all is working
+madplay:
+	depends on isJPCM, libmad and libid3tag
+	all is working
+expat:
+	all is working
+aalib:
+	all is working
+	sample is working
+libconfig-1.4.5:
+	all is working
+libmikmod:
+	depends on gsKit
+	sample failed
+ld.exe: ../lib\libmikmod.a(freesd_irx.o): ABI is incompatible with that of the selected emulation
+ld.exe: ../lib\libmikmod.a(audsrv_irx.o): ABI is incompatible with that of the selected emulation
+
+lua:
+	sample failed
+liblualib.a(loslib.o): In function `os_rename':
+loslib.c:(.text+0x150): undefined reference to `rename'
+
+ode:
+	sample depends on dreamgl and ps2Perf
+libgcc/unwind-dw2.c:1319: undefined reference to `memset'
+
+romfs:
+	for tools and sample we need installed romfs at host
+ucl:
+	produces errors
+stlport:
+	produces errors
+sdl, sdlgfx, sdlimage, sdlmixer, sdlttf
+	every sample failed
+ld.exe: ../lib\libsdl.a(audsrv_irx.o): ABI is incompatible with that of the selected emulation
+sdl:
+	depends on gsKit
+sdlgfx, sdlimage, sdlmixer, sdlttf:
+	depends on sdl and gsKit
+sdlgfx samples
+	depends on sdlimage
+sdlttf
+	depends on freetype2

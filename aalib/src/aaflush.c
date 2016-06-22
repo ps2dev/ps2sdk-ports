@@ -37,7 +37,7 @@ static void aa_display(aa_context * c, int x1, int y1, int x2, int y2)
 		str[p] = 0;
 		HIDEMOUSE
 		c->driver->setattr(c, attr);
-		c->driver->print(c, str);
+		c->driver->print(c, (char *)str);
 	    }
 	c->driver->gotoxy(c, c->cursorx, c->cursory);
     }

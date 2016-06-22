@@ -1,3 +1,3 @@
-SUBDIRS = src lib
+SUBDIRS = src
 
 include Rules.make

@@ -5,6 +5,7 @@ Then run:
    make
    make install
 
+   make sample
 there is tests in Test directory,
 and all works Fine (joystick for one : gfxprimitive)
 

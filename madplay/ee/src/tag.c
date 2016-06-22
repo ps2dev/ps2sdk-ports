@@ -123,7 +123,7 @@ int parse_lame(struct tag_lame *lame,
   /* bytes $9A-$A4: Encoder short VersionString */
 
   magic   = mad_bit_read(ptr, 4 * 8);
-  version = mad_bit_nextbyte(ptr);
+  version = (char const *)mad_bit_nextbyte(ptr);
 
   mad_bit_skip(ptr, 5 * 8);
 
@@ -314,7 +314,7 @@ int tag_parse(struct tag *tag, struct mad_stream const *stream)
 
   if (stream->next_frame - stream->this_frame >= 192 &&
       parse_lame(&tag->lame, &ptr, &bitlen,
-		 crc_compute(stream->this_frame, 190, 0x0000)) == 0) {
+		 crc_compute((const char *)stream->this_frame, 190, 0x0000)) == 0) {
     tag->flags |= TAG_LAME;
     tag->encoder[9] = 0;
   }

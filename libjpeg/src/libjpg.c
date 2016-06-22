@@ -464,7 +464,7 @@ int jpgScreenshot( const char* pFilename,unsigned int VramAdress, unsigned int W
 					u8 g = *p_in++;
 					u8 b = *p_in++;
 					
-					*p_in++;
+					p_in++;
 					
 					p_out[x*3+0] = r;
 					p_out[x*3+1] = g;
