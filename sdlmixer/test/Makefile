@@ -3,8 +3,8 @@ BINS = sample.elf
 EE_CFLAGS = -DUSE_RWOPS
 EE_INCS = -I../include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
 EE_LIBS = -L../lib -L$(PS2SDK)/ports/lib -lsdlmixer -lsdl -lc -lm
-# EE_LDFLAGS += -mno-crt0
-EE_LDFLAGS += -nostartfiles
+EE_LDFLAGS += -mno-crt0
+# EE_LDFLAGS += -nostartfiles
 
 all: $(BINS)
 

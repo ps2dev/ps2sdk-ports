@@ -58,3 +58,7 @@ sdl:
 	depends on gsKit
 sdlgfx, sdlimage, sdlmixer, sdlttf:
 	depends on sdl and gsKit
+sdlgfx samples
+	depends on sdlimage
+sdlttf
+	depends on freetype2

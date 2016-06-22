@@ -21,8 +21,8 @@ SUBDIRS += libmikmod
 SUBDIRS += madplay
 SUBDIRS += lua
 SUBDIRS += sdl
-SUBDIRS += sdlgfx
 SUBDIRS += sdlimage
+SUBDIRS += sdlgfx
 SUBDIRS += sdlmixer
 SUBDIRS += sdlttf
 SUBDIRS += aalib
@@ -30,7 +30,6 @@ SUBDIRS += aalib
 # SUBDIRS += ode #doesnt work
 # SUBDIRS += stlport #doesnt work on 5.3.0
 # SUBDIRS += ucl #doesnt work
-# SUBDIRS += stlport #doesnt work
 
 all: $(patsubst %, _dir_%, $(SUBDIRS)) 
 

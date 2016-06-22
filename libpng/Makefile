@@ -18,8 +18,8 @@ TEST_OBJS = $(SOURCE_DIR)pngtest.o
 TEST_BIN = pngtest.elf
 TEST_CFLAGS = -I$(PS2SDK)/ports/include -I$(SOURCE_DIR)
 TEST_LIBS = -lz -lm -lc -lkernel
-# TEST_LDFLAGS += -mno-crt0
-TEST_LDFLAGS += -nostartfiles
+TEST_LDFLAGS += -mno-crt0
+# TEST_LDFLAGS += -nostartfiles
 TEST_LDFLAGS += -L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib $(EE_LIB)
 
 all: pnglibconf.h $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
@@ -50,8 +50,7 @@ install: all
 	cp -f $(SOURCE_DIR)pngconf.h $(DESTDIR)$(PS2SDK)/ports/include
 	cp -f $(SOURCE_DIR)pnglibconf.h $(DESTDIR)$(PS2SDK)/ports/include
 
-sample: all
-	$(TEST_BIN)
+sample: all $(TEST_BIN)
 	
 clean:
 	rm -f -r $(SOURCE_DIR)pnglibconf.* $(SOURCE_DIR)pngusr.h $(EE_OBJS_DIR) $(EE_LIB_DIR) $(TEST_BIN) $(TEST_OBJS) pngtest.png pngout.png

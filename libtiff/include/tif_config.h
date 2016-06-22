@@ -87,7 +87,7 @@
 #define HAVE_PTHREAD 1
 
 /* Define to 1 if you have the <search.h> header file. */
-#define HAVE_SEARCH_H 1
+#undef HAVE_SEARCH_H
 
 /* Define to 1 if you have the `sqrt' function. */
 #define HAVE_SQRT 1
