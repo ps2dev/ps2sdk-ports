@@ -1,4 +1,4 @@
-# makefile for sdlimage.a 
+# makefile for sdlimage.a
 #------------------------------------------------------------------
 # Review README & LICENSE files for further details.
 #------------------------------------------------------------------
@@ -43,10 +43,10 @@ EMBEDDED += \
 	$(PS2SDK)/ports/lib/libz.a
 
 $(LIB_SDLIMAGE): $(SDLIMAGE_OBJS)
-	# packing with all embedded libraries
+# packing with all embedded libraries
 	rm -rf tmp
 	mkdir tmp
-	$(foreach f, $(EMBEDDED), (cd tmp; $(AR) x $f);)
+	$(foreach f, $(EMBEDDED), (cd tmp; $(EE_AR) x $f);)
 	cp $(SDLIMAGE_OBJS) tmp
 	$(EE_AR) cru $(LIB_SDLIMAGE) tmp/*
 	rm -rf tmp
