@@ -55,4 +55,4 @@ clean:
 	rm -f $(EE_LIB) $(EE_BIN) $(EE_OBJS)
 
 include $(PS2SDK)/Defs.make
-include ../../../Makefile.eeglobal
+include ../../Makefile.eeglobal
