@@ -156,10 +156,10 @@ EMBEDDED += \
 	$(PS2DEV)/gsKit/lib/libgskit.a
 
 $(LIB_SDL): $(SDL_OBJS)
-	# packing with all embedded libraries
+# packing with all embedded libraries
 	rm -rf tmp
 	mkdir tmp
-	$(foreach f, $(EMBEDDED), (cd tmp; $(AR) x $f);)
+	$(foreach f, $(EMBEDDED), (cd tmp; $(EE_AR) x $f);)
 	cp $(SDL_OBJS) tmp
 	$(EE_AR) cru $(LIB_SDL) tmp/*
 	rm -rf tmp
