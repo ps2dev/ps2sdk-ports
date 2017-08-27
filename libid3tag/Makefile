@@ -1,4 +1,5 @@
 all:
+	mkdir -p ee/lib
 	make -C ee/src all
 
 clean:

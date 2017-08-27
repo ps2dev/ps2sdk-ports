@@ -18,8 +18,11 @@ EE_OBJS = 	SDL_framerate.o 	\
 		SDL_imageFilter.o	\
 		SDL_rotozoom.o
 
-all: $(EE_LIB)
+all: create_lib $(EE_LIB)
 	$(MAKE) -C  Test all
+
+create_lib:
+	mkdir -p lib
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
