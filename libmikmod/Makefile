@@ -59,9 +59,10 @@ EMBEDDED += \
 
 $(LIB_LIBMIKMOD): $(LIBMIKMOD_OBJS)
 	# packing with all embedded libraries
+	mkdir -p lib
 	rm -rf tmp
 	mkdir tmp
-	$(foreach f, $(EMBEDDED), (cd tmp; $(AR) x $f);)
+	$(foreach f, $(EMBEDDED), (cd tmp; $(EE_AR) x $f);)
 	cp $(LIBMIKMOD_OBJS) tmp
 	$(EE_AR) cru $(LIB_LIBMIKMOD) tmp/*
 	rm -rf tmp

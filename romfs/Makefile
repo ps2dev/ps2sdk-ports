@@ -8,10 +8,11 @@ EE_CFLAGS += -DSYS_LITTLE_ENDIAN -DSYS_NEED_ALIGNMENT
 EE_OBJS   +=  src/romfs.o \
 	      src/romfs_io.o
 
-
-all: $(EE_LIB)
+all: create_lib $(EE_LIB)
 	$(MAKE) -C tools/genromfs all
 
+create_lib:
+	mkdir -p lib
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/bin/
