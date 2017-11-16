@@ -47,8 +47,8 @@ libtiff:
 	$(MAKE) -C $@ install
 
 lua:
-	$(MAKE) -C $@ -f makefile.ps2 all
-	$(MAKE) -C $@ -f makefile.ps2 install
+	$(MAKE) -C $@ -f Makefile.ps2 all
+	$(MAKE) -C $@ -f Makefile.ps2 install
 
 # Broken
 madplay: libid3tag libmad
