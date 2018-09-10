@@ -1,6 +1,6 @@
 MAKE = make
 
-.PHONY: aalib expat freetype-2.4.12 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer ucl
+.PHONY: aalib expat freetype-2.9.1 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer ucl
 
 all: expat freetype-2.4.12 libconfig-1.4.5 zlib libid3tag libjpeg libmad libmikmod libpng libtiff lua romfs sdlgfx sdlttf stlport ucl
 
@@ -11,7 +11,7 @@ aalib:
 expat:
 	$(MAKE) -C $@ install
 
-freetype-2.4.12:
+freetype-2.9.1:
 	cd $@; ./SetupPS2.sh
 
 libconfig-1.4.5:
