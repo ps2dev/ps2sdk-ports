@@ -1,10 +1,10 @@
 .PHONY: install
 
 all:
-	make -C src all
+	$(MAKE) -C src all
 
 clean:
-	make -C src clean
+	$(MAKE) -C src clean
 
 install:
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/stlport
