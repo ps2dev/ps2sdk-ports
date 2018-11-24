@@ -17,7 +17,7 @@ TEST_LDFLAGS = -L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib libpng.a
 all: pnglibconf.h $(EE_LIB) $(TEST_BIN)
 
 pnglibconf.h: pngusr.h
-	CPPFLAGS=-DPNG_USER_CONFIG make -f scripts/pnglibconf.mak
+	CPPFLAGS=-DPNG_USER_CONFIG $(MAKE) -f scripts/pnglibconf.mak
 
 $(TEST_BIN) : $(TEST_OBJS) $(PS2SDK)/ee/startup/crt0.o
 	$(EE_CC) -mno-crt0 -T$(PS2SDK)/ee/startup/linkfile $(TEST_CFLAGS) \

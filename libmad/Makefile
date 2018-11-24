@@ -1,9 +1,9 @@
 all:
 	mkdir -p ee/lib
-	make -C ee/src all
+	$(MAKE) -C ee/src all
 
 clean:
-	make -C ee/src clean
+	$(MAKE) -C ee/src clean
 
 install:
-	make -C ee/src install
+	$(MAKE) -C ee/src install
