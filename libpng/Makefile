@@ -32,7 +32,7 @@ install: all
 	cp -f pnglibconf.h $(DESTDIR)$(PS2SDK)/ports/include
 
 clean:
-	/bin/rm -f pnglibconf.h $(EE_OBJS_LIB) $(EE_OBJS) $(EE_BIN) $(EE_LIB) $(TEST_BIN) $(TEST_OBJS)
+	/bin/rm -f pnglibconf.* $(EE_OBJS_LIB) $(EE_OBJS) $(EE_BIN) $(EE_LIB) $(TEST_BIN) $(TEST_OBJS)
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal
