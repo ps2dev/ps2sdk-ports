@@ -11,9 +11,13 @@ aalib:
 expat:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
+	
+freetype: freetype-2.9.1
 
 freetype-2.9.1:
 	cd $@; ./SetupPS2.sh
+
+libconfig: libconfig-1.4.5
 
 libconfig-1.4.5:
 	$(MAKE) -C $@
