@@ -7,8 +7,15 @@ if test ! $PS2DEV; then { echo "ERROR: Set \$PS2DEV before continuing."; exit 1;
  ## Check if $PS2SDK is set.
 if test ! $PS2SDK; then { echo "ERROR: Set \$PS2SDK before continuing."; exit 1; } fi
 
+## Determine GNU Make command.
+if command -v gmake >/dev/null; then
+	GNUMAKE=gmake
+else
+	GNUMAKE=make
+fi
+
 echo "Building FreeType..."
-make setup ps2 --silent; make --silent
+$GNUMAKE setup ps2 --silent; $GNUMAKE --silent
 
 ## Install the library.
 echo "Copying library files..."
@@ -22,6 +29,6 @@ cp -R include/* $PS2SDK/ports/include
 
 ## Post-installation cleanup.
 echo "Cleaning up..."
-make clean --silent
+$GNUMAKE clean --silent
 
 echo "FreeType built and installed."
