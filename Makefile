@@ -1,6 +1,6 @@
-.PHONY: aalib expat freetype-2.9.1 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer ucl
+.PHONY: aalib expat freetype2 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer ucl
 
-all: expat freetype-2.9.1 libconfig-1.4.5 zlib libid3tag libjpeg libmad libmikmod libpng libtiff lua romfs sdlgfx sdlttf stlport ucl
+all: expat freetype2 libconfig-1.4.5 zlib libid3tag libjpeg libmad libmikmod libpng libtiff lua romfs sdlgfx sdlttf stlport ucl
 
 # Broken
 aalib:
@@ -11,7 +11,7 @@ expat:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-freetype-2.9.1:
+freetype2:
 	cd $@; ./SetupPS2.sh
 
 libconfig-1.4.5:
