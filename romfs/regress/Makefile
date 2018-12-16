@@ -12,7 +12,7 @@ all: $(EE_BIN)
 install:
 
 clean:
-	rm -f $(EE_BIN) $(EE_OBJS)
+	rm -f $(EE_BIN) $(EE_OBJS) romdisk.img
 
 run:
 	ps2client -h 192.168.0.100 execee host:$(EE_BIN)  

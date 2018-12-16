@@ -3,8 +3,11 @@
 # tmator@gmail.com
 # GPL V2
 #
-LIBAA = ../lib/libaa.a
-EE_INCS = -I../include/
+EE_OBJS_DIR = ../obj/
+EE_LIB_DIR = ../lib/
+
+EE_LIB = $(EE_LIB_DIR)libaa.a
+EE_INCS += -I../include/
 EE_OBJS = aafont.o \
        aafonts.o \
        aavyhen.o \
@@ -37,13 +40,28 @@ EE_OBJS = aafont.o \
        aastdout.o \
        aastdin.o \
        aaparse.o
+EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
-all: $(EE_OBJS)
-	$(EE_AR) rcs $(LIBAA) $(EE_OBJS)
+all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_OBJS)
+	$(EE_AR) rcs $(EE_LIB) $(EE_OBJS)
+
+$(EE_OBJS_DIR):
+	mkdir -p $(EE_OBJS_DIR)
+
+$(EE_LIB_DIR):
+	mkdir -p $(EE_LIB_DIR)
+
+$(EE_OBJS_DIR)%.o : %.c
+	$(EE_C_COMPILE) -c $< -o $@
+
+install: all
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/
+	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib/
+	cp -f ../include/* $(DESTDIR)$(PS2SDK)/ports/include/
+	cp -f $(EE_LIB_DIR)* $(DESTDIR)$(PS2SDK)/ports/lib/
 
 clean:
-	rm -f $(EE_OBJS)
-	rm -f $(LIBAA)
+	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
 
 include $(PS2SDK)/Defs.make
 include ../../Makefile.eeglobal

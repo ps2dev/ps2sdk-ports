@@ -30,3 +30,5 @@ clean: $(subdir_clean)
 
 # A rule to do nothing.
 dummy:
+
+sample:
