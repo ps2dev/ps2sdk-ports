@@ -1,3 +1,6 @@
+EE_OBJS_DIR = obj/
+EE_LIB_DIR = lib/
+
 EE_OBJS = \
 	tif_aux.o \
 	tif_close.o \
@@ -29,21 +32,33 @@ EE_OBJS = \
 	tif_version.o \
 	tif_warning.o \
 	tif_write.o
+EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
-EE_CFLAGS = -msingle-float
-EE_INCS = -I./
-EE_LIB = libtiff.a
+EE_CFLAGS += -msingle-float
+EE_INCS += -I./
+EE_LIB = $(EE_LIB_DIR)libtiff.a
 
-all:	$(EE_LIB)
+all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
+
+$(EE_OBJS_DIR):
+	mkdir -p $(EE_OBJS_DIR)
+
+$(EE_LIB_DIR):
+	mkdir -p $(EE_LIB_DIR)
+
+$(EE_OBJS_DIR)%.o : $(SOURCE_DIR)%.c
+	$(EE_C_COMPILE) -c $< -o $@
 
 clean:
-	rm -f $(EE_LIB) $(EE_OBJS)
+	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
 
-install:
+install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib/
 	cp *.h $(DESTDIR)$(PS2SDK)/ports/include/
 	cp $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib/
+
+sample:
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal

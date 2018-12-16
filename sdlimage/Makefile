@@ -1,15 +1,15 @@
-# makefile for sdlimage.a
+# makefile for sdlimage.a 
 #------------------------------------------------------------------
 # Review README & LICENSE files for further details.
 #------------------------------------------------------------------
 # GCC 3.2.2 / PS2SDK / SDL / ZLIB / PNG / JPG / TIFF
 #------------------------------------------------------------------
+EE_LIB_DIR = lib/
 
-
-LIB_SDLIMAGE 	= libSDL_image.a
+LIB_SDLIMAGE 	= $(EE_LIB_DIR)libSDL_image.a
 
 EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/zlib -I$(PS2SDK)/ports/include/SDL
-EE_LIBS      += -lpng -lz -ljpg -lSDL
+EE_LIBS      += -lpng -lz -ljpeg -lSDL
 
 EE_CFLAGS    += -DLOAD_BMP \
 		-DLOAD_GIF \
@@ -43,10 +43,11 @@ EMBEDDED += \
 	$(PS2SDK)/ports/lib/libz.a
 
 $(LIB_SDLIMAGE): $(SDLIMAGE_OBJS)
-# packing with all embedded libraries
+	# packing with all embedded libraries
 	rm -rf tmp
 	mkdir tmp
-	$(foreach f, $(EMBEDDED), (cd tmp; $(EE_AR) x $f);)
+	mkdir -p $(EE_LIB_DIR)
+	$(foreach f, $(EMBEDDED), (cd tmp; $(AR) x $f);)
 	cp $(SDLIMAGE_OBJS) tmp
 	$(EE_AR) cru $(LIB_SDLIMAGE) tmp/*
 	rm -rf tmp
@@ -61,7 +62,9 @@ install: all
 	cp -f include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
-	/bin/rm -f $(SDLIMAGE_OBJS) $(LIB_SDLIMAGE)
+	rm -f -r $(SDLIMAGE_OBJS) $(EE_LIB_DIR)
+
+sample:
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal

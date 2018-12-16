@@ -6,3 +6,5 @@ clean:
 
 install:
 	$(MAKE) -C ee/src install
+
+sample:

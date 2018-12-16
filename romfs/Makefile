@@ -1,18 +1,27 @@
+EE_SRC_DIR = src/
+EE_OBJS_DIR = obj/
+EE_LIB_DIR = lib/
 
-EE_LIB     = lib/libromfs.a
+EE_LIB     = $(EE_LIB_DIR)libromfs.a
 
 EE_INCS   += -I./include
 
 EE_CFLAGS += -DSYS_LITTLE_ENDIAN -DSYS_NEED_ALIGNMENT
 
-EE_OBJS   +=  src/romfs.o \
-	      src/romfs_io.o
+EE_OBJS   += romfs.o romfs_io.o
+EE_OBJS   := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
-all: create_lib $(EE_LIB)
+all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
 	$(MAKE) -C tools/genromfs all
 
-create_lib:
-	mkdir -p lib
+$(EE_OBJS_DIR):
+	mkdir -p $(EE_OBJS_DIR)
+
+$(EE_LIB_DIR):
+	mkdir -p $(EE_LIB_DIR)
+
+$(EE_OBJS_DIR)%.o : $(EE_SRC_DIR)%.c
+	$(EE_C_COMPILE) -c $< -o $@
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/bin/
@@ -23,8 +32,11 @@ install: all
 	cp -f tools/genromfs/genromfs $(DESTDIR)$(PS2SDK)/bin/
 
 clean:
-	rm -f $(EE_OBJS) $(EE_LIB)
-	$(MAKE) -C tools/genromfs clean
+	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
+	$(MAKE) -C regress/ clean
+	
+sample: all
+	$(MAKE) -C regress/
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal

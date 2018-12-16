@@ -1,112 +1,117 @@
-.PHONY: aalib expat freetype2 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer ucl
+.PHONY: aalib expat freetype2 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
-all: expat freetype2 libconfig-1.4.5 zlib libid3tag libjpeg libmad libmikmod libpng libtiff lua romfs sdlgfx sdlttf stlport ucl
+all: expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+#aalib madplay ode
 
 # Broken
 aalib:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ clean
 
 expat:
-	$(MAKE) -C $@ install
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 freetype2:
-	cd $@; ./SetupPS2.sh
+	rm -rf $PS2SDK/ports/ && cd $@; ./SetupPS2.sh
+
+libconfig: libconfig-1.4.5
 
 libconfig-1.4.5:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 zlib:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 libid3tag: zlib
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 libjpeg:
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 libmad:
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 libmikmod:
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 libpng: zlib
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 libtiff:
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 lua:
-	$(MAKE) -C $@ -f Makefile.ps2 all
-	$(MAKE) -C $@ -f Makefile.ps2 install
-	$(MAKE) -C $@ -f Makefile.ps2 clean
-
-# Broken
-madplay: libid3tag libmad
-	$(MAKE) -C $@ all
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
+# depends on isJPCM
+# Broken
+madplay: libid3tag libmad
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@ all
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+# depends on dream2gl and ps2Perf
 # Broken
 ode:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 romfs:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 sdl: libjpeg
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdlgfx: sdl sdlimage
-	$(MAKE) -C $@
+sdlgfx: sdlimage
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdlimage: sdl
-	$(MAKE) -C $@
+sdlimage: sdl libpng libtiff
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 sdlmixer: sdl
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdlttf:
-	$(MAKE) -C $@
+sdlttf: sdl freetype2
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 stlport:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 ucl:
-	$(MAKE) -C $@
+	rm -rf $PS2SDK/ports/ && $(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean

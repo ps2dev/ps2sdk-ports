@@ -1,39 +1,48 @@
+EE_SRC_DIR = src/
+EE_LIB_DIR = lib/
 
-TARGET_LIB 	= liblua.a
-EXTRA_TARGETS 	= liblualib.a
+EE_LIBLUA 	= $(EE_LIB_DIR)liblua.a
+EXTRA_TARGETS 	= $(EE_LIB_DIR)liblualib.a
 
-EE_CFLAGS 	+= -fomit-frame-pointer -fno-exceptions -fno-rtti
-EE_CFLAGS 	+= -DCLOCKS_PER_SEC=1000 
+EE_CFLAGS 	+= -fomit-frame-pointer -fno-exceptions #-fno-rtti
+# EE_CFLAGS 	+= -DCLOCKS_PER_SEC=1000 
 
+EE_INCS 	+= -I$(EE_SRC_DIR)
 
-EE_INCS 	+= -I./src
+LIBLUA_OBJS 	= lapi.o lcode.o ldebug.o ldo.o ldump.o lfunc.o \
+		lgc.o llex.o lmem.o lobject.o lopcodes.o \
+		lparser.o lstate.o lstring.o ltable.o \
+		ltm.o lundump.o lvm.o lzio.o ps2_stub.o
+LIBLUA_OBJS := $(LIBLUA_OBJS:%=$(EE_SRC_DIR)%)
 
-LIBLUA_OBJS 	= src/lapi.o src/lcode.o src/ldebug.o src/ldo.o src/ldump.o src/lfunc.o \
-		src/lgc.o src/llex.o src/lmem.o src/lobject.o src/lopcodes.o \
-		src/lparser.o src/lstate.o src/lstring.o src/ltable.o \
-		src/ltm.o src/lundump.o src/lvm.o src/lzio.o src/ps2_stub.o
+LIBLUALIB_OBJS 	= lauxlib.o lbaselib.o ldblib.o \
+		liolib.o lmathlibf.o loslib.o ltablib.o \
+		lstrlib.o loadlib.o linit.o
+LIBLUALIB_OBJS := $(LIBLUALIB_OBJS:%=$(EE_SRC_DIR)%)
 
-LIBLUALIB_OBJS 	= src/lauxlib.o src/lbaselib.o src/ldblib.o \
-		src/liolib.o src/lmathlibf.o src/loslib.o src/ltablib.o \
-		src/lstrlib.o src/loadlib.o src/linit.o
+all: $(EE_LIB_DIR) $(EE_LIBLUA) $(EXTRA_TARGETS)
 
+$(EE_LIB_DIR):
+	mkdir -p $(EE_LIB_DIR)
 
-all: $(TARGET_LIB) $(EXTRA_TARGETS)
-
-$(TARGET_LIB): $(LIBLUA_OBJS)
+$(EE_LIBLUA): $(LIBLUA_OBJS)
 	$(EE_AR) cru $@ $^
 
 $(EXTRA_TARGETS): $(LIBLUALIB_OBJS)
 	$(EE_AR) cru $@ $^
 
+sample: all
+	make -C test
+
 clean:
-	rm -f $(TARGET_LIB) $(LIBLUA_OBJS) $(EXTRA_TARGETS) $(LIBLUALIB_OBJS)
+	rm -f -r $(LIBLUA_OBJS) $(LIBLUALIB_OBJS) $(EE_LIB_DIR)
+	make -C test clean
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
-	cp src/lua.h src/luaconf.h src/lualib.h src/lauxlib.h etc/lua.hpp $(DESTDIR)$(PS2SDK)/ports/include
-	cp *.a $(DESTDIR)$(PS2SDK)/ports/lib
+	cp $(EE_SRC_DIR)lua.h $(EE_SRC_DIR)luaconf.h $(EE_SRC_DIR)lualib.h $(EE_SRC_DIR)lauxlib.h etc/lua.hpp $(DESTDIR)$(PS2SDK)/ports/include
+	cp $(EE_LIB_DIR)*.a $(DESTDIR)$(PS2SDK)/ports/lib
 
 
 # DO NOT DELETE
