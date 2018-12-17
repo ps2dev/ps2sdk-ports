@@ -1,9 +1,8 @@
 .PHONY: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
-all: expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
-#aalib stlport madplay ode
+all: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
+# stlport madplay ode
 
-# Broken
 aalib:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ clean
@@ -104,6 +103,7 @@ sdlttf: sdl freetype2
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
+# Broken
 stlport:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install

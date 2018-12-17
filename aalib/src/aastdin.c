@@ -5,6 +5,7 @@
 #include <setjmp.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <ps2ip.h>
 #ifdef GPM_MOUSEDRIVER
 #include <gpm.h>
 #endif
