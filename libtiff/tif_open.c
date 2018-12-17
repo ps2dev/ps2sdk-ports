@@ -1,4 +1,4 @@
-/* $Id: tif_open.c,v 1.26 2005/07/01 12:35:18 dron Exp $ */
+/* $Id: tif_open.c,v 1.31 2006/03/16 12:23:02 dron Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -28,8 +28,6 @@
  * TIFF Library.
  */
 #include "tiffiop.h"
-
-void _TIFFSetDefaultCompressionState(TIFF* tif);
 
 static const long typemask[13] = {
 	(long)0L,		/* TIFF_NOTYPE */
@@ -83,12 +81,14 @@ static const int litTypeshift[13] = {
 static int
 _tiffDummyMapProc(thandle_t fd, tdata_t* pbase, toff_t* psize)
 {
+	(void) fd; (void) pbase; (void) psize;
 	return (0);
 }
 
 static void
 _tiffDummyUnmapProc(thandle_t fd, tdata_t base, toff_t size)
 {
+	(void) fd; (void) base; (void) size;
 }
 
 /*
@@ -131,7 +131,7 @@ _TIFFgetMode(const char* mode, const char* module)
 			m |= O_TRUNC;
 		break;
 	default:
-		TIFFError(module, "\"%s\": Bad mode", mode);
+		TIFFErrorExt(0, module, "\"%s\": Bad mode", mode);
 		break;
 	}
 	return (m);
@@ -160,7 +160,7 @@ TIFFClientOpen(
 		goto bad2;
 	tif = (TIFF *)_TIFFmalloc(sizeof (TIFF) + strlen(name) + 1);
 	if (tif == NULL) {
-		TIFFError(module, "%s: Out of memory (TIFF structure)", name);
+		TIFFErrorExt(clientdata, module, "%s: Out of memory (TIFF structure)", name);
 		goto bad2;
 	}
 	_TIFFmemset(tif, 0, sizeof (*tif));
@@ -173,7 +173,7 @@ TIFFClientOpen(
 	tif->tif_row = (uint32) -1;		/* read/write pre-increment */
 	tif->tif_clientdata = clientdata;
 	if (!readproc || !writeproc || !seekproc || !closeproc || !sizeproc) {
-		TIFFError(module,
+		TIFFErrorExt(clientdata, module,
 			  "One of the client procedures is NULL pointer.");
 		goto bad2;
 	}
@@ -307,7 +307,7 @@ TIFFClientOpen(
 	if (tif->tif_mode & O_TRUNC ||
 	    !ReadOK(tif, &tif->tif_header, sizeof (TIFFHeader))) {
 		if (tif->tif_mode == O_RDONLY) {
-			TIFFError(name, "Cannot read TIFF header");
+			TIFFErrorExt(tif->tif_clientdata, name, "Cannot read TIFF header");
 			goto bad;
 		}
 		/*
@@ -325,8 +325,18 @@ TIFFClientOpen(
 			TIFFSwabShort(&tif->tif_header.tiff_version);
 		tif->tif_header.tiff_diroff = 0;	/* filled in later */
 
+
+                /*
+                 * The doc for "fopen" for some STD_C_LIBs says that if you 
+                 * open a file for modify ("+"), then you must fseek (or 
+                 * fflush?) between any freads and fwrites.  This is not
+                 * necessary on most systems, but has been shown to be needed
+                 * on Solaris. 
+                 */
+                TIFFSeekFile( tif, 0, SEEK_SET );
+               
 		if (!WriteOK(tif, &tif->tif_header, sizeof (TIFFHeader))) {
-			TIFFError(name, "Error writing TIFF header");
+			TIFFErrorExt(tif->tif_clientdata, name, "Error writing TIFF header");
 			goto bad;
 		}
 		/*
@@ -347,8 +357,20 @@ TIFFClientOpen(
 	 * Setup the byte order handling.
 	 */
 	if (tif->tif_header.tiff_magic != TIFF_BIGENDIAN &&
-	    tif->tif_header.tiff_magic != TIFF_LITTLEENDIAN) {
-		TIFFError(name,  "Not a TIFF file, bad magic number %d (0x%x)",
+	    tif->tif_header.tiff_magic != TIFF_LITTLEENDIAN
+#if MDI_SUPPORT
+	    &&
+#if HOST_BIGENDIAN
+	    tif->tif_header.tiff_magic != MDI_BIGENDIAN
+#else
+	    tif->tif_header.tiff_magic != MDI_LITTLEENDIAN
+#endif
+	    ) {
+		TIFFErrorExt(tif->tif_clientdata, name,  "Not a TIFF or MDI file, bad magic number %d (0x%x)",
+#else
+	    ) {
+		TIFFErrorExt(tif->tif_clientdata, name,  "Not a TIFF file, bad magic number %d (0x%x)",
+#endif
 		    tif->tif_header.tiff_magic,
 		    tif->tif_header.tiff_magic);
 		goto bad;
@@ -367,13 +389,13 @@ TIFFClientOpen(
 	 * magic number that doesn't change (stupid).
 	 */
 	if (tif->tif_header.tiff_version == TIFF_BIGTIFF_VERSION) {
-		TIFFError(name,
+		TIFFErrorExt(tif->tif_clientdata, name,
                           "This is a BigTIFF file.  This format not supported\n"
                           "by this version of libtiff." );
 		goto bad;
 	}
 	if (tif->tif_header.tiff_version != TIFF_VERSION) {
-		TIFFError(name,
+		TIFFErrorExt(tif->tif_clientdata, name,
 		    "Not a TIFF file, bad version number %d (0x%x)",
 		    tif->tif_header.tiff_version,
 		    tif->tif_header.tiff_version); 
