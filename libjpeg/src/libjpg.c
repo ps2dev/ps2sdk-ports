@@ -40,8 +40,8 @@ typedef struct {
 	
 	custom_error_mgr jerr;
 
-	struct jpeg_source_mgr jsrc;
-	_destination_mgr jdst;
+	struct jpeg_source_mgr *jsrc;
+	_destination_mgr *jdst;
 
 	JSAMPLE *buffer;
 	u8 *data;
@@ -154,14 +154,14 @@ jpgData *jpgOpenRAW( u8 *data, int size, int mode )
 	jpeg_create_decompress(dinfo);
 
 	/* Specify data source for decompression */
-	priv->jsrc.next_input_byte   = data;
-	priv->jsrc.bytes_in_buffer   = size;
-	priv->jsrc.init_source       = _src_init_source;
-	priv->jsrc.fill_input_buffer = _src_fill_input_buffer;
-	priv->jsrc.skip_input_data   = _src_skip_input_data;
-	priv->jsrc.resync_to_restart = _src_resync_to_restart;
-	priv->jsrc.term_source       = _src_term_source;
-	dinfo->src = &priv->jsrc;
+	priv->jsrc->next_input_byte   = data;
+	priv->jsrc->bytes_in_buffer   = size;
+	priv->jsrc->init_source       = _src_init_source;
+	priv->jsrc->fill_input_buffer = _src_fill_input_buffer;
+	priv->jsrc->skip_input_data   = _src_skip_input_data;
+	priv->jsrc->resync_to_restart = _src_resync_to_restart;
+	priv->jsrc->term_source       = _src_term_source;
+	dinfo->src = priv->jsrc;
 
 	/* Read file header, set default decompression parameters */
 	jpeg_read_header(dinfo, TRUE);
@@ -320,12 +320,12 @@ jpgData *jpgCreateRAW( u8 *data, int width, int height, int bpp )
 	if( priv->buffer == NULL )
 		return NULL;
 	
-	priv->jdst.pub.next_output_byte		= priv->buffer;
-	priv->jdst.pub.free_in_buffer		= OUTPUT_BUF_SIZE;
-	priv->jdst.pub.init_destination		= _dest_init_destination;
-	priv->jdst.pub.empty_output_buffer	= _dest_empty_output_buffer;
-	priv->jdst.pub.term_destination		= _dest_term_destination;
-	priv->jdst.buffer					= priv->buffer;
+	priv->jdst->pub.next_output_byte		= priv->buffer;
+	priv->jdst->pub.free_in_buffer		= OUTPUT_BUF_SIZE;
+	priv->jdst->pub.init_destination		= _dest_init_destination;
+	priv->jdst->pub.empty_output_buffer	= _dest_empty_output_buffer;
+	priv->jdst->pub.term_destination		= _dest_term_destination;
+	priv->jdst->buffer					= priv->buffer;
 
 	/* Specify data source for decompression */
 	cinfo->dest = (struct jpeg_destination_mgr *)&priv->jdst;
@@ -464,7 +464,7 @@ int jpgScreenshot( const char* pFilename,unsigned int VramAdress, unsigned int W
 					u8 g = *p_in++;
 					u8 b = *p_in++;
 					
-					*p_in++;
+					p_in++;
 					
 					p_out[x*3+0] = r;
 					p_out[x*3+1] = g;
@@ -602,7 +602,7 @@ jpgData *jpgOpenFILE( FILE *in_file, int mode )
 
   /* Specify data source for decompression */
   jpeg_stdio_src(dinfo, in_file);
-	memcpy(&priv->jsrc, dinfo->src, sizeof(struct jpeg_source_mgr));
+	priv->jsrc = dinfo->src;
 
   /* Read file header, set default decompression parameters */
 	jpeg_read_header(dinfo, TRUE);
