@@ -1,4 +1,4 @@
-/* $Header: /cvs/maptools/cvsroot/libtiff/libtiff/tif_close.c,v 1.8 2004/01/30 20:22:18 dron Exp $ */
+/* $Id: tif_close.c,v 1.9 2005/11/23 22:20:56 dron Exp $ */
 
 /*
  * Copyright (c) 1988-1997 Sam Leffler
@@ -74,7 +74,7 @@ TIFFCleanup(TIFF* tif)
 	/* Clean up custom fields */
 	if (tif->tif_nfields > 0) 
 	{
-	    int  i;
+	    size_t  i;
 
 	    for (i = 0; i < tif->tif_nfields; i++) 
 	    {

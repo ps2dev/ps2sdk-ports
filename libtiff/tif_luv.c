@@ -1,4 +1,4 @@
-/* $Id: tif_luv.c,v 1.13 2004/10/12 18:50:48 dron Exp $ */
+/* $Id: tif_luv.c,v 1.17 2006/03/16 12:38:24 dron Exp $ */
 
 /*
  * Copyright (c) 1997 Greg Ward Larson
@@ -173,7 +173,6 @@ struct logLuvState {
 #define	DecoderState(tif)	((LogLuvState*) (tif)->tif_data)
 #define	EncoderState(tif)	((LogLuvState*) (tif)->tif_data)
 
-#define N(a)   (sizeof(a)/sizeof(a[0]))
 #define SGILOGDATAFMT_UNKNOWN	-1
 
 #define MINRUN		4	/* minimum run length */
@@ -221,7 +220,7 @@ LogL16Decode(TIFF* tif, tidata_t op, tsize_t occ, tsample_t s)
 					tp[i++] |= (int16)*bp++ << shft;
 			}
 		if (i != npixels) {
-			TIFFError(tif->tif_name,
+			TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 		"LogL16Decode: Not enough data at row %d (short %d pixels)",
 			    tif->tif_row, npixels - i);
 			tif->tif_rawcp = (tidata_t) bp;
@@ -268,7 +267,7 @@ LogLuvDecode24(TIFF* tif, tidata_t op, tsize_t occ, tsample_t s)
 	tif->tif_rawcp = (tidata_t) bp;
 	tif->tif_rawcc = cc;
 	if (i != npixels) {
-		TIFFError(tif->tif_name,
+		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 	    "LogLuvDecode24: Not enough data at row %d (short %d pixels)",
 		    tif->tif_row, npixels - i);
 		return (0);
@@ -321,7 +320,7 @@ LogLuvDecode32(TIFF* tif, tidata_t op, tsize_t occ, tsample_t s)
 					tp[i++] |= (uint32)*bp++ << shft;
 			}
 		if (i != npixels) {
-			TIFFError(tif->tif_name,
+			TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 		"LogLuvDecode32: Not enough data at row %d (short %d pixels)",
 			    tif->tif_row, npixels - i);
 			tif->tif_rawcp = (tidata_t) bp;
@@ -647,11 +646,11 @@ LogLuvEncodeTile(TIFF* tif, tidata_t bp, tsize_t cc, tsample_t s)
 #if !LOGLUV_PUBLIC
 static
 #endif
-float
+double
 LogL16toY(int p16)		/* compute luminance from 16-bit LogL */
 {
 	int	Le = p16 & 0x7fff;
-	float	Y;
+	double	Y;
 
 	if (!Le)
 		return (0.);
@@ -663,7 +662,7 @@ LogL16toY(int p16)		/* compute luminance from 16-bit LogL */
 static
 #endif
 int
-LogL16fromY(float Y, int em)	/* get 16-bit LogL from Y */
+LogL16fromY(double Y, int em)	/* get 16-bit LogL from Y */
 {
 	if (Y >= 1.8371976e19)
 		return (0x7fff);
@@ -693,7 +692,7 @@ L16toGry(LogLuvState* sp, tidata_t op, int n)
 	uint8* gp = (uint8*) op;
 
 	while (n-- > 0) {
-		float Y = LogL16toY(*l16++);
+		double Y = LogL16toY(*l16++);
 		*gp++ = (uint8) ((Y <= 0.) ? 0 : (Y >= 1.) ? 255 : (int)(256.*sqrt(Y)));
 	}
 }
@@ -714,7 +713,7 @@ static
 void
 XYZtoRGB24(float xyz[3], uint8 rgb[3])
 {
-	float	r, g, b;
+	double	r, g, b;
 					/* assume CCIR-709 primaries */
 	r =  2.690*xyz[0] + -1.276*xyz[1] + -0.414*xyz[2];
 	g = -1.022*xyz[0] +  1.978*xyz[1] +  0.044*xyz[2];
@@ -729,7 +728,7 @@ XYZtoRGB24(float xyz[3], uint8 rgb[3])
 #if !LOGLUV_PUBLIC
 static
 #endif
-float
+double
 LogL10toY(int p10)		/* compute luminance from 10-bit LogL */
 {
 	if (p10 == 0)
@@ -741,7 +740,7 @@ LogL10toY(int p10)		/* compute luminance from 10-bit LogL */
 static
 #endif
 int
-LogL10fromY(float Y, int em)	/* get 10-bit LogL from Y */
+LogL10fromY(double Y, int em)	/* get 10-bit LogL from Y */
 {
 	if (Y >= 15.742)
 		return (0x3ff);
@@ -756,14 +755,14 @@ LogL10fromY(float Y, int em)	/* get 10-bit LogL from Y */
 				* atan2((v)-V_NEU,(u)-U_NEU) + .5*NANGLES )
 
 static int
-oog_encode(float u, float v)		/* encode out-of-gamut chroma */
+oog_encode(double u, double v)		/* encode out-of-gamut chroma */
 {
 	static int	oog_table[NANGLES];
 	static int	initialized = 0;
 	register int	i;
 	
 	if (!initialized) {		/* set up perimeter table */
-		float	eps[NANGLES], ua, va, ang, epsa;
+		double	eps[NANGLES], ua, va, ang, epsa;
 		int	ui, vi, ustep;
 		for (i = NANGLES; i--; )
 			eps[i] = 2.;
@@ -812,7 +811,7 @@ oog_encode(float u, float v)		/* encode out-of-gamut chroma */
 static
 #endif
 int
-uv_encode(float u, float v, int em)	/* encode (u',v') coordinates */
+uv_encode(double u, double v, int em)	/* encode (u',v') coordinates */
 {
 	register int	vi, ui;
 
@@ -834,7 +833,7 @@ uv_encode(float u, float v, int em)	/* encode (u',v') coordinates */
 static
 #endif
 int
-uv_decode(float *up, float *vp, int c)	/* decode (u',v') index */
+uv_decode(double *up, double *vp, int c)	/* decode (u',v') index */
 {
 	int	upper, lower;
 	register int	ui, vi;
@@ -869,7 +868,7 @@ void
 LogLuv24toXYZ(uint32 p, float XYZ[3])
 {
 	int	Ce;
-	float	L, u, v, s, x, y;
+	double	L, u, v, s, x, y;
 					/* decode luminance */
 	L = LogL10toY(p>>14 & 0x3ff);
 	if (L <= 0.) {
@@ -897,7 +896,7 @@ uint32
 LogLuv24fromXYZ(float XYZ[3], int em)
 {
 	int	Le, Ce;
-	float	u, v, s;
+	double	u, v, s;
 					/* encode luminance */
 	Le = LogL10fromY(XYZ[1], em);
 					/* encode color */
@@ -936,7 +935,7 @@ Luv24toLuv48(LogLuvState* sp, tidata_t op, int n)
 	int16* luv3 = (int16*) op;
 
 	while (n-- > 0) {
-		float u, v;
+		double u, v;
 
 		*luv3++ = (int16)((*luv >> 12 & 0xffd) + 13314);
 		if (uv_decode(&u, &v, *luv&0x3fff) < 0) {
@@ -1009,7 +1008,7 @@ static
 void
 LogLuv32toXYZ(uint32 p, float XYZ[3])
 {
-	float	L, u, v, s, x, y;
+	double	L, u, v, s, x, y;
 					/* decode luminance */
 	L = LogL16toY((int)p >> 16);
 	if (L <= 0.) {
@@ -1035,7 +1034,7 @@ uint32
 LogLuv32fromXYZ(float XYZ[3], int em)
 {
 	unsigned int	Le, ue, ve;
-	float	u, v, s;
+	double	u, v, s;
 					/* encode luminance */
 	Le = (unsigned int)LogL16fromY(XYZ[1], em);
 					/* encode color */
@@ -1076,7 +1075,7 @@ Luv32toLuv48(LogLuvState* sp, tidata_t op, int n)
 	int16* luv3 = (int16*) op;
 
 	while (n-- > 0) {
-		float u, v;
+		double u, v;
 
 		*luv3++ = (int16)(*luv >> 16);
 		u = 1./UVSCALE * ((*luv>>8 & 0xff) + .5);
@@ -1197,14 +1196,14 @@ LogL16InitState(TIFF* tif)
 		sp->pixel_size = sizeof (uint8);
 		break;
 	default:
-		TIFFError(tif->tif_name,
+		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 		    "No support for converting user data format to LogL");
 		return (0);
 	}
 	sp->tbuflen = multiply(td->td_imagewidth, td->td_rowsperstrip);
 	if (multiply(sp->tbuflen, sizeof (int16)) == 0 ||
 	    (sp->tbuf = (tidata_t*) _TIFFmalloc(sp->tbuflen * sizeof (int16))) == NULL) {
-		TIFFError(module, "%s: No space for SGILog translation buffer",
+		TIFFErrorExt(tif->tif_clientdata, module, "%s: No space for SGILog translation buffer",
 		    tif->tif_name);
 		return (0);
 	}
@@ -1275,7 +1274,7 @@ LogLuvInitState(TIFF* tif)
 
 	/* for some reason, we can't do this in TIFFInitLogLuv */
 	if (td->td_planarconfig != PLANARCONFIG_CONTIG) {
-		TIFFError(module,
+		TIFFErrorExt(tif->tif_clientdata, module,
 		    "SGILog compression cannot handle non-contiguous data");
 		return (0);
 	}
@@ -1295,14 +1294,14 @@ LogLuvInitState(TIFF* tif)
 		sp->pixel_size = 3*sizeof (uint8);
 		break;
 	default:
-		TIFFError(tif->tif_name,
+		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 		    "No support for converting user data format to LogLuv");
 		return (0);
 	}
 	sp->tbuflen = multiply(td->td_imagewidth, td->td_rowsperstrip);
 	if (multiply(sp->tbuflen, sizeof (uint32)) == 0 ||
 	    (sp->tbuf = (tidata_t*) _TIFFmalloc(sp->tbuflen * sizeof (uint32))) == NULL) {
-		TIFFError(module, "%s: No space for SGILog translation buffer",
+		TIFFErrorExt(tif->tif_clientdata, module, "%s: No space for SGILog translation buffer",
 		    tif->tif_name);
 		return (0);
 	}
@@ -1362,7 +1361,7 @@ LogLuvSetupDecode(TIFF* tif)
 		}
 		return (1);
 	default:
-		TIFFError(tif->tif_name,
+		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
     "Inappropriate photometric interpretation %d for SGILog compression; %s",
 		    td->td_photometric, "must be either LogLUV or LogL");
 		break;
@@ -1425,14 +1424,14 @@ LogLuvSetupEncode(TIFF* tif)
 		}
 		break;
 	default:
-		TIFFError(tif->tif_name,
+		TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
     "Inappropriate photometric interpretation %d for SGILog compression; %s",
     		    td->td_photometric, "must be either LogLUV or LogL");
 		break;
 	}
 	return (1);
 notsupported:
-	TIFFError(tif->tif_name,
+	TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 	    "SGILog compression supported only for %s, or raw data",
 	    td->td_photometric == PHOTOMETRIC_LOGL ? "Y, L" : "XYZ, Luv");
 	return (0);
@@ -1461,12 +1460,17 @@ LogLuvCleanup(TIFF* tif)
 {
 	LogLuvState* sp = (LogLuvState *)tif->tif_data;
 
-	if (sp) {
-		if (sp->tbuf)
-			_TIFFfree(sp->tbuf);
-		_TIFFfree(sp);
-		tif->tif_data = NULL;
-	}
+	assert(sp != 0);
+
+	tif->tif_tagmethods.vgetfield = sp->vgetparent;
+	tif->tif_tagmethods.vsetfield = sp->vsetparent;
+
+	if (sp->tbuf)
+		_TIFFfree(sp->tbuf);
+	_TIFFfree(sp);
+	tif->tif_data = NULL;
+
+	_TIFFSetDefaultCompressionState(tif);
 }
 
 static int
@@ -1499,7 +1503,7 @@ LogLuvVSetField(TIFF* tif, ttag_t tag, va_list ap)
 			bps = 8, fmt = SAMPLEFORMAT_UINT;
 			break;
 		default:
-			TIFFError(tif->tif_name,
+			TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 			    "Unknown data format %d for LogLuv compression",
 			    sp->user_datafmt);
 			return (0);
@@ -1516,7 +1520,7 @@ LogLuvVSetField(TIFF* tif, ttag_t tag, va_list ap)
 		sp->encode_meth = va_arg(ap, int);
 		if (sp->encode_meth != SGILOGENCODE_NODITHER &&
 				sp->encode_meth != SGILOGENCODE_RANDITHER) {
-			TIFFError(tif->tif_name,
+			TIFFErrorExt(tif->tif_clientdata, tif->tif_name,
 				"Unknown encoding %d for LogLuv compression",
 				sp->encode_meth);
 			return (0);
@@ -1584,7 +1588,8 @@ TIFFInitSGILog(TIFF* tif, int scheme)
 	tif->tif_cleanup = LogLuvCleanup;
 
 	/* override SetField so we can handle our private pseudo-tag */
-	_TIFFMergeFieldInfo(tif, LogLuvFieldInfo, N(LogLuvFieldInfo));
+	_TIFFMergeFieldInfo(tif, LogLuvFieldInfo,
+			    TIFFArrayCount(LogLuvFieldInfo));
 	sp->vgetparent = tif->tif_tagmethods.vgetfield;
 	tif->tif_tagmethods.vgetfield = LogLuvVGetField;   /* hook for codec tags */
 	sp->vsetparent = tif->tif_tagmethods.vsetfield;
@@ -1592,7 +1597,8 @@ TIFFInitSGILog(TIFF* tif, int scheme)
 
 	return (1);
 bad:
-	TIFFError(module, "%s: No space for LogLuv state block", tif->tif_name);
+	TIFFErrorExt(tif->tif_clientdata, module,
+		     "%s: No space for LogLuv state block", tif->tif_name);
 	return (0);
 }
 #endif /* LOGLUV_SUPPORT */
