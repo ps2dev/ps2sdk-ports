@@ -35,7 +35,7 @@ EE_OBJS = \
 EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 EE_CFLAGS += -msingle-float
-EE_INCS += -I./
+EE_INCS += -Iinclude/
 EE_LIB = $(EE_LIB_DIR)libtiff.a
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
@@ -55,7 +55,7 @@ clean:
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib/
-	cp *.h $(DESTDIR)$(PS2SDK)/ports/include/
+	cp include/*.h $(DESTDIR)$(PS2SDK)/ports/include/
 	cp $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib/
 
 sample:
