@@ -86,9 +86,7 @@ static void gentable()
 #define MA 5
 static void firemain()
 {
-    register unsigned int i;
     unsigned char *p;
-    i = 0;
 #define END (bitmap + XSIZ * YSIZ)
     for (p = bitmap;
 	 p <= (unsigned char *) (END); p += 1) {
@@ -110,7 +108,7 @@ static void drawfire()
 	loop = rand() % 3, sloop++;;
     i1 = 1;
     i2 = 4 * XSIZ + 1;
-    for (p = (char *) bitmap + XSIZ * (YSIZ + 0); p < ((unsigned char *) bitmap + XSIZ * (YSIZ + 1)); p++, i1 += 4, i2 -= 4) {
+    for (p = (unsigned char *)((char *) bitmap + XSIZ * (YSIZ + 0)); p < ((unsigned char *) bitmap + XSIZ * (YSIZ + 1)); p++, i1 += 4, i2 -= 4) {
 	last1 = rand() % min(i1, min(i2, height));
 	i = rand() % 6;
 	for (; p < (unsigned char *) bitmap + XSIZ * (YSIZ + 1) && i != 0; p++, i--, i1 += 4, i2 -= 4)
