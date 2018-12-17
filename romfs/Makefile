@@ -34,6 +34,7 @@ install: all
 clean:
 	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
 	$(MAKE) -C regress/ clean
+	$(MAKE) -C tools/genromfs clean
 	
 sample: all
 	$(MAKE) -C regress/
