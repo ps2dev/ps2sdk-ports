@@ -49,14 +49,14 @@ static char rcsid =
 #endif
 
 #ifdef USE_FREESIO2
-extern unsigned char sio2man_irx_start[];
-extern unsigned int sio2man_irx_size;
+extern unsigned char sio2man_irx[];
+extern unsigned int size_sio2man_irx;
 
-extern unsigned char padman_irx_start[];
-extern unsigned int padman_irx_size;
+extern unsigned char padman_irx[];
+extern unsigned int size_padman_irx;
 
-extern unsigned char mtapman_irx_start[];
-extern unsigned int mtapman_irx_size;
+extern unsigned char mtapman_irx[];
+extern unsigned int size_mtapman_irx;
 #endif
 
 #define MAX_JOYSTICKS	8
@@ -155,21 +155,21 @@ int SDL_SYS_JoystickInit(void)
 
 #ifdef PS2SDL_ENABLE_MTAP
 #ifdef USE_FREESIO2
-	SifExecModuleBuffer(sio2man_irx_start, sio2man_irx_size, 0, NULL, &ret);
+	SifExecModuleBuffer(sio2man_irx, size_sio2man_irx, 0, NULL, &ret);
 	if (ret < 0)
 	{
 		SDL_SetError("Failed to load SIO2MAN");
 		return 0;
 	}
 
-	SifExecModuleBuffer(padman_irx_start, padman_irx_size, 0, NULL, &ret);
+	SifExecModuleBuffer(padman_irx, size_padman_irx, 0, NULL, &ret);
 	if (ret < 0)
 	{
 		SDL_SetError("Failed to load PADMAN");
 		return 0;
 	}
 
-	SifExecModuleBuffer(mtapman_irx_start, mtapman_irx_size, 0, NULL, &ret);
+	SifExecModuleBuffer(mtapman_irx, size_mtapman_irx, 0, NULL, &ret);
 	if (ret < 0)
 	{
 		SDL_SetError("Failed to load MTAPMAN");
