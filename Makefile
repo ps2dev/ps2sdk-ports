@@ -1,6 +1,6 @@
-.PHONY: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+.PHONY: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
-all: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
+all: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
 # stlport madplay ode
 
 aalib:
@@ -45,6 +45,11 @@ libmikmod:
 	$(MAKE) -C $@ clean
 
 libpng: zlib
+	$(MAKE) -C $@ all
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+libtap:
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
