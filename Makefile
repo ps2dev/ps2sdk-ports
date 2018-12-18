@@ -50,6 +50,7 @@ libpng: zlib
 	$(MAKE) -C $@ clean
 
 libtap:
+	git submodule init && git submodule update
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
