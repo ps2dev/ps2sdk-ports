@@ -41,12 +41,12 @@
 #include <audsrv.h>
 
 #ifdef USE_FREESD
-extern int freesd_irx_size;
-extern char freesd_irx_start[];
+extern unsigned int size_freesd_irx;
+extern unsigned char freesd_irx;
 #endif
 
-extern int audsrv_irx_size;
-extern char audsrv_irx_start[];
+extern unsigned int size_audsrv_irx;
+extern unsigned char audsrv_irx;
 
 
 #define STACK_SIZE              16384
@@ -74,7 +74,7 @@ static int spu2_init()
 
         #ifdef USE_FREESD
 	// load freesd (libsd replacement)
-    	SifExecModuleBuffer(freesd_irx_start, freesd_irx_size, 0, NULL, &error);
+    	SifExecModuleBuffer(freesd_irx, size_freesd_irx, 0, NULL, &error);
     	if (error < 0)
     	{
 		printf("libmikmod: Failed to open FREESD module");
@@ -88,7 +88,7 @@ static int spu2_init()
 		return -1;
 	}
         #endif
-        SifExecModuleBuffer(audsrv_irx_start, audsrv_irx_size, 0, NULL, &error);
+        SifExecModuleBuffer(audsrv_irx, size_audsrv_irx, 0, NULL, &error);
 
 	/* init audsrv */
 	audsrv_init();
@@ -109,9 +109,9 @@ static void sound_callback(void)
 	while (1)
 	{
 	   if (playing)
-	      done = VC_WriteBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+	      done = VC_WriteBytes((SBYTE *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
 	   else
-	      done = VC_SilenceBytes((char *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
+	      done = VC_SilenceBytes((SBYTE *)mikmod_sndbuf,PS2_NUM_AUDIO_SAMPLES * 4);
 
 	   audsrv_wait_audio( done);
 	   audsrv_play_audio( (char *)mikmod_sndbuf, done);
