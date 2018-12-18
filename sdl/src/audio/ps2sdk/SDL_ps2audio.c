@@ -42,12 +42,12 @@ static char rcsid =
 #include <audsrv.h>
 
 #ifdef USE_FREESD
-extern int freesd_irx_size;
-extern char freesd_irx_start[];
+extern unsigned int size_freesd_irx;
+extern unsigned char freesd_irx;
 #endif
 
-extern int audsrv_irx_size;
-extern char audsrv_irx_start[];
+extern unsigned int size_audsrv_irx;
+extern unsigned char audsrv_irx;
 
 static int spu2_init()
 {
@@ -57,7 +57,7 @@ static int spu2_init()
 
 #ifdef USE_FREESD
 	// load freesd (libsd replacement)
-    	SifExecModuleBuffer(freesd_irx_start, freesd_irx_size, 0, NULL, &error);
+	SifExecModuleBuffer(freesd_irx, size_freesd_irx, 0, NULL, &error);
     	if (error < 0)
     	{
 		SDL_SetError("Failed to load FREESD module");
@@ -70,7 +70,7 @@ static int spu2_init()
 		return -1;
 	}
 #endif
-    	SifExecModuleBuffer(audsrv_irx_start, audsrv_irx_size, 0, NULL, &error);
+	SifExecModuleBuffer(audsrv_irx, size_audsrv_irx, 0, NULL, &error);
 	if (error < 0)
 	{
 		SDL_SetError("Failed to load audsrv module");
