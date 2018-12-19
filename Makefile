@@ -24,7 +24,7 @@ libconfig:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-zlib:
+zlib: initialize
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
