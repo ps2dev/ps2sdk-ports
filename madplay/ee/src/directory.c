@@ -242,7 +242,7 @@ int readDirectory(char *ext, int media)
 //			numToc = CDVD_GetDir(&folder.directory[5], NULL, CDVD_GET_FILES_AND_DIRS, cdDirectory, 254, NULL);
 // fixme: update to ps2sdk
 //			CDVD_Stop();
-			cdStop();
+			sceCdStop();
 
 #define CD_S_ISDIR(x) x & 2
 #define CD_S_ISFILE(x) !CD_S_ISDIR(x)
