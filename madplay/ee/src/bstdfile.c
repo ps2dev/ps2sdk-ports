@@ -401,9 +401,9 @@ size_t BstdRead(void *UserBuffer, size_t ElementSize, size_t ElementsCount, bstd
 	 * was feeded to the user buffer.
 	 */
 	if (memoryFile)
-		ObtainedSize=readMemory(BstdFile->buffer, BFILE_BUFSIZE, BstdFile);
+		ObtainedSize=readMemory((unsigned char *)BstdFile->buffer, BFILE_BUFSIZE, BstdFile);
 	else
-		ObtainedSize=ReadFile(BstdFile->fp, BstdFile->buffer, BFILE_BUFSIZE, mediaMode);
+		ObtainedSize=ReadFile(BstdFile->fp, (unsigned char *)BstdFile->buffer, BFILE_BUFSIZE, mediaMode);
 
 	if(ObtainedSize==0)
 	{
