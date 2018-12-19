@@ -8,9 +8,10 @@ EE_OBJS = audio.o audio_aiff.o audio_snd.o audio_wave.o audio_raw.o \
 	getopt1.o madplay.o resample.o rgain.o player.o \
 	strcasecmp.o strncasecmp.o tag.o tagger.o version.o  \
 	file.o directory.o bstdfile.o rmalloc.o \
-	audio_sjpcm.o isjpcm.o
+	audio_sjpcm.o
 EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 # excluded: bar.o option.o
+EE_OBJS += $(EE_OBJS_DIR)isjpcm_irx.o
 
 EE_LIBS += -lfileXio -ldebug -lmad -lid3tag \
 	-lcdvd -lsjpcm -lz -lm -lgcc -lmc -lc -lmc -lkernel
@@ -43,13 +44,14 @@ install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/bin
 	cp -f $(EE_BIN) $(DESTDIR)$(PS2SDK)/ports/bin/
 
-sample: all
-
-isjpcm.o:
-	bin2o $(PS2DEV)/isjpcm/bin/isjpcm.irx isjpcm.c isjpcm_irx
+$(EE_OBJS_DIR)isjpcm_irx.c: $(PS2DEV)/isjpcm/bin/isjpcm.irx
+	$(PS2SDK)/bin/bin2c $< $@ isjpcm_irx
+#	bin2o $(PS2DEV)/isjpcm/bin/isjpcm.irx isjpcm.c isjpcm_irx
 
 clean:
-	rm -f -r $(EE_OBJS_DIR) $(EE_BIN_DIR) isjpcm.c
+	rm -f -r $(EE_OBJS_DIR) $(EE_BIN_DIR)
+
+sample:
 
 include $(PS2SDK)/Defs.make
 include ../../../Makefile.eeglobal
