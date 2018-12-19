@@ -34,12 +34,11 @@ GENROMFS = $(GENROMFS_PATH)/genromfs
 # Defs
 #
 
-EE_OBJS += romdisk.o
+EE_OBJS += romdisk.c
 	
 romdisk.img:
 	@echo Creating romdisk..
 	@$(GENROMFS) -f $@ -d romdisk
 
-romdisk.o: romdisk.img
-	@$(PS2SDK)/bin/bin2o -a 16 -n romdisk.img romdisk.o romdisk
-
+romdisk.c: romdisk.img
+	$(PS2SDK)/bin/bin2c romdisk.img romdisk.c romdisk
