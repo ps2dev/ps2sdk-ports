@@ -30,5 +30,6 @@ cp -R include/* $PS2SDK/ports/include
 ## Post-installation cleanup.
 echo "Cleaning up..."
 $GNUMAKE clean --silent
+$GNUMAKE distclean --silent
 
 echo "FreeType built and installed."
