@@ -1,3 +1,6 @@
 [submodule "libtap"]
 	path = libtap
 	url = git://github.com/mlafeldt/libtap.git
+[submodule "zlib/src"]
+	path = zlib/src
+	url = https://github.com/madler/zlib
