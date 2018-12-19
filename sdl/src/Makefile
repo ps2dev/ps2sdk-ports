@@ -49,7 +49,7 @@ endif
 
 EE_INCS += -I../include
 EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
-EE_INCS += -I$(PS2SDK)/ports/include -I$(PS2DEV)/gsKit/include
+EE_INCS += -I$(PS2SDK)/ports/include -I$(GSKIT)/include
 EE_LIBS =
 
 all: $(LIB_SDL) $(LIB_SDLMAIN)
@@ -117,32 +117,32 @@ SDLMAIN_OBJS = main/arch.o main/ps2sdk/sdl_main.o
 # inline
 
 ifeq ($(USE_FREESD), 1)
-audio/ps2sdk/freesd_irx.o: $(PS2SDK)/iop/irx/freesd.irx
-	$(PS2SDK)/bin/bin2o $< $@ freesd_irx
+audio/ps2sdk/freesd_irx.c: $(PS2SDK)/iop/irx/freesd.irx
+	$(PS2SDK)/bin/bin2c $< $@ freesd_irx
 endif
 
 ifeq ($(USE_FREESIO2), 1)
-joystick/ps2sdk/sio2man_irx.o: $(PS2SDK)/iop/irx/freesio2.irx
-	$(PS2SDK)/bin/bin2o $< $@ sio2man_irx
+joystick/ps2sdk/sio2man_irx.c: $(PS2SDK)/iop/irx/freesio2.irx
+	$(PS2SDK)/bin/bin2c $< $@ sio2man_irx
 
-joystick/ps2sdk/padman_irx.o: $(PS2SDK)/iop/irx/freepad.irx
-	$(PS2SDK)/bin/bin2o $< $@ padman_irx
+joystick/ps2sdk/padman_irx.c: $(PS2SDK)/iop/irx/freepad.irx
+	$(PS2SDK)/bin/bin2c $< $@ padman_irx
 
-joystick/ps2sdk/mtapman_irx.o: $(PS2SDK)/iop/irx/freemtap.irx
-	$(PS2SDK)/bin/bin2o $< $@ mtapman_irx
+joystick/ps2sdk/mtapman_irx.c: $(PS2SDK)/iop/irx/freemtap.irx
+	$(PS2SDK)/bin/bin2c $< $@ mtapman_irx
 endif
 
-audio/ps2sdk/audsrv_irx.o: $(PS2SDK)/iop/irx/audsrv.irx
-	$(PS2SDK)/bin/bin2o $< $@ audsrv_irx
+audio/ps2sdk/audsrv_irx.c: $(PS2SDK)/iop/irx/audsrv.irx
+	$(PS2SDK)/bin/bin2c $< $@ audsrv_irx
 
-video/ps2sdk/ps2kbd_irx.o: $(PS2SDK)/iop/irx/ps2kbd.irx
-	$(PS2SDK)/bin/bin2o $< $@ ps2kbd_irx
+video/ps2sdk/ps2kbd_irx.c: $(PS2SDK)/iop/irx/ps2kbd.irx
+	$(PS2SDK)/bin/bin2c $< $@ ps2kbd_irx
 
-video/ps2sdk/ps2mouse_irx.o: $(PS2SDK)/iop/irx/ps2mouse.irx
-	$(PS2SDK)/bin/bin2o $< $@ ps2mouse_irx
+video/ps2sdk/ps2mouse_irx.c: $(PS2SDK)/iop/irx/ps2mouse.irx
+	$(PS2SDK)/bin/bin2c $< $@ ps2mouse_irx
 
-video/ps2sdk/ps2usbd_irx.o: $(PS2SDK)/iop/irx/usbd.irx
-	$(PS2SDK)/bin/bin2o $< $@ ps2usbd_irx
+video/ps2sdk/ps2usbd_irx.c: $(PS2SDK)/iop/irx/usbd.irx
+	$(PS2SDK)/bin/bin2c $< $@ ps2usbd_irx
 
 
 ifeq ($(ENABLE_MTAP), 1)
@@ -161,8 +161,8 @@ EMBEDDED += \
 	$(PS2SDK)/ee/lib/libmouse.a     \
 	$(PS2SDK)/ee/lib/libaudsrv.a    \
 	$(PS2SDK)/ports/lib/libjpeg.a    \
-	$(PS2DEV)/gsKit/lib/libdmakit.a	\
-	$(PS2DEV)/gsKit/lib/libgskit.a
+	$(GSKIT)/lib/libdmakit.a	\
+	$(GSKIT)/lib/libgskit.a
 
 $(LIB_SDL): $(SDL_OBJS)
 	# packing with all embedded libraries
