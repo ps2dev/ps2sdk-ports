@@ -81,11 +81,11 @@ clean:
 # inline
 
 ifeq ($(USE_FREESD), 1)
-drivers/freesd_irx.o: $(PS2SDK)/iop/irx/freesd.irx
-	$(PS2SDK)/bin/bin2o $< $@ freesd_irx
+drivers/freesd_irx.c: $(PS2SDK)/iop/irx/freesd.irx
+	$(PS2SDK)/bin/bin2c $< $@ freesd_irx
 endif
-drivers/audsrv_irx.o: $(PS2SDK)/iop/irx/audsrv.irx
-	$(PS2SDK)/bin/bin2o $< $@ audsrv_irx
+drivers/audsrv_irx.c: $(PS2SDK)/iop/irx/audsrv.irx
+	$(PS2SDK)/bin/bin2c $< $@ audsrv_irx
 
 include $(PS2SDK)/Defs.make
 include ../Makefile.eeglobal

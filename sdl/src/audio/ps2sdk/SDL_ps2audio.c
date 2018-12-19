@@ -57,7 +57,7 @@ static int spu2_init()
 
 #ifdef USE_FREESD
 	// load freesd (libsd replacement)
-	SifExecModuleBuffer(freesd_irx, size_freesd_irx, 0, NULL, &error);
+	SifExecModuleBuffer(&freesd_irx, size_freesd_irx, 0, NULL, &error);
     	if (error < 0)
     	{
 		SDL_SetError("Failed to load FREESD module");
@@ -70,7 +70,7 @@ static int spu2_init()
 		return -1;
 	}
 #endif
-	SifExecModuleBuffer(audsrv_irx, size_audsrv_irx, 0, NULL, &error);
+	SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, &error);
 	if (error < 0)
 	{
 		SDL_SetError("Failed to load audsrv module");
