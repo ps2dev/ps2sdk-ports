@@ -10,8 +10,13 @@ EE_INCS   += -I../include -Isrc -I$(PS2SDK)/ports/include -I$(GSKIT)/include
 # -- PS2 specific source code --
 EE_OBJS   = example.o
 
+ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all:    $(EE_BIN)
 	$(EE_STRIP) $(EE_BIN)
+else
+all:
+	@echo "GSKIT not set and gsKit not installed"
+endif
 
 clean:
 	rm -f $(EE_BIN) $(EE_OBJS)

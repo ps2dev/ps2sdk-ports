@@ -52,7 +52,12 @@ EE_INCS += -Ivideo -Ithread -Ievents -Itimer -Iaudio -Ijoystick -Icdrom
 EE_INCS += -I$(PS2SDK)/ports/include -I$(GSKIT)/include
 EE_LIBS =
 
+ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: $(LIB_SDL) $(LIB_SDLMAIN)
+else
+all:
+	@echo "GSKIT not set and gsKit not installed"
+endif
 
 # generic SDL objects
 SDL_OBJS  = SDL.o SDL_error.o SDL_fatal.o SDL_getenv.o SDL_loadso.o

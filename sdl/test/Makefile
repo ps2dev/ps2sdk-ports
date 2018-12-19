@@ -19,7 +19,12 @@ OBJS = \
 EE_INCS = -I../include
 EE_LIBS = -L. -lc -L$(GSKIT)/lib -L../lib -lsdl -lcdvd
 
+ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: $(BINS)
+else
+all:
+	@echo "GSKIT not set and gsKit not installed"
+endif
 
 install:
 
