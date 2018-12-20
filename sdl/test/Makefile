@@ -17,7 +17,7 @@ OBJS = \
 	checkkeys.o
 
 EE_INCS = -I../include
-EE_LIBS = -L. -lc -L$(GSKIT)/lib -L../lib -lsdl -lcdvd
+EE_LIBS = -L. -L$(GSKIT)/lib -L../lib -lsdl -lcdvd
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: $(BINS)
@@ -28,9 +28,8 @@ endif
 
 install:
 
-%.elf : %.o $(PS2SDK)/ee/startup/crt0.o
-	$(EE_CC) -nostartfiles -T$(PS2SDK)/ee/startup/linkfile $(EE_LDFLAGS) \
-		-o $@ $(PS2SDK)/ee/startup/crt0.o $< $(EE_LIBS)
+%.elf : %.o
+	$(EE_CC) $(EE_LDFLAGS) -o $@ $< $(EE_LIBS)
 
 clean:
 	rm -f $(BINS) $(OBJS)
