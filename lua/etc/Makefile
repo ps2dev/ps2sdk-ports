@@ -9,10 +9,9 @@ TST= $(TOP)/test
 
 CC= gcc
 CFLAGS= -O2 -Wall -I$(INC) $(MYCFLAGS)
-MYCFLAGS= 
+MYCFLAGS=
 MYLDFLAGS= -Wl,-E
-MYLIBS= -lm
-#MYLIBS= -lm -Wl,-E -ldl -lreadline -lhistory -lncurses
+MYLIBS=
 RM= rm -f
 
 default:

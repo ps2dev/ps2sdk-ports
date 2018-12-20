@@ -13,9 +13,7 @@ EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 TEST_OBJS = $(SOURCE_DIR)test/example.o
 TEST_BIN = example.elf
 TEST_CFLAGS = -I$(SOURCE_DIR)
-TEST_LIBS = $(EE_LIB) -lc -lkernel
-TEST_LDFLAGS += -mno-crt0
-# TEST_LDFLAGS += -nostartfiles
+TEST_LIBS = $(EE_LIB)
 TEST_LDFLAGS += -L$(PS2SDK)/ee/lib
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
@@ -29,9 +27,8 @@ $(EE_LIB_DIR):
 $(EE_OBJS_DIR)%.o : $(SOURCE_DIR)%.c
 	$(EE_C_COMPILE) -c $< -o $@
 
-$(TEST_BIN) : $(TEST_OBJS) $(PS2SDK)/ee/startup/crt0.o
-	$(EE_CC) -T$(PS2SDK)/ee/startup/linkfile $(TEST_CFLAGS) \
-		-o $(TEST_BIN) $(PS2SDK)/ee/startup/crt0.o $(TEST_OBJS) $(TEST_LDFLAGS) $(TEST_LIBS)
+$(TEST_BIN) : $(TEST_OBJS)
+	$(EE_CC) $(TEST_CFLAGS) -o $(TEST_BIN) $(TEST_OBJS) $(TEST_LDFLAGS) $(TEST_LIBS)
 	gzip -f -c --best $(TEST_OBJS) > foo.gz
 
 install: all
@@ -42,7 +39,7 @@ install: all
 	cp -f $(SOURCE_DIR)zconf.h $(DESTDIR)$(PS2SDK)/ports/include
 
 sample: all $(TEST_BIN)
-	
+
 clean:
 	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR) $(TEST_OBJS) $(TEST_BIN) foo.gz
 

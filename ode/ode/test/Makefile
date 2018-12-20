@@ -15,23 +15,20 @@ BINS = \
 	test_moving_trimesh.elf \
 	test_trimesh.elf \
 	test_step.elf \
-	test_I.elf 
+	test_I.elf
 
 
-OBJS = 
+OBJS =
 EE_INCS += -I../../include
-EE_LIBS += -lode -lopcode -lice -ldrawstuff -lm -ldreamgl -lpad
+EE_LIBS += -lode -lopcode -lice -ldrawstuff -ldreamgl -lpad
 EE_LDFLAGS += -L$(PS2DEV)/dreamgl/lib  -L../../lib
-EE_LDFLAGS += -mno-crt0
-# EE_LDFLAGS += -nostartfiles
 
 all: $(BINS)
 
 install:
 
-%.elf : %.o $(PS2SDK)/ee/startup/crt0.o
-	$(EE_CC) -T$(PS2SDK)/ee/startup/linkfile $(EE_CFLAGS) \
-		-o $@ $(PS2SDK)/ee/startup/crt0.o  $< $(EE_LDFLAGS) $(EE_LIBS)
+%.elf : %.o
+	$(EE_CC) $(EE_CFLAGS) -o $@ $< $(EE_LDFLAGS) $(EE_LIBS)
 	$(EE_STRIP) $@
 
 clean:
