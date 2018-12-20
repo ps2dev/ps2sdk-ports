@@ -181,11 +181,15 @@ $(LIB_SDL): $(SDL_OBJS)
 $(LIB_SDLMAIN): $(SDLMAIN_OBJS)
 	$(EE_AR) cru $(LIB_SDLMAIN) $(SDLMAIN_OBJS)
 
+ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f $(LIB_SDL) $(LIB_SDLMAIN) $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f ../include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
+else
+install: all
+endif
 
 clean:
 	rm -f $(LIB_SDL) $(LIB_SDLMAIN) $(SDL_OBJS) $(SDLMAIN_OBJS) $(SDL_TMP)
