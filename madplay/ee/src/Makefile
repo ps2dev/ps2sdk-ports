@@ -14,12 +14,12 @@ EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 EE_OBJS += $(EE_OBJS_DIR)isjpcm_irx.o
 
 EE_LIBS += -lfileXio -ldebug -lmad -lid3tag \
-	-lcdvd -lsjpcm -lz -lm -lgcc -lmc -lc -lmc -lkernel
+	-lcdvd -lsjpcm -lz -lm
 
 EE_CXXFLAGS += -fno-exceptions -fno-rtti
 
 EE_CFLAGS += -DHAVE_STRNCASECMP -DHAVE_CONFIG_H -DHAVE_UNISTD_H \
-	-DHAVE_STRING_H -DHAVE_SYS_TYPES_H 
+	-DHAVE_STRING_H -DHAVE_SYS_TYPES_H
 
 EE_INCS += -I./ -I../include -Iinclude -I$(PS2SDK)/common/include -I$(PS2SDK)/ee/include \
 	-I$(PS2SDK)/ports/include -I$(PS2DEV)/isjpcm/include

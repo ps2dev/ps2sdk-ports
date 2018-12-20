@@ -13,7 +13,7 @@ EE_OBJS = TestFramerate.o
 
 EE_INCS = -I../../ -I$(PS2SDK)/ports/include/SDL
 EE_LDFLAGS = -L../../lib/ -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib
-EE_LIBS = -lSDL_gfx -lsdl -lgskit -ldmakit -lm
+EE_LIBS = -lSDL_gfx -lsdl -lgskit -ldmakit
 
 all: $(EE_BIN)
 
