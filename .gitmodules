@@ -4,3 +4,7 @@
 [submodule "zlib/src"]
 	path = zlib/src
 	url = https://github.com/madler/zlib
+[submodule "libpng/src"]
+	path = libpng/src
+	url = https://github.com/glennrp/libpng
+	branch = libpng15
