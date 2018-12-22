@@ -14,18 +14,21 @@ else
 	GNUMAKE=make
 fi
 
+cp -fr builds src/
+cd src/
+
 echo "Building FreeType..."
 $GNUMAKE setup ps2 --silent; $GNUMAKE --silent
 
 ## Install the library.
 echo "Copying library files..."
 mkdir -p $PS2SDK/ports/lib
-cp objs/libfreetype.a $PS2SDK/ports/lib
+cp -f objs/libfreetype.a $PS2SDK/ports/lib
 
 ## Install the include files.
 echo "Copying include files..."
 mkdir -p $PS2SDK/ports/include
-cp -R include/* $PS2SDK/ports/include
+cp -fR include/* $PS2SDK/ports/include
 
 ## Post-installation cleanup.
 echo "Cleaning up..."
