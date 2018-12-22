@@ -55,9 +55,9 @@ libpng: zlib
 	$(MAKE) -C $@ clean
 
 libtap: initialize
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
+	$(MAKE) -C $@ -f Makefile.PS2 all
+	$(MAKE) -C $@ -f Makefile.PS2 install
+	$(MAKE) -C $@ -f Makefile.PS2 clean
 
 libtiff:
 	$(MAKE) -C $@ all
@@ -122,3 +122,16 @@ ucl:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
+
+sample: install
+	$(MAKE) -C aalib sample
+	$(MAKE) -C libmikmod sample
+	$(MAKE) -C libpng sample
+	$(MAKE) -C sdl sample
+	$(MAKE) -C sdlgfx sample
+	$(MAKE) -C sdlmixer sample
+	$(MAKE) -C zlib sample
+# Broken samples
+#	$(MAKE) -C lua sample
+#	$(MAKE) -C romfs sample
+#	$(MAKE) -C ucl sample
