@@ -1,9 +1,9 @@
-.PHONY: initialize aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+.PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
-all: initialize aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
+all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
 # libtap stlport ode
 
-initialize:
+submodules:
 	git submodule init && git submodule update
 
 aalib:
@@ -16,7 +16,7 @@ expat:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-freetype2:
+freetype2: submodules
 	cd $@; ./SetupPS2.sh
 
 libconfig:
@@ -24,7 +24,7 @@ libconfig:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-zlib: initialize
+zlib: submodules
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -54,7 +54,7 @@ libpng: zlib
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-libtap: initialize
+libtap: submodules
 	$(MAKE) -C $@ -f Makefile.PS2 all
 	$(MAKE) -C $@ -f Makefile.PS2 install
 	$(MAKE) -C $@ -f Makefile.PS2 clean
@@ -123,7 +123,7 @@ ucl:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sample: install
+sample:
 	$(MAKE) -C aalib sample
 	$(MAKE) -C libmikmod sample
 	$(MAKE) -C libpng sample
@@ -131,7 +131,7 @@ sample: install
 	$(MAKE) -C sdlgfx sample
 	$(MAKE) -C sdlmixer sample
 	$(MAKE) -C zlib sample
+	$(MAKE) -C ucl sample
 # Broken samples
 #	$(MAKE) -C lua sample
 #	$(MAKE) -C romfs sample
-#	$(MAKE) -C ucl sample
