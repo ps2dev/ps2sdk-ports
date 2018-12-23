@@ -13,7 +13,7 @@ EE_OBJS = TestRotozoom.o
 
 EE_INCS = -I../../ -I$(PS2SDK)/ports/include/SDL
 EE_LDFLAGS = -L../../lib/ -L$(PS2SDK)/ports/lib -L$(GSKIT)/lib
-EE_LIBS = -lSDL_gfx -lSDL_image -lpng -ljpeg -lz -lsdl -lgskit -ldmakit
+EE_LIBS = -lSDL_gfx -lSDL_image -lpng -ljpeg -lz -lsdl -lgskit -ldmakit -lm
 
 all: $(EE_BIN)
 
