@@ -17,7 +17,7 @@ EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 TEST_OBJS = $(SOURCE_DIR)pngtest.o
 TEST_BIN = pngtest.elf
 TEST_CFLAGS = -I$(PS2SDK)/ports/include -I$(SOURCE_DIR)
-TEST_LIBS = -lz -lm
+TEST_LIBS = -lz #-lm
 TEST_LDFLAGS += -L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib $(EE_LIB)
 
 all: pnglibconf.h $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
