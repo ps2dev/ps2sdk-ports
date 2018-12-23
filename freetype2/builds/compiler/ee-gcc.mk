@@ -12,9 +12,10 @@
 # indicate that you have read the license and understand and accept it
 # fully.
 
+
 # Compiler command line name
 #
-CC := ee-gcc
+CC           := $(EE_CC)
 
 # The object file extension (for standard and static libraries).  This can be
 # .o, .tco, .obj, etc., depending on the platform.
@@ -55,7 +56,7 @@ T := -o$(space)
 #   ANSI compliance.
 #
 ifndef CFLAGS
-  CFLAGS := -c -g -O2 -G0 -Wall -I$(EE)/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ee/include
+  CFLAGS := $(EE_CFLAGS) $(EE_INCS) -c 
 endif
 
 # ANSIFLAGS: Put there the flags used to make your compiler ANSI-compliant.
@@ -67,6 +68,6 @@ ANSIFLAGS := -ansi -pedantic
 ifndef CLEAN_LIBRARY
   CLEAN_LIBRARY = $(DELETE) $(subst $(SEP),$(HOSTSEP),$(PROJECT_LIBRARY))
 endif
-LINK_LIBRARY = ee-ar -r $@ $(OBJECTS_LIST)
+LINK_LIBRARY = $(EE_AR) -r $@ $(OBJECTS_LIST)
 
 # EOF

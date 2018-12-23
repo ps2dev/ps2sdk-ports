@@ -23,7 +23,7 @@ DELETE   := rm -f
 SEP      := /
 BUILD    := $(TOP_DIR)/builds/ps2
 PLATFORM := ps2
-CC       := ee-gcc
+CC       := $(EE_CC)
 
 COMPILER_SEP := $(SEP)
 

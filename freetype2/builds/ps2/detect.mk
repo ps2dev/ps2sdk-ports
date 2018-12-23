@@ -30,7 +30,7 @@ ifeq ($(PLATFORM),ps2)
   SEP      := /
   HOSTSEP  := $(SEP)
   BUILD    := $(TOP_DIR)/builds/ps2
-  CC       := ee-gcc
+  CC       := $(EE_CC)
 
   CONFIG_FILE := ps2.mk
 
