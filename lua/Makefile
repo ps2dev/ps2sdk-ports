@@ -32,11 +32,11 @@ $(EXTRA_TARGETS): $(LIBLUALIB_OBJS)
 	$(EE_AR) cru $@ $^
 
 sample: all
-	make -C test
+	$(MAKE) -C test
 
 clean:
 	rm -f -r $(LIBLUA_OBJS) $(LIBLUALIB_OBJS) $(EE_LIB_DIR)
-	make -C test clean
+	$(MAKE) -C test clean
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
