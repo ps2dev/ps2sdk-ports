@@ -8,3 +8,6 @@
 	path = libpng/src
 	url = https://github.com/glennrp/libpng
 	branch = libpng15
+[submodule "freetype2/src"]
+	path = freetype2/src
+	url = https://git.savannah.gnu.org/git/freetype/freetype2
