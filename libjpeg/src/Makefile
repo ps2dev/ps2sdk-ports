@@ -64,7 +64,7 @@ DLIBOBJECTS	=	jdapimin.o	\
 # ps2 jpg library object files
 PS2OBJECTS = libjpg.o
 
-EE_OBJS = $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
+EE_OBJS  = $(CLIBOBJECTS) $(DLIBOBJECTS) $(COMOBJECTS)
 EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 EE_OBJS += $(PS2OBJECTS)
 
