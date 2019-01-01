@@ -1,0 +1,21 @@
+--- src/jpeg-6b/jchuff.c	2019-01-01 19:41:55.704403900 +0200
++++ src/jpeg-6b/jchuff.c	2019-01-01 19:46:17.602611300 +0200
+@@ -80,7 +80,9 @@
+ typedef struct {
+   JOCTET * next_output_byte;	/* => next byte to write in buffer */
+   size_t free_in_buffer;	/* # of byte spaces remaining in buffer */
++  int p[4];			/* alignment fix for ps2 */
+   savable_state cur;		/* Current bit buffer & DC state */
++  int pad[8];			/* alignment fix for ps2 */
+   j_compress_ptr cinfo;		/* dump_buffer needs access to this */
+ } working_state;
+ 
+@@ -476,7 +478,7 @@
+ encode_mcu_huff (j_compress_ptr cinfo, JBLOCKROW *MCU_data)
+ {
+   huff_entropy_ptr entropy = (huff_entropy_ptr) cinfo->entropy;
+-  working_state state;
++  static working_state state;
+   int blkn, ci;
+   jpeg_component_info * compptr;
+ 
