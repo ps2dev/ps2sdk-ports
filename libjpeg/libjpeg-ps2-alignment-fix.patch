@@ -1,5 +1,5 @@
---- src/jpeg-6b/jchuff.c	2019-01-01 19:41:55.704403900 +0200
-+++ src/jpeg-6b/jchuff.c	2019-01-01 19:46:17.602611300 +0200
+--- jchuff.c	2019-01-01 19:41:55.704403900 +0200
++++ jchuff.c	2019-01-01 19:46:17.602611300 +0200
 @@ -80,7 +80,9 @@
  typedef struct {
    JOCTET * next_output_byte;	/* => next byte to write in buffer */

@@ -3,3 +3,6 @@ jchuff.c - modified a bit for PS2
 samples\rdtarga.c - old version ?
 jdmarker.c - some component_id fix, old version ?
 jconfig.h - it seems just default config from original sources
+Makefile - heavily modified, based on some old version
+libjpg.c - written from scratch for PS2
+libjpg.h - written from scratch for PS2
