@@ -11,3 +11,7 @@
 [submodule "freetype2/src"]
 	path = freetype2/src
 	url = https://git.savannah.gnu.org/git/freetype/freetype2
+[submodule "micropython"]
+	path = micropython
+	url = https://github.com/astrelsky/micropython.git
+	branch = ps2-port

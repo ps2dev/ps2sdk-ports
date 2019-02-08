@@ -117,6 +117,9 @@ sdlttf: sdl freetype2
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
+	
+micropython: submodules
+	cd $@; ./SetupPS2.sh
 
 # Broken
 stlport:
