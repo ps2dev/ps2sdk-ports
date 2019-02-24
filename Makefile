@@ -22,7 +22,8 @@ expat:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-freetype2: submodules
+freetype2:
+	git submodule update --init freetype2	
 	cd $@; ./SetupPS2.sh
 
 libconfig:
@@ -30,7 +31,8 @@ libconfig:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-zlib: submodules
+zlib:
+	git submodule update --init zlib
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -56,11 +58,13 @@ libmikmod:
 	$(MAKE) -C $@ clean
 
 libpng: zlib
+	git submodule update --init libpng	
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-libtap: submodules
+libtap:
+	git submodule update --init libtap
 	$(MAKE) -C $@ -f Makefile.PS2 all
 	$(MAKE) -C $@ -f Makefile.PS2 install
 	$(MAKE) -C $@ -f Makefile.PS2 clean
