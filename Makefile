@@ -1,4 +1,4 @@
-.PHONY: aalib expat freetype2 libconfig-1.4.5 libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+.PHONY: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
 all: expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 #aalib madplay ode
@@ -15,9 +15,7 @@ expat:
 freetype2:
 	cd $@; ./SetupPS2.sh
 
-libconfig: libconfig-1.4.5
-
-libconfig-1.4.5:
+libconfig:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
