@@ -10,6 +10,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <stdio.h>
+#include <fcntl.h>
 #include <screenshot.h>
 #include <fileXio_rpc.h>
 

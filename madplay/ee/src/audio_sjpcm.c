@@ -23,8 +23,7 @@
 #  include "config.h"
 # endif
 
-# include "global.h"
-
+# include <stdio.h>
 # include <unistd.h>
 # include <errno.h>
 # include <sjpcm.h>
@@ -45,6 +44,8 @@
 #include <sifrpc.h>
 #include <sifcmd.h>
 #include <loadfile.h>
+
+# include "global.h"
 
 typedef void (*functionPointer)();
 
