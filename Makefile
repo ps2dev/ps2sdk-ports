@@ -1,10 +1,10 @@
 .PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
-all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
+all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay sdl sdlgfx sdlimage sdlmixer sdlttf ucl
 # libtap stlport ode
 else
-all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay romfs ucl
+all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay ucl
 # libtap stlport ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif

@@ -199,7 +199,7 @@ int readDirectory(char *ext, int media)
 				ret = fileXioDread(folder.iDir, &directory);
 				if (ret > 0)
 				{
-					if (FIO_S_ISDIR(directory.stat.mode))  //is a directory
+					if (S_ISDIR(directory.stat.mode))  //is a directory
 					{
 						strcpy(folder.object[folder.fIndex].name, "");
 						strcat(folder.object[folder.fIndex].name, "/");
@@ -208,7 +208,7 @@ int readDirectory(char *ext, int media)
 						folder.object[folder.fIndex].count = folder.fIndex;
 						folder.fIndex++;
 					}
-					else if (FIO_S_ISREG(directory.stat.mode)) //is a file
+					else if (S_ISREG(directory.stat.mode)) //is a file
 					{
 						if (size > ret)
 							size = 0;

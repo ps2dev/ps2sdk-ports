@@ -23,8 +23,6 @@
 #  include "config.h"
 # endif
 
-# include "global.h"
-
 # include <stdio.h>
 # include <stdarg.h>
 # include <stdlib.h>
@@ -89,6 +87,8 @@
 
 # include "bstdfile.h"
 # include "file.h"
+
+# include "global.h"
 
 # define MPEG_BUFSZ	80000	/* 5.0 s at 128 kbps; 2 s at 320 kbps */
 # define FREQ_TOLERANCE	2	/* percent sampling frequency tolerance */
