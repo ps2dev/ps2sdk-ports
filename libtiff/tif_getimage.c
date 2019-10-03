@@ -31,7 +31,6 @@
  */
 #include "tiffiop.h"
 #include <stdio.h>
-#include <tamtypes.h>
 #include <malloc.h>
 
 static	int gtTileContig(TIFFRGBAImage*, uint32*, uint32, uint32);
@@ -496,7 +495,7 @@ TIFFReadPS2Image(TIFF* tif,
 
     int orientation = ORIENTATION_BOTLEFT;
 
-    u32* nraster = malloc(img.width * img.height * 4);
+    u32* nraster = malloc(rwidth * rheight * 4);
 
     if (TIFFRGBAImageOK(tif, emsg) &&
         TIFFRGBAImageBegin(&img, tif, stop, emsg)) {
