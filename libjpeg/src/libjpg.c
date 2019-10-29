@@ -136,6 +136,7 @@ jpgData *jpgOpenRAW( u8 *data, int size, int mode )
 	if( priv == NULL )
 		return NULL;
 
+	memset( priv, 0, sizeof(jpgPrivate) );
 	jpg->priv	= priv;
 	dinfo		= &priv->dinfo;
   
@@ -309,6 +310,7 @@ jpgData *jpgCreateRAW( u8 *data, int width, int height, int bpp )
 	if( priv == NULL )
 		return NULL;
 
+	memset( priv, 0, sizeof(jpgPrivate) );
 	jpg->priv = priv;
 	cinfo = &priv->cinfo;
 
@@ -575,6 +577,7 @@ jpgData *jpgOpenFILE( FILE *in_file, int mode )
 	if( priv == NULL )
 		return NULL;
 
+	memset( priv, 0, sizeof(jpgPrivate) );
 	jpg->priv	= priv;
 	dinfo		= &priv->dinfo;
   
