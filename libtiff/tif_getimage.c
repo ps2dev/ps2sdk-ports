@@ -31,6 +31,7 @@
  */
 #include "tiffiop.h"
 #include <stdio.h>
+#include <tamtypes.h>
 #include <malloc.h>
 
 static	int gtTileContig(TIFFRGBAImage*, uint32*, uint32, uint32);
