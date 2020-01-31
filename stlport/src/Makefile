@@ -48,8 +48,8 @@ CXXFLAGS_STLDEBUG_dynamic = $(CXXFLAGS_DEBUG_dynamic) -D_STLP_DEBUG
 
 include common_percent_rules.mak
 include common_rules.mak
-include $(PS2SDK)/Defs.make
-include ../../Makefile.eeglobal
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
 
 #install: all
 #	cp -p $(LIB_TARGET) ${D_LIB_TARGET} ../lib

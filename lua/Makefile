@@ -109,5 +109,5 @@ print.o: print.c ldebug.h lstate.h lua.h luaconf.h lobject.h llimits.h \
 
 # (end of Makefile)
 
-include $(PS2SDK)/Defs.make
-include ../Makefile.eeglobal
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
