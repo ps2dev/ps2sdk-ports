@@ -12,7 +12,7 @@ struct object
 
 struct folder
 {
-	int iDir;
+	DIR *pDir;
 	int fIndex;
 	int fMax;
 	char full[512];

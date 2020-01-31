@@ -16,6 +16,7 @@
 */
 #include "tamtypes.h"
 #include <stdio.h>
+#include <dirent.h>
 #include <sifrpc.h>
 #include <sifcmd.h>
 #include "sys/stat.h"
@@ -25,7 +26,6 @@
 #include "stdarg.h"
 #include "iopheap.h"
 #include "sys/ioctl.h"
-#include "fileXio_rpc.h"
 #include "errno.h"
 #include "string.h"
 #include "libhdd.h"
@@ -68,8 +68,8 @@ int openDirectory(char *dir, int media)
 	{
 	case 0:
 		{
-			folder.iDir = fileXioDopen(dir);
-			if (folder.iDir < 0)
+			folder.pDir = opendir(dir);
+			if (folder.pDir == NULL)
 				return -1;
 			return 0;
 		}
@@ -91,8 +91,8 @@ int closeDirectory(int media)
 	{
 	case 0:
 		{
-			fileXioDclose(folder.iDir);
-			folder.iDir = -1;
+			closedir(folder.pDir);
+			folder.pDir = NULL;
 			return 0;
 		}
 	case 1:
@@ -157,16 +157,16 @@ int changeDirectory(char *dir, int media)
 	{
 	case 0:
 		{
-			fileXioDclose(folder.iDir);
-			fileXioChdir(folder.directory);
-			folder.iDir = fileXioDopen(folder.directory);
+			closedir(folder.pDir);
+			chdir(folder.directory);
+			folder.pDir = opendir(folder.directory);
 			return 1;
 		}
 	case 1:
 		{
 			return 1;
-			fioDclose(folder.iDir);
-			folder.iDir = fioDopen(folder.directory);
+			closedir(folder.pDir);
+			folder.pDir = opendir(folder.directory);
 		}
 	}
 	return 0;
@@ -180,113 +180,35 @@ int changeDirectory(char *dir, int media)
  ****************************************************************************/
 int readDirectory(char *ext, int media)
 {
-	int ret = 1;
-	iox_dirent_t directory;
+	struct dirent *pDirent;
+	DIR *directory;
+	struct stat fileStat;
 	int size;
-	char folderName[255];
-	unsigned int numToc = 0, index;
-	char *extcmp;
+	char fullpath[255];
 	folder.fIndex = 0;
-	struct TocEntry cdDirectory[255];
 	size = strlen(ext);
 
-	switch (media)
-	{
-	case 0:
-		{
-			while (ret > 0)
+	while ((pDirent = readdir(folder.pDir)) != NULL) {
+		strcpy (fullpath, folder.directory);
+		strcat (fullpath, "/");
+		strcat (fullpath, pDirent->d_name);
+		if (!stat(fullpath, &fileStat)) {
+			if (S_ISDIR(fileStat.st_mode)) //is a directory
 			{
-				ret = fileXioDread(folder.iDir, &directory);
-				if (ret > 0)
-				{
-					if (FIO_S_ISDIR(directory.stat.mode))  //is a directory
-					{
-						strcpy(folder.object[folder.fIndex].name, "");
-						strcat(folder.object[folder.fIndex].name, "/");
-						strcat(folder.object[folder.fIndex].name, directory.name);
-						folder.object[folder.fIndex].type = 0;
-						folder.object[folder.fIndex].count = folder.fIndex;
-						folder.fIndex++;
-					}
-					else if (FIO_S_ISREG(directory.stat.mode)) //is a file
-					{
-						if (size > ret)
-							size = 0;
-						extcmp = &directory.name[ret-size];
-						if (strcasecmp(extcmp, ext) == 0)
-						{
-							strcpy(folder.object[folder.fIndex].name, directory.name);
-							folder.object[folder.fIndex].type = 1;
-							folder.object[folder.fIndex].count = folder.fIndex;
-							folder.fIndex++;
-						}
-					}
-				}
-			}
-			folder.fMax = folder.fIndex;
-			folder.fIndex = 0;
-			sortFolder();
-			for (ret = 0; ret < folder.fMax; ret++)
-			{
-				if (folder.object[ret].type == 0)
-				{
-					strcpy(folderName, &folder.object[ret].name[1]);
-					strcpy(folder.object[ret].name, folderName);
-				}
-			}
-			closeDirectory(MODE_HDD);
-			return folder.fMax;
-		}
-	case 1:
-		{
-//			numToc = CDVD_GetDir(&folder.directory[5], NULL, CDVD_GET_FILES_AND_DIRS, cdDirectory, 254, NULL);
-// fixme: update to ps2sdk
-//			CDVD_Stop();
-			sceCdStop();
-
-#define CD_S_ISDIR(x) x & 2
-#define CD_S_ISFILE(x) !CD_S_ISDIR(x)
-
-			for (index=0; index<numToc; index++)
-			{
-				if (CD_S_ISDIR(cdDirectory[index].fileProperties)) //is a folder
-				{
-					strcpy(folder.object[folder.fIndex].name, "");
-					strcat(folder.object[folder.fIndex].name, "/");
-					strcat(folder.object[folder.fIndex].name, cdDirectory[index].filename);
+				strcat(folder.object[folder.fIndex].name, fullpath);
 					folder.object[folder.fIndex].type = 0;
 					folder.object[folder.fIndex].count = folder.fIndex;
 					folder.fIndex++;
 				}
-				else
-				{
-					ret = strlen(cdDirectory[index].filename);
-					if (size > ret)
-						size = 0;
-					extcmp = &cdDirectory[index].filename[ret-size];
-					if (strcasecmp(extcmp, ext) == 0)
+			else if (S_ISREG(fileStat.st_mode)) //is a file
 					{
-						strcpy(folder.object[folder.fIndex].name, cdDirectory[index].filename);
+				strcpy(folder.object[folder.fIndex].name, fullpath);
 						folder.object[folder.fIndex].type = 1;
 						folder.object[folder.fIndex].count = folder.fIndex;
 						folder.fIndex++;
 					}
 				}
 			}
-			folder.fMax = folder.fIndex;
-			folder.fIndex = 0;
-			sortFolder();
-			for (ret = 0; ret < folder.fMax; ret++)
-			{
-				if (folder.object[ret].type == 0)
-				{
-					strcpy(folderName, &folder.object[ret].name[1]);
-					strcpy(folder.object[ret].name, folderName);
-				}
-			}
-			return folder.fMax;
-		}
-	}
 	return 0;
 }
 
