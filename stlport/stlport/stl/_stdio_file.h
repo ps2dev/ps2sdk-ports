@@ -722,19 +722,23 @@ inline void _FILE_I_set(FILE *__f, char* __begin, char* __next, char* __end) {
 
 #elif defined (_EE)
 
-inline int _FILE_fd(const FILE * f) { return f->fd; }
-inline char * _FILE_I_begin(const FILE * f) { return (char *) &(f->putback); }
-inline char * _FILE_I_next(const FILE * f) { return (char *) &(f->putback); }
-inline char * _FILE_I_end(const FILE * f) { return (char *) &(f->putback); }
+inline int _FILE_fd(const FILE * f) { return f->_file; }
+inline char * _FILE_I_begin(const FILE * f) { return (char *) (f->_bf._base); }
+inline char * _FILE_I_next(const FILE * f) { return (char *) (f->_p); }
+inline char * _FILE_I_end(const FILE * f) { return (char *) (f->_bf._base + f->_bf._size); }
 
-inline ptrdiff_t _FILE_I_avail(const FILE * f) { return 0; }
+inline ptrdiff_t _FILE_I_avail(const FILE * f) { return f->_bf._size; }
 
-inline char & _FILE_I_preincr(FILE * f) { return (char) f->putback; }
-inline char & _FILE_I_postincr(FILE * f) { return (char) f->putback; }
-inline char & _FILE_I_predecr(FILE * f) { return (char) f->putback; }
-inline char & _FILE_I_postdecr(FILE * f) { return (char) f->putback; }
-inline void _FILE_I_bump(FILE * f, int n) { }
-inline void _FILE_I_set(FILE * f, char * begin, char * next, char * end) { }
+inline char & _FILE_I_preincr(FILE * f) { --f->_bf._size; return *(char*) (++f->_p); }
+inline char & _FILE_I_postincr(FILE * f) { --f->_bf._size; return *(char*) (f->_p++);}
+inline char & _FILE_I_predecr(FILE * f) { ++f->_bf._size; return *(char*) (++f->_p); }
+inline char & _FILE_I_postdecr(FILE * f) { ++f->_bf._size; return *(char*) (f->_p++);}
+inline void _FILE_I_bump(FILE * f, int n) { f->_p += n; f->_bf._size -= n; }
+inline void _FILE_I_set(FILE * f, char * begin, char * next, char * end) { 
+  f->_bf._base = (unsigned char*)begin;
+  f->_p  = (unsigned char*)next;
+  f->_bf._size  = end - next;
+}
 
 # define _STLP_FILE_I_O_IDENTICAL
 
