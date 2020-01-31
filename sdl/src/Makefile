@@ -194,5 +194,5 @@ endif
 clean:
 	rm -f $(LIB_SDL) $(LIB_SDLMAIN) $(SDL_OBJS) $(SDLMAIN_OBJS) $(SDL_TMP)
 
-include $(PS2SDK)/Defs.make
-include ../../Makefile.eeglobal
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal

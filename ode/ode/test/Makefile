@@ -34,6 +34,6 @@ install:
 clean:
 	rm -f $(BINS) $(OBJS)
 
-include $(PS2SDK)/Defs.make
-include ../../../Makefile.eeglobal
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
 

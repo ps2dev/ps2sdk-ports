@@ -31,5 +31,5 @@ install: all
 	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f ucl/*.h $(DESTDIR)$(PS2SDK)/ports/include/ucl
 
-include $(PS2SDK)/Defs.make
-include ../Makefile.eeglobal
+include $(PS2SDK)/samples/Makefile.pref
+include $(PS2SDK)/samples/Makefile.eeglobal
