@@ -19,6 +19,8 @@
 extern "C" {
 #endif
 
+#define _NFILE 20
+
 extern unsigned char romdisk_start[];
 
 int romdisk_mount(const void *img);

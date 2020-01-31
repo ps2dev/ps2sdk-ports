@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <io_common.h>
+#include <errno.h>
 
 // handle romdisk 
 #include "romfs.h"
@@ -41,7 +42,7 @@ void rioInit()
 		// except stdout, stdin and stderr (even if not relevent here)
 		for(i=3;i<_NFILE;i++)
 		{
-			__riob[i].fd = -1;
+			__riob[i]._file = -1;
 			__sz[i] = 0;
 			__offset[i] = 0;
 			__dataptr[i] = 0;
@@ -71,7 +72,7 @@ int rioOpen(char* path, int mode)
 	fd = -1;
 	for(i=3;i<_NFILE;i++)
 	{
-		if(__riob[i].fd == -1)
+		if(__riob[i]._file == -1)
 		{
 			fd = i;
 			break;
@@ -86,7 +87,7 @@ int rioOpen(char* path, int mode)
 	if (romdisk_find(path, (void **)&(__dataptr[fd]), &(__sz[fd])) == 0)
 	{
 		// set the new fd
-		 __riob[i].fd = fd;
+		 __riob[i]._file = fd;
 		return fd;
 	}
 	else
@@ -120,7 +121,7 @@ int 	rioWrite(int fd, const void *buff, size_t buff_size)
 
 int 	rioClose(int fd)
 {	
-	__riob[fd].fd = -1;
+	__riob[fd]._file = -1;
 	__sz[fd] = 0;
 	__offset[fd] = 0;
 	__dataptr[fd] = 0;
@@ -228,13 +229,13 @@ FILE	*ropen(const char * fname, const char * mode)
 
 int    	rclose(FILE * stream)
 {
-	rioClose (stream->fd);
+	rioClose (stream->_file);
 	return 0;
 }
 
 size_t  rread(void *buf, size_t r, size_t n, FILE *stream)
 {
-	return (size_t)((rioRead(stream->fd, buf, (int)r * (int)n)) / r);
+	return (size_t)((rioRead(stream->_file, buf, (int)r * (int)n)) / r);
 }
 size_t 	rwrite(const void *buf, size_t r, size_t n, FILE *stream)
 {
@@ -243,24 +244,24 @@ size_t 	rwrite(const void *buf, size_t r, size_t n, FILE *stream)
 }
 int    	rseek(FILE *stream, long offset, int origin)
 {
-	return rioLseek( stream->fd, offset, origin);
+	return rioLseek( stream->_file, offset, origin);
 }
 long 	rtell(FILE *stream)
 {
-	return (long)__offset[stream->fd];
+	return (long)__offset[stream->_file];
 }
 int 	rsize(FILE *stream)
 {
-	return rioSize(stream->fd);
+	return rioSize(stream->_file);
 }
 int     rgetc(FILE *stream)
 {
-	return rioGetc(stream->fd);
+	return rioGetc(stream->_file);
 }
 char    *rgets(char *buf, int n, FILE *stream)
 {
 	
-	if (rioGets(stream->fd, buf, n)>0)
+	if (rioGets(stream->_file, buf, n)>0)
 		return (buf);
 	else
 		return NULL;
