@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <screenshot.h>
-#include <fileXio_rpc.h>
 
 #include "libjpg.h"
 #include "jpeglib.h"
@@ -198,21 +197,21 @@ jpgData *jpgOpen( char *filename, int mode )
 	int size;
 	int fd;
 
-	fd = fileXioOpen( filename, O_RDONLY, 0 );
+	fd = open( filename, O_RDONLY, 0 );
 	if( fd == -1 ) {
 		printf("jpgOpen: error opening '%s'\n", filename);
 		return NULL;
 	}
 	
-	size = fileXioLseek( fd, 0, SEEK_END );
-	fileXioLseek( fd, 0, SEEK_SET );
+	size = lseek( fd, 0, SEEK_END );
+	lseek( fd, 0, SEEK_SET );
 	
 	data = (u8*)malloc(size);
 	if( data == NULL )
 		return NULL;
 	
-	fileXioRead( fd, data, size );
-	fileXioClose(fd);
+	read( fd, data, size );
+	close(fd);
 
 	jpg = jpgOpenRAW( data, size, mode );
 	if( jpg == NULL )
@@ -406,7 +405,7 @@ int jpgScreenshot( const char* pFilename,unsigned int VramAdress, unsigned int W
 	u8 *data;
 	int ret;
 
-	file_handle = fileXioOpen( pFilename, O_CREAT | O_WRONLY, 0 );
+	file_handle = open( pFilename, O_CREAT | O_WRONLY, 0 );
 
 	// make sure we could open the file for output
 	if( file_handle < 0 )
@@ -481,10 +480,10 @@ int jpgScreenshot( const char* pFilename,unsigned int VramAdress, unsigned int W
 	jpg = jpgCreateRAW(out_buffer, Width, Height, 24);
 	ret = jpgCompressImageRAW(jpg, &data);
 	
-	fileXioWrite( file_handle, data, ret );
+	write( file_handle, data, ret );
 	jpgClose(jpg);
 
-	fileXioClose( file_handle );
+	close( file_handle );
 	free(out_buffer);
 
 	return 0;
