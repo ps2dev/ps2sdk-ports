@@ -1,12 +1,12 @@
 .PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
-all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf ucl
-# libtap stlport ode
+all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+# ode
 else
-all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtiff lua madplay romfs ucl
-# libtap stlport ode
-	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
+all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs stlport ucl
+# ode
+@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
 
 submodules:
@@ -144,4 +144,5 @@ sample:
 	$(MAKE) -C ucl sample
 # Broken samples
 #	$(MAKE) -C lua sample
+#	$(MAKE) -C ode sample
 #	$(MAKE) -C romfs sample
