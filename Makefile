@@ -6,7 +6,7 @@ all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad li
 else
 all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs stlport ucl
 # ode
-@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
+	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
 
 submodules:
