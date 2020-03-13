@@ -13,8 +13,8 @@
 
 
 #include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
-#include <io_common.h>
 #include <errno.h>
 
 // handle romdisk 
