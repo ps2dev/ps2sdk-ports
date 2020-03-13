@@ -29,7 +29,6 @@
 #include "errno.h"
 #include "string.h"
 #include "libhdd.h"
-#include "fileio.h"
 #include "debug.h"
 #include "sjpcm.h"
 #include "sbv_patches.h"
