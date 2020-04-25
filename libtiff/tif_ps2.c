@@ -54,25 +54,25 @@
 static tsize_t
 _tiffReadProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return ((tsize_t) fioRead((int) fd, buf, (size_t) size));
+	return ((tsize_t) read((int) fd, buf, (size_t) size));
 }
 
 static tsize_t
 _tiffWriteProc(thandle_t fd, tdata_t buf, tsize_t size)
 {
-	return ((tsize_t) fioWrite((int) fd, buf, (size_t) size));
+	return ((tsize_t) write((int) fd, buf, (size_t) size));
 }
 
 static toff_t
 _tiffSeekProc(thandle_t fd, toff_t off, int whence)
 {
-	return ((toff_t) fioLseek((int) fd, (off_t) off, whence));
+	return ((toff_t) lseek((int) fd, (off_t) off, whence));
 }
 
 static int
 _tiffCloseProc(thandle_t fd)
 {
-	return (fioClose((int) fd));
+	return (close((int) fd));
 }
 
 
@@ -127,7 +127,7 @@ TIFFOpen(const char* name, const char* mode)
 	int fd;
         TIFF* tif;
 
-	fd = fioOpen(name, O_RDONLY);
+	fd = open(name, O_RDONLY);
 
 	if (fd < 0) {
 		TIFFError(module, "%s: Cannot open", name);
@@ -136,7 +136,7 @@ TIFFOpen(const char* name, const char* mode)
 
 	tif = TIFFFdOpen((int)fd, name, mode);
 	if(!tif)
-		fioClose(fd);
+		close(fd);
 	return tif;
 }
 

@@ -37,7 +37,7 @@ include common_macros.mak
 WARNING_FLAGS= -Wall -W -Wno-sign-compare -Wno-unused -Wno-uninitialized
 #-ftemplate-depth-32 -frtti
 
-CXXFLAGS_COMMON = -I${STLPORT_DIR} ${WARNING_FLAGS} -I${PS2SDK}/common/include -I${PS2SDK}/ee/include -I${PS2DEV}/ee/include/c++/3.2.2 -I${PS2DEV}/ee/include/c++/3.2.2/ee
+CXXFLAGS_COMMON = -I${STLPORT_DIR} ${WARNING_FLAGS} -I${PS2SDK}/common/include -I${PS2SDK}/ee/include
 
 CXXFLAGS_RELEASE_static = $(CXXFLAGS_COMMON) -O2
 

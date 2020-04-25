@@ -25,11 +25,9 @@
 #include "stdarg.h"
 #include "iopheap.h"
 #include "sys/ioctl.h"
-#include "fileXio_rpc.h"
 #include "errno.h"
 #include "string.h"
 #include "libhdd.h"
-#include "fileio.h"
 #include "debug.h"
 #include "sjpcm.h"
 #include "sbv_patches.h"
@@ -85,68 +83,11 @@ setPathInfo(int argc, char **argv)
 
 
 /****************************************************************************
- * Mounts a hard disk partition.											*
- ****************************************************************************/
-int OpenPartition(char *part)
-{
-	int fd;
-	fd = fileXioMount("pfs0:", part, FIO_MT_RDWR);
-	if (fd < 0) { printf("Cannot mount partition\n"); return -1; }
-	return 0;
-}
-
-/****************************************************************************
- * Unmounts a hard disk partition.											*
- ****************************************************************************/
-int ClosePartition()
-{
-	fileXioUmount("pfs0:");
-	return 0;
-}
-
-/****************************************************************************
  * Universal file opening function.  Returns the handle to the file.		*
  ****************************************************************************/
 int OpenFile(char *filename, int mode, int media)
 {
-	int fd = 0;
-	switch (media)
-	{
-	case 0:  //hdd
-		{
-			fd = fileXioOpen(filename, mode, 0);
-			break;
-		}
-	case 1:  //cdfs
-		{
-//			CDVD_FlushCache();
-// fixme: update to ps2sdk
-			fd = fioOpen(filename, mode);
-			break;
-		}
-	case 2:
-		{
-			//fd = fioOpen(filename, mode);
-			fd = fileXioOpen(filename, mode, 0);
-			break;
-		}
-	case 3:
-		{
-			fd = fileXioOpen(filename, mode, 0);
-			break;	
-		}
-	case 4:
-		{
-			fd = fioOpen(filename, mode);
-			break;	
-		}
-	case 5:
-		{
-			fd = fileXioOpen(filename, mode, 0);
-			break;	
-		}
-	}
-	return fd;
+	return open(filename, mode, 0);
 }
 
 /****************************************************************************
@@ -154,43 +95,7 @@ int OpenFile(char *filename, int mode, int media)
  ****************************************************************************/
 void CloseFile(int handle, int media)
 {
-	switch (media)
-	{
-	case 0:  //hdd
-		{
-			fileXioClose(handle);
-			break;
-		}
-	case 1:  //cdfs
-		{
-			fioClose(handle);
-			//CDVD_Stop();
-//			cdStop();
-			break;
-		}
-	case 2: //mc0
-		{
-			//fioClose(handle);
-			fileXioClose(handle);
-			break;
-		}	
-	case 3:
-		{
-			//fioClose(handle);
-			fileXioClose(handle);
-			break;
-		}		
-	case 4:
-		{
-			fioClose(handle);
-			break;
-		}	
-	case 5:
-		{
-			fileXioClose(handle);
-			break;
-		}			
-	}
+	close(handle);
 }
 
 
@@ -199,44 +104,7 @@ void CloseFile(int handle, int media)
  ****************************************************************************/
 int ReadFile(int handle, unsigned char *buffer, int size, int media)
 {
-	int sr =0;
-//	printf ("ReadFile(%d, %p, %d, %d)\n", handle, buffer, size, media);
-	switch (media)
-	{
-	case 0:
-		{
-			sr = fileXioRead(handle, buffer, size);
-			break;
-		}
-	case 1:
-		{
-			sr = fioRead(handle, buffer, size);
-			break;
-		}
-	case 2:
-		{
-			//sr = fioRead(handle, buffer, size);
-			sr = fileXioRead(handle, buffer, size);
-			break;
-		}
-	case 3:
-		{
-			//sr = fioRead(handle, buffer, size);
-			sr = fileXioRead(handle, buffer, size);
-			break;
-		}
-	case 4:
-		{
-			sr = fioRead(handle, buffer, size);
-			break;
-		}
-	case 5:
-		{
-			sr = fileXioRead(handle, buffer, size);
-			break;
-		}
-	}
-	return sr;
+	return read(handle, buffer, size);
 }
 
 /****************************************************************************
@@ -244,43 +112,7 @@ int ReadFile(int handle, unsigned char *buffer, int size, int media)
  ****************************************************************************/
 int SeekFile(int handle, int pos, int rel, int media)
 {
-	int sr=0;
-	switch (media)
-	{
-	case 0:
-		{
-			sr = fileXioLseek(handle, pos, rel);
-			break;
-		}
-	case 1:
-		{
-			sr = fioLseek(handle, pos, rel);
-			break;
-		}
-	case 2:
-		{
-			//sr = fioLseek(handle, pos, rel);
-			sr = fileXioLseek(handle, pos, rel);
-			break;
-		}
-	case 3:
-		{
-			//sr = fioLseek(handle, pos, rel);
-			sr = fileXioLseek(handle, pos, rel);
-			break;
-		}
-	case 4:
-		{
-			sr = fioLseek(handle, pos, rel);
-			break;
-		}
-	case 5:
-		{
-			sr = fileXioLseek(handle, pos, rel);
-			break;
-		}
-	}
-	return sr;
+	return lseek(handle, pos, rel);;
 }
 	
 
@@ -290,8 +122,7 @@ int SeekFile(int handle, int pos, int rel, int media)
  ****************************************************************************/
 void closeShop(int handle)
 {
-	fileXioClose(handle);
-	fileXioUmount("pfs0:");
+	close(handle);
 }
 
 //from now elf loading functions
@@ -358,24 +189,24 @@ int RunElf(char *name)
 	fd=-1;
 	if(name[0]=='m' && name[1]=='c') // if mc, test mc0 and mc1
 	{
-		if((fd = fioOpen(name,1)) < 0) 
+		if((fd = open(name,1)) < 0) 
 		{
 			name[2]='1';
 		}
 	}
 	if(fd < 0)
-		if((fd = fioOpen(name,1)) < 0) 
+		if((fd = open(name,1)) < 0) 
 		{
 			return -1;
 		}
-		size = fioLseek(fd, 0, SEEK_END);
+		size = lseek(fd, 0, SEEK_END);
 		if(!size) {
-			fioClose(fd);
+			close(fd);
 			return -2;
 		}
 
-		fioLseek(fd, 0, 0);
-		fioRead(fd, eh, sizeof(elf_header_t)); // read the elf header
+		lseek(fd, 0, 0);
+		read(fd, eh, sizeof(elf_header_t)); // read the elf header
 
 		// crazy code for crazy man :P
 		boot_elf=(u8 *)0x1800000-size-256; 
@@ -383,8 +214,8 @@ int RunElf(char *name)
 		boot_elf=(u8 *) (((unsigned)boot_elf) &0xfffffff0);
 
 		// read rest file elf
-		fioRead(fd, boot_elf+sizeof(elf_header_t), size-sizeof(elf_header_t));
-		fioClose(fd);
+		read(fd, boot_elf+sizeof(elf_header_t), size-sizeof(elf_header_t));
+		close(fd);
 
 		// mrbrown machine gun ;)
 		eph = (elf_pheader_t *)(boot_elf + eh->phoff);
