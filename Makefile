@@ -31,11 +31,13 @@ libconfig:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
+ZLIB_FLAGS = --static --includedir=$(PS2SDK)/ee/include --libdir=$(PS2SDK)/ee/lib --prefix=$(PS2SDK)/ports
 zlib:
 	git submodule update --init zlib
-	$(MAKE) -C $@
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
+	cd $@/src && CHOST=ee CFLAGS="-O2 -G0" ./configure $(ZLIB_FLAGS)
+	$(MAKE) -C $@/src clean
+	$(MAKE) -C $@/src all
+	$(MAKE) -C $@/src install
 
 libid3tag: zlib
 	$(MAKE) -C $@ all
@@ -57,11 +59,15 @@ libmikmod:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
+LIBPNG_FLAGS = --host=mips64el --enable-static=true --enable-shared=false CC=ee-gcc AR=ee-ar STRIP=ee-strip RANLIB=ee-ranlib 
+LIBPNG_FLAGS += CFLAGS="-O2 -G0" CPPFLAGS="-I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ports/include" 
+LIBPNG_FLAGS += LDFLAGS="-L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib" --prefix=$(PS2SDK)/ports
 libpng: zlib
-	git submodule update --init libpng	
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
+	git submodule update --init libpng
+	cd $@/src && ./configure $(LIBPNG_FLAGS)
+	$(MAKE) -C $@/src clean
+	$(MAKE) -C $@/src all
+	$(MAKE) -C $@/src install
 
 libtap:
 	git submodule update --init libtap
