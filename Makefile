@@ -31,7 +31,7 @@ libconfig:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-ZLIB_FLAGS = --static --includedir=$(PS2SDK)/ee/include --libdir=$(PS2SDK)/ee/lib --prefix=$(PS2SDK)/ports
+ZLIB_FLAGS = --static --prefix=$(PS2SDK)/ports
 zlib:
 	git submodule update --init zlib
 	cd $@/src && CHOST=ee CFLAGS="-O2 -G0" ./configure $(ZLIB_FLAGS)
