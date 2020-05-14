@@ -1,14 +1,15 @@
 FROM fjtrujy/ps2dev:gskit-latest
 
-COPY . /src/ps2sdk-ports
+COPY . /src
 
-RUN \
-  apk add --no-cache --virtual .build-deps gcc musl-dev git && \
-  cd /src/ps2sdk-ports && \
-  make && \
-  apk del .build-deps && \
-  rm -rf \
-    /src/* \
-    /tmp/*
+RUN apk add build-base git
+RUN cd /src && make
 
-WORKDIR /src
+FROM alpine:latest  
+
+ENV PS2DEV /usr/local/ps2dev
+ENV PS2SDK $PS2DEV/ps2sdk
+ENV PATH   $PATH:${PS2DEV}/bin:${PS2DEV}/ee/bin:${PS2DEV}/iop/bin:${PS2DEV}/dvp/bin:${PS2SDK}/bin
+ENV GSKIT=$PS2DEV/gsKit
+
+COPY --from=0 ${PS2DEV} ${PS2DEV}

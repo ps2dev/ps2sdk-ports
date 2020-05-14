@@ -22,5 +22,4 @@ jobs:
 
     - name: Compile project
       run: |
-        ls -la
         make
