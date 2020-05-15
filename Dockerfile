@@ -1,4 +1,6 @@
-FROM fjtrujy/ps2dev:gskit-latest
+ARG BASE_DOCKER_IMAGE
+
+FROM $BASE_DOCKER_IMAGE
 
 COPY . /src
 

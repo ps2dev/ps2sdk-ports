@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: fjtrujy/ps2dev:gskit-latest
+    container: ${{ github.repository_owner }}/gskit:latest
     steps:
     - name: Install dependencies
       run: |
