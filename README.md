@@ -1,5 +1,8 @@
 # PS2SDK-PORTS
 
+![CI](https://github.com/ps2dev/ps2sdk-ports/workflows/CI/badge.svg)
+![CI-Docker](https://github.com/ps2dev/ps2sdk-ports/workflows/CI-Docker/badge.svg)
+
 ## What is it ?
 This git repository contains various number of ports working with the current `ps2sdk`. It is not intended to be a releasable package.
 
