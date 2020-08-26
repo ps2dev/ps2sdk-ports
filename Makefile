@@ -129,7 +129,7 @@ sdlttf: sdl freetype2
 	$(MAKE) -C $@ clean
 
 libyaml:
-	cd $@ && chmod a+x yamlBuildPS2.sh && ./yamlBuildPS2.sh
+	cd $@ && chmod a+x yamlBuildPS2.sh ./yamlBuildPS2.sh
 
 # Broken
 stlport:
