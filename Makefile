@@ -1,10 +1,12 @@
 .PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
-all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+all: submodules libraries
+libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
 # ode
 else
-all: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs stlport ucl
+all: submodules libraries
+libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs stlport ucl
 # ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
@@ -23,7 +25,6 @@ expat:
 	$(MAKE) -C $@ clean
 
 freetype2:
-	git submodule update --init freetype2	
 	cd $@; ./SetupPS2.sh
 
 libconfig:
@@ -33,7 +34,6 @@ libconfig:
 
 ZLIB_FLAGS = --static --prefix=$(PS2SDK)/ports
 zlib:
-	git submodule update --init zlib
 	cd $@/src && CHOST=ee CFLAGS="-O2 -G0" ./configure $(ZLIB_FLAGS)
 	$(MAKE) -C $@/src clean
 	$(MAKE) -C $@/src all
@@ -63,14 +63,12 @@ LIBPNG_FLAGS = --host=mips64el --enable-static=true --enable-shared=false CC=ee-
 LIBPNG_FLAGS += CFLAGS="-O2 -G0" CPPFLAGS="-I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ports/include" 
 LIBPNG_FLAGS += LDFLAGS="-L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib" --prefix=$(PS2SDK)/ports
 libpng: zlib
-	git submodule update --init libpng
 	cd $@/src && ./configure $(LIBPNG_FLAGS)
 	$(MAKE) -C $@/src clean
 	$(MAKE) -C $@/src all
 	$(MAKE) -C $@/src install
 
 libtap:
-	git submodule update --init libtap
 	$(MAKE) -C $@ -f Makefile.PS2 all
 	$(MAKE) -C $@ -f Makefile.PS2 install
 	$(MAKE) -C $@ -f Makefile.PS2 clean
