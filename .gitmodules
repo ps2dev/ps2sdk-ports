@@ -9,4 +9,4 @@
 	url = https://github.com/glennrp/libpng
 [submodule "freetype2/src"]
 	path = freetype2/src
-	url = https://git.savannah.gnu.org/git/freetype/freetype2
+	url = https://github.com/freetype/freetype2
