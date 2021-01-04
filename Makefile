@@ -1,12 +1,12 @@
-.PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+.PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: submodules libraries
-libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport ucl
+libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf stlport
 # ode
 else
 all: submodules libraries
-libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs stlport ucl
+libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs stlport
 # ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
@@ -132,11 +132,6 @@ stlport:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-ucl:
-	$(MAKE) -C $@
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
-
 sample:
 	$(MAKE) -C aalib sample
 	$(MAKE) -C libmikmod sample
@@ -145,7 +140,6 @@ sample:
 	$(MAKE) -C sdlgfx sample
 	$(MAKE) -C sdlmixer sample
 	$(MAKE) -C zlib sample
-	$(MAKE) -C ucl sample
 # Broken samples
 #	$(MAKE) -C lua sample
 #	$(MAKE) -C ode sample
