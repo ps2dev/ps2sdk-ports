@@ -623,11 +623,6 @@ static unsigned long long fromhex(const char *s)
 #endif /* __MINGW32__ || _EE */
 }
 
-#ifdef _EE
-/* TODO: Add working atoll() to support 64-bit integers */
-static long long atoll(const char *nptr) { return 0; }
-#endif /* _EE */
-
 #line 628 "scanner.c"
 
 #define INITIAL 0
