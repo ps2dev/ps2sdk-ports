@@ -34,7 +34,7 @@ libconfig:
 
 ZLIB_FLAGS = --static --prefix=$(PS2SDK)/ports
 zlib:
-	cd $@/src && CHOST=ee CFLAGS="-O2 -G0" ./configure $(ZLIB_FLAGS)
+	cd $@/src && CHOST=mips64r5900el-ps2-elf CFLAGS="-D_EE -O2 -G0" ./configure $(ZLIB_FLAGS)
 	$(MAKE) -C $@/src clean
 	$(MAKE) -C $@/src all
 	$(MAKE) -C $@/src install
@@ -59,8 +59,8 @@ libmikmod:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-LIBPNG_FLAGS = --host=mips64el --enable-static=true --enable-shared=false CC=ee-gcc AR=ee-ar STRIP=ee-strip RANLIB=ee-ranlib 
-LIBPNG_FLAGS += CFLAGS="-O2 -G0" CPPFLAGS="-I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ports/include" 
+LIBPNG_FLAGS = --host=mips64el --enable-static=true --enable-shared=false CC=mips64r5900el-ps2-elf-gcc AR=mips64r5900el-ps2-elf-ar STRIP=mips64r5900el-ps2-elf-strip RANLIB=mips64r5900el-ps2-elf-ranlib 
+LIBPNG_FLAGS += CFLAGS="-D_EE -O2 -G0" CPPFLAGS="-I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ports/include" 
 LIBPNG_FLAGS += LDFLAGS="-L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib" --prefix=$(PS2SDK)/ports
 libpng: zlib
 	cd $@/src && ./configure $(LIBPNG_FLAGS)

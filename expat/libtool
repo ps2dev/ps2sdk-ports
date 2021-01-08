@@ -60,26 +60,26 @@ host=mips-scei-elf
 echo="echo"
 
 # The archiver.
-AR="ee-ar"
+AR="mips64r5900el-ps2-elf-ar"
 AR_FLAGS="cru"
 
 # The default C compiler.
-CC="ee-gcc"
+CC="mips64r5900el-ps2-elf-gcc"
 
 # Is the compiler the GNU C compiler?
 with_gcc=yes
 
 # The linker used to build libraries.
-LD="ee-ld"
+LD="mips64r5900el-ps2-elf-ld"
 
 # Whether we need hard or soft links.
 LN_S="ln -s"
 
 # A BSD-compatible nm program.
-NM="/usr/local/ps2dev/ee/bin/ee-nm -B"
+NM="/usr/local/ps2dev/ee/bin/mips64r5900el-ps2-elf-nm -B"
 
 # A symbol stripping program
-STRIP=ee-strip
+STRIP=mips64r5900el-ps2-elf-strip
 
 # Used to examine libraries when file_magic_cmd begins "file"
 MAGIC_CMD=file
@@ -169,7 +169,7 @@ library_names_spec=""
 soname_spec=""
 
 # Commands used to build and install an old-style archive.
-RANLIB="ee-ranlib"
+RANLIB="mips64r5900el-ps2-elf-ranlib"
 old_archive_cmds="\$AR \$AR_FLAGS \$oldlib\$oldobjs\$old_deplibs~\$RANLIB \$oldlib"
 old_postinstall_cmds=""
 old_postuninstall_cmds=""
@@ -187,8 +187,8 @@ postinstall_cmds=""
 postuninstall_cmds=""
 
 # Commands to strip libraries.
-old_striplib="ee-strip --strip-debug"
-striplib="ee-strip --strip-unneeded"
+old_striplib="mips64r5900el-ps2-elf-strip --strip-debug"
+striplib="mips64r5900el-ps2-elf-strip --strip-unneeded"
 
 # Method to check whether dependent libraries are shared objects.
 deplibs_check_method="unknown"

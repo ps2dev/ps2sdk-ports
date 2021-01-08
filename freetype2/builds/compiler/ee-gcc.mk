@@ -1,5 +1,5 @@
 #
-# FreeType 2 Emotion Engine ee-gcc-specific definitions
+# FreeType 2 Emotion Engine mips64r5900el-ps2-elf-gcc-specific definitions
 # Modified by Nic, futher modified by ooPo.
 #
 
