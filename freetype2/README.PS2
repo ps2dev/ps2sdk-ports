@@ -9,7 +9,7 @@ To install: run SetupPS2.sh, which will automatically do whatever that was writt
  ---------------------------------------
 
  This package assumes you already have a working ps2dev toolchain,
- specificially binutils and gcc compiled for ee support. (ee-gcc)
+ specificially binutils and gcc compiled for ee support. (mips64r5900el-ps2-elf-gcc)
 
  ------------------
  Build Instructions
