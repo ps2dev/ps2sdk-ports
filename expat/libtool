@@ -76,7 +76,7 @@ LD="mips64r5900el-ps2-elf-ld"
 LN_S="ln -s"
 
 # A BSD-compatible nm program.
-NM="/usr/local/ps2dev/ee/bin/mips64r5900el-ps2-elf-nm -B"
+NM="mips64r5900el-ps2-elf-nm -B"
 
 # A symbol stripping program
 STRIP=mips64r5900el-ps2-elf-strip
