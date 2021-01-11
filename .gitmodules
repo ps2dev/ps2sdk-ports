@@ -10,3 +10,6 @@
 [submodule "freetype2/src"]
 	path = freetype2/src
 	url = https://github.com/freetype/freetype2
+[submodule "libyaml"]
+	path = libyaml
+	url = https://github.com/yaml/libyaml.git
