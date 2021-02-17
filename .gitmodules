@@ -1,15 +1,3 @@
 [submodule "libtap"]
 	path = libtap
 	url = https://github.com/ps2dev/libtap
-[submodule "zlib"]
-	path = zlib/src
-	url = https://github.com/madler/zlib
-[submodule "libpng"]
-	path = libpng/src
-	url = https://github.com/glennrp/libpng
-[submodule "freetype2/src"]
-	path = freetype2/src
-	url = https://github.com/freetype/freetype2
-[submodule "libyaml"]
-	path = libyaml
-	url = https://github.com/yaml/libyaml.git

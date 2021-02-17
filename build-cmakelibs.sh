@@ -7,28 +7,41 @@ CMAKE_OPTIONS="-Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INST
 #CMAKE_OPTIONS+="-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
 
 function build {
-    mkdir $1
     cd $1
-    cmake $CMAKE_OPTIONS $3 ../../$2 || { exit 1; }
+    mkdir build
+    cd build
+    cmake $CMAKE_OPTIONS $2 .. || { exit 1; }
     make --quiet -j $PROC_NR clean || { exit 1; }
     make --quiet -j $PROC_NR all || { exit 1; }
     make --quiet -j $PROC_NR install || { exit 1; }
-    cd ..
+    cd ../..
 }
 
 ## Add ps2dev.cmake
 cp ps2dev.cmake $PS2SDK/ || { exit 1; }
 
 ##
-## Build cmake projects
+## Remove build folder
 ##
 rm -rf build
 mkdir build
 cd build
-build zlib      zlib/src
-build libpng    libpng/src "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
-build freetype  freetype2/src
-build libyaml   libyaml
+
+##
+## Clone repos
+##
+git clone --depth 1 -b v1.2.11 https://github.com/madler/zlib || { exit 1; }
+git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
+git clone --depth 1 -b VER-2-10-2 https://github.com/freetype/freetype2 || { exit 1; }
+git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
+
+##
+## Build cmake projects
+##
+build zlib
+build libpng "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
+build freetype2
+build libyaml
 cd ..
 
 ##

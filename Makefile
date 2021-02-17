@@ -32,7 +32,7 @@ libconfig:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-libid3tag: zlib
+libid3tag: cmakelibs
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
