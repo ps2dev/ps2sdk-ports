@@ -10,7 +10,7 @@ EE_LIB_DIR = lib/
 
 EE_LIB = $(EE_LIB_DIR)libSDL_ttf.a
 
-EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL
+EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/SDL -I$(PS2SDK)/ports/include/freetype2
 EE_LIBS      += -lSDL
 
 EE_OBJS = SDL_ttf.o
