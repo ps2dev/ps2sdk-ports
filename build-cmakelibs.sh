@@ -32,7 +32,7 @@ cd build
 ##
 git clone --depth 1 -b v1.2.11 https://github.com/madler/zlib || { exit 1; }
 git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
-git clone --depth 1 -b VER-2-10-2 https://github.com/freetype/freetype2 || { exit 1; }
+git clone --depth 1 -b VER-2-10-4 https://gitlab.freedesktop.org/freetype/freetype || { exit 1; }
 git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 
 ##
@@ -40,7 +40,7 @@ git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 ##
 build zlib
 build libpng "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
-build freetype2
+build freetype
 build libyaml
 cd ..
 
