@@ -11,14 +11,11 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ github.repository_owner }}/gskit:latest
     steps:
+    - uses: actions/checkout@v2
+    
     - name: Install dependencies
       run: |
         apk add build-base git bash cmake
-
-    - uses: actions/checkout@v2
-      with:
-        submodules: true
-        fetch-depth: 0
 
     - name: Compile project
       run: |

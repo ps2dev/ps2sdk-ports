@@ -1,18 +1,15 @@
-.PHONY: submodules aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
-all: submodules libraries
+all: libraries
 libraries: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf
 # ode
 else
-all: submodules libraries
+all: libraries
 libraries: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay romfs
 # ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
-
-submodules:
-	git submodule init && git submodule update
 
 aalib:
 	$(MAKE) -C $@
