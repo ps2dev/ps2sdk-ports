@@ -3,3 +3,4 @@
 *.erl
 *.irx
 *.o
+build/

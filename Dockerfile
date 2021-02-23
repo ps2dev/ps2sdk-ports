@@ -5,7 +5,7 @@ FROM $BASE_DOCKER_IMAGE
 COPY . /src
 
 RUN apk add build-base git
-RUN cd /src && make libraries
+RUN cd /src && make -j $(nproc)
 
 FROM alpine:latest  
 

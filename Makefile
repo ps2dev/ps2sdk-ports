@@ -1,45 +1,35 @@
-.PHONY: submodules aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
-all: submodules libraries
-libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+all: libraries
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf
 # ode
 else
-all: submodules libraries
-libraries: aalib expat freetype2 libconfig libid3tag zlib libjpeg libmad libmikmod libpng libtap libtiff lua madplay romfs
+all: libraries
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay romfs
 # ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
-
-submodules:
-	git submodule init && git submodule update
 
 aalib:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
+cmakelibs:
+	./build-cmakelibs.sh
+
 expat:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
-
-freetype2:
-	cd $@; ./SetupPS2.sh
 
 libconfig:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-ZLIB_FLAGS = --static --prefix=$(PS2SDK)/ports
-zlib:
-	cd $@/src && CHOST=mips64r5900el-ps2-elf CFLAGS="-D_EE -O2 -G0" ./configure $(ZLIB_FLAGS)
-	$(MAKE) -C $@/src clean
-	$(MAKE) -C $@/src all
-	$(MAKE) -C $@/src install
-
-libid3tag: zlib
+libid3tag: cmakelibs
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -59,16 +49,9 @@ libmikmod:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-LIBPNG_FLAGS = --host=mips64el --enable-static=true --enable-shared=false CC=mips64r5900el-ps2-elf-gcc AR=mips64r5900el-ps2-elf-ar STRIP=mips64r5900el-ps2-elf-strip RANLIB=mips64r5900el-ps2-elf-ranlib 
-LIBPNG_FLAGS += CFLAGS="-D_EE -O2 -G0" CPPFLAGS="-I$(PS2SDK)/ee/include -I$(PS2SDK)/common/include -I$(PS2SDK)/ports/include" 
-LIBPNG_FLAGS += LDFLAGS="-L$(PS2SDK)/ee/lib -L$(PS2SDK)/ports/lib" --prefix=$(PS2SDK)/ports
-libpng: zlib
-	cd $@/src && ./configure $(LIBPNG_FLAGS)
-	$(MAKE) -C $@/src clean
-	$(MAKE) -C $@/src all
-	$(MAKE) -C $@/src install
-
 libtap:
+	rm -rf $@
+	git clone --depth 1 https://github.com/ps2dev/libtap
 	$(MAKE) -C $@ -f Makefile.PS2 all
 	$(MAKE) -C $@ -f Makefile.PS2 install
 	$(MAKE) -C $@ -f Makefile.PS2 clean
@@ -111,7 +94,7 @@ sdlgfx: sdlimage
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdlimage: sdl libpng libtiff
+sdlimage: sdl cmakelibs libtiff
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -121,7 +104,7 @@ sdlmixer: sdl
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdlttf: sdl freetype2
+sdlttf: sdl cmakelibs
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
