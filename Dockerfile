@@ -4,8 +4,8 @@ FROM $BASE_DOCKER_IMAGE
 
 COPY . /src
 
-RUN apk add build-base git
-RUN cd /src && make -j $(nproc)
+RUN apk add build-base git bash cmake
+RUN cd /src && make -j $(getconf _NPROCESSORS_ONLN)
 
 FROM alpine:latest  
 
