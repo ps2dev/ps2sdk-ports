@@ -53,6 +53,8 @@ libmikmod:
 	$(MAKE) -C $@ clean
 
 libtap:
+	rm -rf $@
+	git clone --depth 1 https://github.com/ps2dev/libtap
 	$(MAKE) -C $@ -f Makefile.PS2 all
 	$(MAKE) -C $@ -f Makefile.PS2 install
 	$(MAKE) -C $@ -f Makefile.PS2 clean
