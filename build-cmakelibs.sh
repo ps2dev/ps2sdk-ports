@@ -38,13 +38,8 @@ git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 ##
 ## Build cmake projects
 ##
-build zlib
+build zlib "-DUNIX:BOOL=ON"
 build libpng "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
 build freetype
 build libyaml
 cd ..
-
-##
-## Fix legacy applications using libz.a instead of libzlib.a
-##
-ln -sf "$PS2SDK/ports/lib/libzlib.a" "$PS2SDK/ports/lib/libz.a"
