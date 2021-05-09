@@ -1,19 +1,27 @@
 #!/bin/bash
 
 ## Determine the maximum number of processes that Make can work with.
+## Also make preparations for different toolchains
 PROC_NR=$(getconf _NPROCESSORS_ONLN)
+XTRA_OPTS=""
+MAKECMD=make
+OSVER=$(uname)
+if [ ${OSVER:0:5} == MINGW ]; then
+  XTRA_OPTS=(. -G"MinGW Makefiles")
+  MAKECMD=${OSVER:0:7}-make
+fi
 
 CMAKE_OPTIONS="-Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports -DBUILD_SHARED_LIBS=OFF "
 #CMAKE_OPTIONS+="-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
 
 function build {
     cd $1
-    mkdir build
+    mkdir -p build
     cd build
-    cmake $CMAKE_OPTIONS $2 .. || { exit 1; }
-    make --quiet -j $PROC_NR clean || { exit 1; }
-    make --quiet -j $PROC_NR all || { exit 1; }
-    make --quiet -j $PROC_NR install || { exit 1; }
+    cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
+    ${MAKECMD} --quiet -j $PROC_NR clean || { exit 1; }
+    ${MAKECMD} --quiet -j $PROC_NR all || { exit 1; }
+    ${MAKECMD} --quiet -j $PROC_NR install || { exit 1; }
     cd ../..
 }
 
@@ -38,13 +46,8 @@ git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 ##
 ## Build cmake projects
 ##
-build zlib
+build zlib "-DUNIX:BOOL=ON"
 build libpng "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
 build freetype
 build libyaml
 cd ..
-
-##
-## Fix legacy applications using libz.a instead of libzlib.a
-##
-ln -sf "$PS2SDK/ports/lib/libzlib.a" "$PS2SDK/ports/lib/libz.a"

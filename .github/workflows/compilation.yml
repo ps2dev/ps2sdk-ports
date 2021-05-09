@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: ${{ github.repository_owner }}/gskit:latest
+    container: ps2dev/gskit:latest
     steps:
     - uses: actions/checkout@v2
     
