@@ -47,6 +47,7 @@ git clone --depth 1 -b v1.9.4 https://github.com/lz4/lz4.git || { exit 1; }
 git clone --depth 1 -b v1.9.2 https://github.com/nih-at/libzip.git || { exit 1; }
 git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
 git clone --depth 1 -b VER-2-10-4 https://github.com/freetype/freetype || { exit 1; }
+git clone --depth 1 -b v1.14.0 https://github.com/google/googletest || { exit 1; }
 git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 git clone --depth 1 -b 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
@@ -96,6 +97,7 @@ build lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DL
 build libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
 build libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build freetype
+build googletest -DCMAKE_CXX_FLAGS='-DGTEST_HAS_POSIX_RE=0'
 build libyaml
 build libjpeg-turbo -DENABLE_SHARED=FALSE -DWITH_SIMD=0
 build ogg
