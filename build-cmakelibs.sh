@@ -19,9 +19,7 @@ function build {
     mkdir -p build
     cd build
     cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
-    ${MAKECMD} --quiet -j $PROC_NR clean || { exit 1; }
-    ${MAKECMD} --quiet -j $PROC_NR all || { exit 1; }
-    ${MAKECMD} --quiet -j $PROC_NR install || { exit 1; }
+    ${MAKECMD} --quiet -j $PROC_NR clean all install || { exit 1; }
     cd ../..
 }
 
