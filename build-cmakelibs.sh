@@ -9,6 +9,8 @@ OSVER=$(uname)
 if [ ${OSVER:0:5} == MINGW ]; then
   XTRA_OPTS=(. -G"MinGW Makefiles")
   MAKECMD=${OSVER:0:7}-make
+else
+  XTRA_OPTS=(. -G"Unix Makefiles")
 fi
 
 CMAKE_OPTIONS="-Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports -DBUILD_SHARED_LIBS=OFF "
