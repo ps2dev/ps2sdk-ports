@@ -64,9 +64,9 @@ libtiff:
 lua:
 	rm -rf $@
 	git clone --depth 1 -b ee-v5.4.4 https://github.com/ps2dev/lua
-	$(MAKE) -C $@ -f all platform=PS2
-	$(MAKE) -C $@ -f install platform=PS2
-	$(MAKE) -C $@ -f clean platform=PS2
+	$(MAKE) -C $@ all platform=PS2
+	$(MAKE) -C $@ install platform=PS2
+	$(MAKE) -C $@ clean platform=PS2
 
 # depends on SjPCM sound library
 madplay: libid3tag libmad
