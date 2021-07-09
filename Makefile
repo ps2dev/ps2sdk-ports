@@ -62,9 +62,11 @@ libtiff:
 	$(MAKE) -C $@ clean
 
 lua:
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
+	rm -rf $@
+	git clone --depth 1 -b ee-v5.4.4 https://github.com/ps2dev/lua
+	$(MAKE) -C $@ all platform=PS2
+	$(MAKE) -C $@ install platform=PS2
+	$(MAKE) -C $@ clean platform=PS2
 
 # depends on SjPCM sound library
 madplay: libid3tag libmad
@@ -117,7 +119,7 @@ sample:
 	$(MAKE) -C sdlgfx sample
 	$(MAKE) -C sdlmixer sample
 	$(MAKE) -C zlib sample
+	$(MAKE) -C lua sample platform=PS2
 # Broken samples
-#	$(MAKE) -C lua sample
 #	$(MAKE) -C ode sample
 #	$(MAKE) -C romfs sample
