@@ -34,12 +34,12 @@ libid3tag: cmakelibs
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-libjpeg:
+libjpeg: cmakelibs
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-libmad:
+libmad: cmakelibs
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -69,7 +69,7 @@ lua:
 	$(MAKE) -C $@ clean platform=PS2
 
 # depends on SjPCM sound library
-madplay: libid3tag libmad
+madplay: cmakelibs libid3tag libmad
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -96,7 +96,7 @@ sdlgfx: sdlimage
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdlimage: sdl cmakelibs libtiff
+sdlimage: cmakelibs libtiff sdl
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
