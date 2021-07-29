@@ -12,11 +12,11 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <screenshot.h>
+#include <setjmp.h>
 
 #include "libjpg.h"
 #include "jpeglib.h"
 #include "jerror.h"
-#include "setjmp.h"
 
 typedef struct {
 	struct jpeg_error_mgr pub;	/* "public" fields */
