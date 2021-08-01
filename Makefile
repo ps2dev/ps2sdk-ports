@@ -114,11 +114,9 @@ sdlttf: sdl cmakelibs
 sample:
 	$(MAKE) -C aalib sample
 	$(MAKE) -C libmikmod sample
-	$(MAKE) -C libpng sample
 	$(MAKE) -C sdl sample
 	$(MAKE) -C sdlgfx sample
 	$(MAKE) -C sdlmixer sample
-	$(MAKE) -C zlib sample
 	$(MAKE) -C lua sample platform=PS2
 # Broken samples
 #	$(MAKE) -C ode sample
