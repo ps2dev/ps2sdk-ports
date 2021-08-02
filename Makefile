@@ -1,12 +1,12 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf
 # ode
 else
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg libmad libmikmod libtap libtiff lua madplay romfs
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay romfs
 # ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
@@ -34,7 +34,7 @@ libid3tag: cmakelibs
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-libjpeg: cmakelibs
+libjpeg_ps2_addons: cmakelibs
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -86,7 +86,7 @@ romfs:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sdl: libjpeg
+sdl: cmakelibs
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
@@ -114,11 +114,9 @@ sdlttf: sdl cmakelibs
 sample:
 	$(MAKE) -C aalib sample
 	$(MAKE) -C libmikmod sample
-	$(MAKE) -C libpng sample
 	$(MAKE) -C sdl sample
 	$(MAKE) -C sdlgfx sample
 	$(MAKE) -C sdlmixer sample
-	$(MAKE) -C zlib sample
 	$(MAKE) -C lua sample platform=PS2
 # Broken samples
 #	$(MAKE) -C ode sample
