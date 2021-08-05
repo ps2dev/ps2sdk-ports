@@ -122,8 +122,9 @@ jpgData *jpgFromFilename(const char *filename, int mode)
 	}
 	
 	ret = read(fd, data, size);
-	if (ret != read) {
+	if (ret != size) {
 		printf("jpgOpen: Error reading content\n");
+		free(data);
 		close(fd);
 		return NULL;
 	}
