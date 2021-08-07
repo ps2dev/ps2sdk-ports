@@ -103,6 +103,7 @@ jpgData *jpgFromFilename(const char *filename, int mode)
 	void *data;
 	int size;
 	int fd;
+	jpgData *jpg;
 	ssize_t ret;
 
 	fd = open(filename, O_RDONLY, 0);
@@ -130,8 +131,10 @@ jpgData *jpgFromFilename(const char *filename, int mode)
 	}
 
 	close(fd);
+	jpg = jpgFromRAW(data, size, mode);
+	free(data);
 
-	return jpgFromRAW(data, size, mode);
+	return jpg;
 }
 
 jpgData *jpgFromFILE(FILE *in_file, int mode)
