@@ -1,12 +1,12 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf unzip
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf unzip
 # ode
 else
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay romfs
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libmikmod libtap libtiff lua madplay romfs unzip
 # ode
 	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
 endif
@@ -107,6 +107,11 @@ sdlmixer: sdl
 	$(MAKE) -C $@ clean
 
 sdlttf: sdl cmakelibs
+	$(MAKE) -C $@
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+unzip:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
