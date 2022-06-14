@@ -47,7 +47,7 @@ git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || {
 ##
 ## Build cmake projects
 ##
-build zlib "-DUNIX:BOOL=ON"
+PROC_NR=1 build zlib "-DUNIX:BOOL=ON" # Forcing to compile with -j1 because there is a race condition in zlib
 build libpng "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
 build freetype
 build libyaml
