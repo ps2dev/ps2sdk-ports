@@ -15,7 +15,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        apk add build-base git bash cmake
+        apk add build-base git bash cmake pkgconfig
 
     - name: Compile project
       run: |
