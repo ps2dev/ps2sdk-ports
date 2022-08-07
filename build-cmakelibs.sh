@@ -57,6 +57,14 @@ git clone https://github.com/xiph/opus.git || { exit 1; }
 # till they release a new version with cmake compatibility
 git clone https://github.com/xiph/opusfile.git || { exit 1; } 
 (cd opusfile && git checkout cf218fb54929a1f54e30e2cb208a22d08b08c889 && cd -) || { exit 1; }
+# We need to clone the whole repo and point to the specific hash for now, 
+# till they release a new version with cmake compatibility
+git clone https://github.com/Konstanty/libmodplug.git || { exit 1; } 
+(cd libmodplug && git checkout d1b97ed0020bc620a059d3675d1854b40bd2608d && cd -) || { exit 1; }
+# We need to clone the whole repo and point to the specific hash for now, 
+# till they release a new version with cmake compatibility
+git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; } 
+(cd mikmod-mikmod && git checkout 187e55986a5888a8ead767a38fc29a8fc0ec5bbe && cd -) || { exit 1; }
 
 ##
 ## Build cmake projects
@@ -71,4 +79,10 @@ build vorbis
 build libxmp
 build opus
 build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON"
+build libmodplug
+build mikmod-mikmod/libmikmod "-DENABLE_SHARED=0"
+#we need an additional cd .. because previous library goes one sub-level more
+cd ..
+
+# Finish
 cd ..
