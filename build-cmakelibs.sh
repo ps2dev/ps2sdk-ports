@@ -76,7 +76,7 @@ build libyaml
 build libjpeg-turbo "-DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=FALSE -DWITH_SIMD=0"
 build ogg
 build vorbis
-build libxmp
+build libxmp "-DBUILD_SHARED=OFF"
 build opus
 build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON"
 build libmodplug
