@@ -106,7 +106,7 @@ sdlttf: sdl cmakelibs
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-unzip:
+unzip: cmakelibs
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
