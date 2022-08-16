@@ -45,6 +45,7 @@ git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
 git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
+git clone --depth 1 -b curl-7_84_0 https://github.com/curl/curl.git || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
@@ -76,6 +77,7 @@ build libyaml
 build libjpeg-turbo "-DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=FALSE -DWITH_SIMD=0"
 build ogg
 build vorbis
+build curl "-DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_MBEDTLS=OFF -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO"
 build libxmp "-DBUILD_SHARED=OFF"
 build opus
 build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON"
