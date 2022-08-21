@@ -16,7 +16,14 @@ aalib:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-cmakelibs:
+ps2_drivers:
+	rm -rf $@
+	git clone --depth 1 https://github.com/fjtrujy/ps2_drivers
+	$(MAKE) -C $@ all
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+cmakelibs: ps2_drivers
 	./build-cmakelibs.sh
 
 expat:
