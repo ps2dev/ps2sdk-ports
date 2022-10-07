@@ -67,7 +67,7 @@ git clone https://github.com/Konstanty/libmodplug.git || { exit 1; }
 git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; } 
 (cd mikmod-mikmod && git checkout 187e55986a5888a8ead767a38fc29a8fc0ec5bbe && cd -) || { exit 1; }
 
-git clone --depth 1 -b release-2.24.0 https://github.com/libsdl-org/SDL.git || { exit 1; }
+git clone --depth 1 -b release-2.24.1 https://github.com/libsdl-org/SDL.git || { exit 1; }
 git clone --depth 1 -b release-2.6.2 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
 git clone --depth 1 -b release-2.6.2 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.1 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
@@ -91,7 +91,7 @@ build mikmod-mikmod/libmikmod "-DENABLE_SHARED=0"
 #we need an additional cd .. because previous library goes one sub-level more
 cd ..
 
-build SDL
+build SDL "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF"
 build SDL_mixer "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DDSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=ON -DSDL2MIXER_SAMPLES=OFF"
 build SDL_image "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DBUILD_SHARED_LIBS=OFF"
 build SDL_ttf "-DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF"
