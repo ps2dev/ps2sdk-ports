@@ -17,12 +17,13 @@ CMAKE_OPTIONS="-Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INST
 #CMAKE_OPTIONS+="-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
 
 function build {
+    START_DIR="${PWD}"
     cd $1
     mkdir -p build
     cd build
     cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
     ${MAKECMD} --quiet -j $PROC_NR clean all install || { exit 1; }
-    cd ../..
+    cd "${START_DIR}"
 }
 
 ## Add ps2dev.cmake
@@ -90,8 +91,6 @@ build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=
 build libmodplug
 build mikmod-mikmod/libmikmod "-DENABLE_SHARED=0"
 build jsoncpp  "-DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF"
-#we need an additional cd .. because previous library goes one sub-level more
-cd ..
 
 build SDL "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF"
 build SDL_mixer "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DDSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=ON -DSDL2MIXER_SAMPLES=OFF"
