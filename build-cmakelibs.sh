@@ -17,12 +17,13 @@ CMAKE_OPTIONS="-Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INST
 #CMAKE_OPTIONS+="-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
 
 function build {
+    START_DIR="${PWD}"
     cd $1
     mkdir -p build
     cd build
     cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
     ${MAKECMD} --quiet -j $PROC_NR clean all install || { exit 1; }
-    cd ../..
+    cd "${START_DIR}"
 }
 
 ## Add ps2dev.cmake
@@ -46,6 +47,7 @@ git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || {
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
 git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
 git clone --depth 1 -b curl-7_84_0 https://github.com/curl/curl.git || { exit 1; }
+git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
@@ -88,8 +90,7 @@ build opus
 build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON"
 build libmodplug
 build mikmod-mikmod/libmikmod "-DENABLE_SHARED=0"
-#we need an additional cd .. because previous library goes one sub-level more
-cd ..
+build jsoncpp  "-DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF"
 
 build SDL "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF"
 build SDL_mixer "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DDSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_MOD=ON -DSDL2MIXER_SAMPLES=OFF"
