@@ -3,6 +3,7 @@
 ## Determine the maximum number of processes that Make can work with.
 ## Also make preparations for different toolchains
 PROC_NR=$(getconf _NPROCESSORS_ONLN)
+CFLAGS=""
 XTRA_OPTS=""
 MAKECMD=make
 OSVER=$(uname)
@@ -21,7 +22,7 @@ function build {
     cd $1
     mkdir -p build
     cd build
-    cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
+    CFLAGS="$CFLAGS" cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
     ${MAKECMD} --quiet -j $PROC_NR clean all install || { exit 1; }
     cd "${START_DIR}"
 }
@@ -46,7 +47,8 @@ git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
 git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
-git clone --depth 1 -b curl-7_84_0 https://github.com/curl/curl.git || { exit 1; }
+git clone --depth 1 -b v5.5.4-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
+git clone --depth 1 -b curl-7_87_0 https://github.com/curl/curl.git || { exit 1; }
 git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
@@ -84,7 +86,8 @@ build libyaml
 build libjpeg-turbo "-DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=FALSE -DWITH_SIMD=0"
 build ogg
 build vorbis
-build curl "-DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_MBEDTLS=OFF -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO"
+CFLAGS="-DNO_WRITEV" build wolfssl "-DBUILD_SHARED_LIBS=OFF -DWOLFSSL_CRYPT_TESTS=OFF -DWOLFSSL_EXAMPLES=OFF -DWOLFSSL_OPENSSLEXTRA=ON -DWARNING_C_FLAGS=-w"
+CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build curl "-DBUILD_SHARED_LIBS=OFF -DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_WOLFSSL=ON -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO -DHAVE_ATOMIC=NO"
 build libxmp "-DBUILD_SHARED=OFF"
 build opus
 build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON"
