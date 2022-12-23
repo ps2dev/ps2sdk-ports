@@ -3,6 +3,7 @@
 ## Determine the maximum number of processes that Make can work with.
 ## Also make preparations for different toolchains
 PROC_NR=$(getconf _NPROCESSORS_ONLN)
+CFLAGS=""
 XTRA_OPTS=""
 MAKECMD=make
 OSVER=$(uname)
@@ -13,21 +14,22 @@ else
   XTRA_OPTS=(. -G"Unix Makefiles")
 fi
 
-CMAKE_OPTIONS="-Wno-dev -DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake -DCMAKE_INSTALL_PREFIX=$PS2SDK/ports -DBUILD_SHARED_LIBS=OFF "
-#CMAKE_OPTIONS+="-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON "
+CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF)
+#CMAKE_OPTIONS=("${CMAKE_OPTIONS[@]}" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON)
 
 function build {
     START_DIR="${PWD}"
-    cd $1
+    cd "$1"
+    shift
     mkdir -p build
     cd build
-    cmake $CMAKE_OPTIONS $2 "${XTRA_OPTS[@]}" .. || { exit 1; }
-    ${MAKECMD} --quiet -j $PROC_NR clean all install || { exit 1; }
+    CFLAGS="$CFLAGS" cmake "${CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
+    "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
     cd "${START_DIR}"
 }
 
 ## Add ps2dev.cmake
-cp ps2dev.cmake $PS2SDK/ || { exit 1; }
+cp ps2dev.cmake "$PS2SDK/" || { exit 1; }
 
 ##
 ## Remove build folder
@@ -46,7 +48,8 @@ git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
 git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
 git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
-git clone --depth 1 -b curl-7_84_0 https://github.com/curl/curl.git || { exit 1; }
+git clone --depth 1 -b v5.5.4-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
+git clone --depth 1 -b curl-7_87_0 https://github.com/curl/curl.git || { exit 1; }
 git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
@@ -77,25 +80,26 @@ git clone --depth 1 -b release-2.20.1 https://github.com/libsdl-org/SDL_ttf.git 
 ##
 ## Build cmake projects
 ##
-PROC_NR=1 build zlib "-DUNIX:BOOL=ON" # Forcing to compile with -j1 because there is a race condition in zlib
-build libpng "-DPNG_SHARED=OFF -DPNG_STATIC=ON"
+PROC_NR=1 build zlib -DUNIX:BOOL=ON # Forcing to compile with -j1 because there is a race condition in zlib
+build libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build freetype
 build libyaml
-build libjpeg-turbo "-DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=FALSE -DWITH_SIMD=0"
+build libjpeg-turbo -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=FALSE -DWITH_SIMD=0
 build ogg
 build vorbis
-build curl "-DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_MBEDTLS=OFF -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO"
-build libxmp "-DBUILD_SHARED=OFF"
+CFLAGS="-DNO_WRITEV" build wolfssl -DBUILD_SHARED_LIBS=OFF -DWOLFSSL_CRYPT_TESTS=OFF -DWOLFSSL_EXAMPLES=OFF -DWOLFSSL_OPENSSLEXTRA=ON -DWARNING_C_FLAGS=-w
+CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build curl -DBUILD_SHARED_LIBS=OFF -DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_WOLFSSL=ON -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO -DHAVE_ATOMIC=NO
+build libxmp -DBUILD_SHARED=OFF
 build opus
-build opusfile "-DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON"
+build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
 build libmodplug
-build mikmod-mikmod/libmikmod "-DENABLE_SHARED=0"
-build jsoncpp  "-DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF"
+build mikmod-mikmod/libmikmod -DENABLE_SHARED=0
+build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 
-build SDL "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF"
-build SDL_mixer "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF"
-build SDL_image "-DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DBUILD_SHARED_LIBS=OFF"
-build SDL_ttf "-DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF"
+build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
+build SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
+build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DBUILD_SHARED_LIBS=OFF
+build SDL_ttf -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
 # Finish
 cd ..
