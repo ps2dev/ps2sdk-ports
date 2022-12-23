@@ -42,6 +42,7 @@ cd build
 ## Clone repos
 ##
 git clone --depth 1 -b v1.2.12 https://github.com/madler/zlib || { exit 1; }
+git clone --depth 1 -b v5.4.0 https://github.com/xz-mirror/xz.git || { exit 1; }
 git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
 git clone --depth 1 -b VER-2-10-4 https://github.com/freetype/freetype || { exit 1; }
 git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
@@ -81,6 +82,7 @@ git clone --depth 1 -b release-2.20.1 https://github.com/libsdl-org/SDL_ttf.git 
 ## Build cmake projects
 ##
 PROC_NR=1 build zlib -DUNIX:BOOL=ON # Forcing to compile with -j1 because there is a race condition in zlib
+build xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF
 build libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build freetype
 build libyaml
