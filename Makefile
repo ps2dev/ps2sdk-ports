@@ -1,29 +1,14 @@
 .PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf unzip
 
-ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: libraries
 libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf unzip
-# ode
-else
-all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs unzip
-# ode
-	@echo "GSKIT not set and gsKit not installed.\nSDL libraries were not built."
-endif
 
 aalib:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-ps2_drivers:
-	rm -rf $@
-	git clone --depth 1 -b 1.3.1 https://github.com/fjtrujy/ps2_drivers
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
-
-cmakelibs: ps2_drivers
+cmakelibs: ps2_drivers libtiff
 	./build-cmakelibs.sh
 
 expat:
@@ -80,6 +65,13 @@ madplay: cmakelibs libid3tag libmad
 # Broken
 ode:
 	$(MAKE) -C $@
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+ps2_drivers:
+	rm -rf $@
+	git clone --depth 1 -b 1.3.1 https://github.com/fjtrujy/ps2_drivers
+	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
