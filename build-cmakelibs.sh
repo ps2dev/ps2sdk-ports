@@ -75,6 +75,9 @@ git clone https://github.com/Konstanty/libmodplug.git || { exit 1; }
 git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; } 
 (cd mikmod-mikmod && git checkout 187e55986a5888a8ead767a38fc29a8fc0ec5bbe && cd -) || { exit 1; }
 
+# SDL requires to have gsKit
+git clone --depth 1 -b v1.3.2 https://github.com/ps2dev/gsKit || { exit 1; } 
+
 git clone --depth 1 -b release-2.24.1 https://github.com/libsdl-org/SDL.git || { exit 1; }
 git clone --depth 1 -b release-2.6.2 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
 git clone --depth 1 -b release-2.6.2 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
@@ -101,6 +104,9 @@ build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=O
 build libmodplug
 build mikmod-mikmod/libmikmod -DENABLE_SHARED=0
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
+
+# gsKit is mandatory for SDL, gsKit doesn't have cmake configuration yet, however we are going to put it here to solve cycling dependencies
+make -C gsKit -j "$PROC_NR" install
 
 build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
