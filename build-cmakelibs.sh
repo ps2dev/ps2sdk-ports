@@ -106,6 +106,7 @@ build mikmod-mikmod/libmikmod -DENABLE_SHARED=0
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 
 # gsKit is mandatory for SDL, gsKit doesn't have cmake configuration yet, however we are going to put it here to solve cycling dependencies
+make -C gsKit -j "$PROC_NR"
 make -C gsKit -j "$PROC_NR" install
 
 build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
