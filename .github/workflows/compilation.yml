@@ -19,4 +19,5 @@ jobs:
 
     - name: Compile project
       run: |
+        export GSKIT=$PS2DEV/gsKit
         make -j$(getconf _NPROCESSORS_ONLN)
