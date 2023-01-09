@@ -74,6 +74,9 @@ git clone https://github.com/Konstanty/libmodplug.git || { exit 1; }
 # till they release a new version with cmake compatibility
 git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; } 
 (cd mikmod-mikmod && git checkout 187e55986a5888a8ead767a38fc29a8fc0ec5bbe && cd -) || { exit 1; }
+# We need to clone a fork, this is a PR opened for ading cmake support
+# https://github.com/xiph/theora/pull/14
+git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
 
 # SDL requires to have gsKit
 git clone --depth 1 -b v1.3.2 https://github.com/ps2dev/gsKit || { exit 1; } 
@@ -104,6 +107,7 @@ build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=O
 build libmodplug
 build mikmod-mikmod/libmikmod -DENABLE_SHARED=0
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
+build theora
 
 # gsKit is mandatory for SDL, gsKit doesn't have cmake configuration yet, however we are going to put it here to solve cycling dependencies
 "${MAKECMD}" -C gsKit -j "$PROC_NR" || { exit 1; }
