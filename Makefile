@@ -1,7 +1,7 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf unzip
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf unzip
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 aalib:
 	$(MAKE) -C $@
@@ -102,6 +102,13 @@ sdlmixer: sdl
 
 sdlttf: sdl cmakelibs
 	$(MAKE) -C $@
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+SIOCookie:
+	rm -rf $@
+	git clone --depth 1 -b v1.0.0 https://github.com/israpps/SIOCookie
+	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
