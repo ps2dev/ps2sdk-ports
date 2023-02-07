@@ -81,10 +81,10 @@ git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git |
 # SDL requires to have gsKit
 git clone --depth 1 -b v1.3.2 https://github.com/ps2dev/gsKit || { exit 1; } 
 
-git clone --depth 1 -b release-2.24.1 https://github.com/libsdl-org/SDL.git || { exit 1; }
-git clone --depth 1 -b release-2.6.2 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
-git clone --depth 1 -b release-2.6.2 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
-git clone --depth 1 -b release-2.20.1 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
+git clone --depth 1 -b release-2.26.3 https://github.com/libsdl-org/SDL.git || { exit 1; }
+git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
+git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
+git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
 ##
 ## Build cmake projects
