@@ -79,7 +79,7 @@ git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; }
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
 
 # SDL requires to have gsKit
-git clone --depth 1 -b v1.3.2 https://github.com/ps2dev/gsKit || { exit 1; } 
+git clone --depth 1 -b v1.3.3 https://github.com/ps2dev/gsKit || { exit 1; } 
 
 git clone --depth 1 -b release-2.26.3 https://github.com/libsdl-org/SDL.git || { exit 1; }
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
