@@ -107,7 +107,7 @@ sdlttf: sdl cmakelibs
 
 SIOCookie:
 	rm -rf $@
-	git clone --depth 1 -b v1.0.1 https://github.com/israpps/SIOCookie
+	git clone --depth 1 -b v1.0.4 https://github.com/israpps/SIOCookie
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
