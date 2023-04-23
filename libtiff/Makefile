@@ -32,7 +32,6 @@ EE_OBJS = \
 	tif_version.o \
 	tif_warning.o \
 	tif_write.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 EE_CFLAGS += -msingle-float
 EE_INCS += -Iinclude/
