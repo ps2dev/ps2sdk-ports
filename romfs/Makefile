@@ -9,7 +9,6 @@ EE_INCS    += -I./include
 EE_CFLAGS  += -DSYS_LITTLE_ENDIAN -DSYS_NEED_ALIGNMENT
 
 EE_OBJS    += romfs.o romfs_io.o
-EE_OBJS    := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
 
