@@ -10,7 +10,6 @@ EE_INCS += -I./include -I$(EE_SRC_DIR)
 
 EE_LIB = $(EE_LIB_DIR)libconfig.a
 EE_OBJS = grammar.o libconfig.o scanctx.o scanner.o strbuf.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
 
