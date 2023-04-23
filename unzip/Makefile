@@ -7,7 +7,6 @@ EE_LIBS += -lz
 
 EE_LIB = $(EE_LIB_DIR)libunzip.a
 EE_OBJS = unzip.o ioapi.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
 

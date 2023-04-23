@@ -5,7 +5,6 @@ EE_LIB = $(EE_LIB_DIR)libid3tag.a
 EE_OBJS = compat.o crc.o debug.o field.o file.o frame.o frametype.o \
 	genre.o latin1.o parse.o render.o tag.o ucs4.o utf16.o utf8.o \
 	util.o version.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 EE_CFLAGS += -DHAVE_CONFIG_H -DHAVE_SYS_TYPES_H -DHAVE_ERRNO_H \
 	-DHAVE_UNISTD_H -DHAVE_FCNTL_H -I$(PS2SDK)/common/include/sys/ 

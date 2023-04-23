@@ -40,7 +40,6 @@ EE_OBJS = aafont.o \
        aastdout.o \
        aastdin.o \
        aaparse.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_OBJS)
 	$(EE_AR) rcs $(EE_LIB) $(EE_OBJS)

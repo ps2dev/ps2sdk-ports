@@ -19,7 +19,7 @@ EE_OBJS =	SDL_framerate.o	\
 		SDL_gfxPrimitives.o	\
 		SDL_imageFilter.o	\
 		SDL_rotozoom.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
+
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
 

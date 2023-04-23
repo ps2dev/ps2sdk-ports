@@ -9,7 +9,7 @@ EE_OBJS = audio.o audio_aiff.o audio_snd.o audio_wave.o audio_raw.o \
 	strcasecmp.o strncasecmp.o tag.o tagger.o version.o  \
 	file.o directory.o bstdfile.o rmalloc.o \
 	audio_sjpcm.o
-EE_OBJS := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
+
 # excluded: bar.o option.o
 EE_OBJS += $(EE_OBJS_DIR)isjpcm_irx.o
 
