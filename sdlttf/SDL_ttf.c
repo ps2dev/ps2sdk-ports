@@ -24,6 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define RW_SEEK_SET SEEK_SET
+#define RW_SEEK_CUR SEEK_CUR
+#define RW_SEEK_END SEEK_END
+
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
 #endif
@@ -46,10 +50,6 @@
 #include "SDL.h"
 #include "SDL_endian.h"
 #include "SDL_ttf.h"
-
-#define RW_SEEK_SET SEEK_SET
-#define RW_SEEK_CUR SEEK_CUR
-#define RW_SEEK_END SEEK_END
 
 /* FIXME: Right now we assume the gray-scale renderer Freetype is using
    supports 256 shades of gray, but we should instead key off of num_grays
