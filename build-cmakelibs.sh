@@ -72,8 +72,8 @@ git clone https://github.com/Konstanty/libmodplug.git || { exit 1; }
 (cd libmodplug && git checkout d1b97ed0020bc620a059d3675d1854b40bd2608d && cd -) || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
-git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; } 
-(cd mikmod-mikmod && git checkout 187e55986a5888a8ead767a38fc29a8fc0ec5bbe && cd -) || { exit 1; }
+git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; } 
+(cd mikmod-mikmod && git checkout 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 && cd -) || { exit 1; }
 # We need to clone a fork, this is a PR opened for ading cmake support
 # https://github.com/xiph/theora/pull/14
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
