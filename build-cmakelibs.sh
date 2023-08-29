@@ -54,6 +54,10 @@ git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
 git clone --depth 1 -b v5.5.4-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
 git clone --depth 1 -b curl-7_87_0 https://github.com/curl/curl.git || { exit 1; }
 git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
+# "snprintf" not found in "std" namespace error may occur, so patch that out here.
+pushd jsoncpp
+sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
+popd
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
