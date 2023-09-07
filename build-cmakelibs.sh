@@ -109,7 +109,7 @@ build libxmp -DBUILD_SHARED=OFF
 build opus
 build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
 build libmodplug
-build mikmod-mikmod/libmikmod -DENABLE_SHARED=0
+build mikmod-mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 build theora
 
