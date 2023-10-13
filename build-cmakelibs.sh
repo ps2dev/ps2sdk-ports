@@ -14,7 +14,7 @@ else
   XTRA_OPTS=(. -G"Unix Makefiles")
 fi
 
-CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo)
+CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
 #CMAKE_OPTIONS=("${CMAKE_OPTIONS[@]}" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON)
 
 function build {
@@ -54,6 +54,10 @@ git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
 git clone --depth 1 -b v5.5.4-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
 git clone --depth 1 -b curl-7_87_0 https://github.com/curl/curl.git || { exit 1; }
 git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
+# "snprintf" not found in "std" namespace error may occur, so patch that out here.
+pushd jsoncpp
+sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
+popd
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
@@ -72,8 +76,8 @@ git clone https://github.com/Konstanty/libmodplug.git || { exit 1; }
 (cd libmodplug && git checkout d1b97ed0020bc620a059d3675d1854b40bd2608d && cd -) || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
-git clone https://git.code.sf.net/p/mikmod/mikmod mikmod-mikmod || { exit 1; } 
-(cd mikmod-mikmod && git checkout 187e55986a5888a8ead767a38fc29a8fc0ec5bbe && cd -) || { exit 1; }
+git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; } 
+(cd mikmod-mikmod && git checkout 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 && cd -) || { exit 1; }
 # We need to clone a fork, this is a PR opened for ading cmake support
 # https://github.com/xiph/theora/pull/14
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
@@ -105,7 +109,7 @@ build libxmp -DBUILD_SHARED=OFF
 build opus
 build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
 build libmodplug
-build mikmod-mikmod/libmikmod -DENABLE_SHARED=0
+build mikmod-mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 build theora
 
