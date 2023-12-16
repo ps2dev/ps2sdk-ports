@@ -83,7 +83,7 @@ git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; }
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
 
 # SDL requires to have gsKit
-git clone --depth 1 -b v1.3.4 https://github.com/ps2dev/gsKit || { exit 1; } 
+git clone --depth 1 -b v1.3.5 https://github.com/ps2dev/gsKit || { exit 1; } 
 
 git clone --depth 1 -b release-2.26.3 https://github.com/libsdl-org/SDL.git || { exit 1; }
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
@@ -113,10 +113,8 @@ build mikmod-mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 build theora
 
-# gsKit is mandatory for SDL, gsKit doesn't have cmake configuration yet, however we are going to put it here to solve cycling dependencies
-"${MAKECMD}" -C gsKit || { exit 1; }
-"${MAKECMD}" -C gsKit install || { exit 1; }
-
+# gsKit is mandatory for SDL
+build gsKit
 build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
 build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DBUILD_SHARED_LIBS=OFF
