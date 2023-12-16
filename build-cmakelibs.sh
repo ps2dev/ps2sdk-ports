@@ -14,7 +14,7 @@ else
   XTRA_OPTS=(. -G"Unix Makefiles")
 fi
 
-CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2SDK/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
+CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
 #CMAKE_OPTIONS=("${CMAKE_OPTIONS[@]}" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON)
 
 function build {
@@ -28,8 +28,8 @@ function build {
     cd "${START_DIR}"
 }
 
-## Add ps2dev.cmake
-cp ps2dev.cmake "$PS2SDK/" || { exit 1; }
+## Create a synbolic link for retro-compatibility ps2dev.cmake
+ln -sf "$PS2DEV/share/ps2dev.cmake" "$PS2SDK/ps2dev.cmake" || { exit 1; }
 
 ##
 ## Remove build folder
