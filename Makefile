@@ -1,7 +1,7 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff libsmb2 lua madplay ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff libsmb2 lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 aalib:
 	$(MAKE) -C $@
@@ -47,6 +47,12 @@ libtiff:
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
+
+libsmb2:
+	rm -rf $@
+	git clone https://github.com/sahlberg/libsmb2 
+	$(MAKE) -C $@/lib -f Makefile.PS2_EE
+	$(MAKE) -C $@/lib -f Makefile.PS2_IOP 
 
 lua:
 	rm -rf $@
