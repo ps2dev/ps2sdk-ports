@@ -51,8 +51,9 @@ libtiff:
 libsmb2:
 	rm -rf $@
 	git clone https://github.com/sahlberg/libsmb2 
-	$(MAKE) -C $@/lib -f Makefile.PS2_EE
-	$(MAKE) -C $@/lib -f Makefile.PS2_IOP 
+	$(MAKE) -C $@/lib -f Makefile.PS2_EE install clean 
+	$(MAKE) -C $@/lib -f Makefile.PS2_EE_IPS install clean
+	$(MAKE) -C $@/lib -f Makefile.PS2_IOP install clean
 
 lua:
 	rm -rf $@
