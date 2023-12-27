@@ -58,14 +58,8 @@ git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git 
 pushd jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
-# We need to clone the whole repo and point to the specific hash for now, 
-# till they release a new version with cmake compatibility
-git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
-(cd libxmp && git checkout b0769774109d338554d534d9c122439d61d2bdd1 && cd -) || { exit 1; }
-# We need to clone the whole repo and point to the specific hash for now, 
-# till they release a new version with cmake compatibility
-git clone https://github.com/xiph/opus.git || { exit 1; } 
-(cd opus && git checkout ab04fbb1b7d0b727636d28fc2cadb5df9febe515 && cd -) || { exit 1; }
+git clone --depth 1 -b libxmp-4.6.0 https://github.com/libxmp/libxmp.git || { exit 1; } 
+git clone --depth 1 -b v1.4 https://github.com/xiph/opus.git || { exit 1; } 
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/xiph/opusfile.git || { exit 1; } 
