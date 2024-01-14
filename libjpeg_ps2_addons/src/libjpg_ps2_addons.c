@@ -9,7 +9,6 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <screenshot.h>
 #include <jpeglib.h>
 #include <setjmp.h>
 #include <gs_psm.h>
@@ -206,12 +205,15 @@ void jpgFileFromJpgData(const char *filename, int quality, jpgData *jpg) {
 	jpeg_destroy_compress(&cinfo);
 }
 
-int jpgScreenshot(const char* filename,unsigned int vramAdress, unsigned int width, unsigned int height, unsigned int psm)
+int jpgScreenshot(const char* filename,unsigned int vramAdress, unsigned int width, unsigned int height, unsigned int psm, cb_fetch_screen cb_fetch)
 {
 	int y;
 	static uint32_t in_buffer[1024*4];  // max 1024*32bit for a line, should be ok
 	uint8_t *p_out;
 	jpgData *jpg;
+
+	if (cb_fetch == NULL)
+		return -1;
 
 	jpg = malloc(sizeof(jpgData));
 	if(jpg == NULL)
@@ -228,7 +230,7 @@ int jpgScreenshot(const char* filename,unsigned int vramAdress, unsigned int wid
 	// Check if we have a tempbuffer, if we do we use it 
 	for (y = 0; y < height; y++)
 	{
-		ps2_screenshot(in_buffer, vramAdress, 0, y, width, 1, psm);
+		cb_fetch(in_buffer, vramAdress, 0, y, width, 1, psm);
 
 		if (psm == GS_PSM_16)
 		{
