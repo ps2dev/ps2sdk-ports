@@ -50,7 +50,7 @@ libtiff:
 
 lua:
 	rm -rf $@
-	git clone --depth 1 -b ee-v5.4.4 https://github.com/ps2dev/lua
+	git clone --depth 1 -b ee-v5.4.6 https://github.com/ps2dev/lua
 	$(MAKE) -C $@ all platform=PS2
 	$(MAKE) -C $@ install platform=PS2
 	$(MAKE) -C $@ clean platform=PS2

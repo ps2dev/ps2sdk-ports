@@ -58,14 +58,8 @@ git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git 
 pushd jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
-# We need to clone the whole repo and point to the specific hash for now, 
-# till they release a new version with cmake compatibility
-git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
-(cd libxmp && git checkout b0769774109d338554d534d9c122439d61d2bdd1 && cd -) || { exit 1; }
-# We need to clone the whole repo and point to the specific hash for now, 
-# till they release a new version with cmake compatibility
-git clone https://github.com/xiph/opus.git || { exit 1; } 
-(cd opus && git checkout ab04fbb1b7d0b727636d28fc2cadb5df9febe515 && cd -) || { exit 1; }
+git clone --depth 1 -b libxmp-4.6.0 https://github.com/libxmp/libxmp.git || { exit 1; } 
+git clone --depth 1 -b v1.4 https://github.com/xiph/opus.git || { exit 1; } 
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/xiph/opusfile.git || { exit 1; } 
@@ -83,9 +77,12 @@ git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; }
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
 
 # SDL requires to have gsKit
-git clone --depth 1 -b v1.3.5 https://github.com/ps2dev/gsKit || { exit 1; } 
+git clone --depth 1 -b v1.3.6 https://github.com/ps2dev/gsKit || { exit 1; } 
 
-git clone --depth 1 -b release-2.26.3 https://github.com/libsdl-org/SDL.git || { exit 1; }
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+git clone https://github.com/libsdl-org/SDL.git || { exit 1; }
+(cd SDL && git checkout 3b1e0e163ba3933daa9aa19f06a7bb3909e05c8a && cd -) || { exit 1; }
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
