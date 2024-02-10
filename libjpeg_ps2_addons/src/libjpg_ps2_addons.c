@@ -9,10 +9,8 @@
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <screenshot.h>
 #include <jpeglib.h>
 #include <setjmp.h>
-#include <gs_psm.h>
 
 #include "../include/libjpg_ps2_addons.h"
 
@@ -204,97 +202,4 @@ void jpgFileFromJpgData(const char *filename, int quality, jpgData *jpg) {
   	fclose(outfile);
 
 	jpeg_destroy_compress(&cinfo);
-}
-
-int jpgScreenshot(const char* filename,unsigned int vramAdress, unsigned int width, unsigned int height, unsigned int psm)
-{
-	int y;
-	static uint32_t in_buffer[1024*4];  // max 1024*32bit for a line, should be ok
-	uint8_t *p_out;
-	jpgData *jpg;
-
-	jpg = malloc(sizeof(jpgData));
-	if(jpg == NULL)
-		return -1;
-
-	jpg->buffer = malloc(width * height * 3);
-	if (jpg->buffer == NULL) {
-		free(jpg);
-		return -1;
-	}
-
-	p_out = jpg->buffer;
-
-	// Check if we have a tempbuffer, if we do we use it 
-	for (y = 0; y < height; y++)
-	{
-		ps2_screenshot(in_buffer, vramAdress, 0, y, width, 1, psm);
-
-		if (psm == GS_PSM_16)
-		{
-			uint32_t x;
-			uint16_t* p_in  = (uint16_t*)&in_buffer;
-
-			for (x = 0; x < width; x++)
-			{
-				uint32_t r = (p_in[x] & 31) << 3;
-				uint32_t g = ((p_in[x] >> 5) & 31) << 3;
-				uint32_t b = ((p_in[x] >> 10) & 31) << 3;
-
-				p_out[x*3+0] = r;
-				p_out[x*3+1] = g;
-				p_out[x*3+2] = b;
-			}
-		}
-		else
-		{
-			if (psm == GS_PSM_24)
-			{
-				uint32_t x;
-				uint8_t* p_in  = (uint8_t*)&in_buffer;
-
-				for (x = 0; x < width; x++)
-				{
-					uint8_t r =  *p_in++;
-					uint8_t g =  *p_in++;
-					uint8_t b =  *p_in++;
-
-					p_out[x*3+0] = r;
-					p_out[x*3+1] = g;
-					p_out[x*3+2] = b;
-				}
-			}
-			else
-			{
-				uint8_t *p_in = (uint8_t *) &in_buffer;
-				uint32_t x;
-
-				for(x = 0; x < width; x++)
-				{
-					uint8_t r = *p_in++;
-					uint8_t g = *p_in++;
-					uint8_t b = *p_in++;
-
-					p_in++;
-
-					p_out[x*3+0] = r;
-					p_out[x*3+1] = g;
-					p_out[x*3+2] = b;
-				}
-			}
-
-			p_out+= width*3;
-		}
-	}
-
-	jpg->width = width;
-	jpg->height = height;
-	jpg->bpp = 24;
-
-	jpgFileFromJpgData(filename, 100, jpg);
-	
-	free(jpg->buffer);
-	free(jpg);
-
-	return 0;
 }

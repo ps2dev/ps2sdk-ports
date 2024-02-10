@@ -57,7 +57,7 @@ libsmb2:
 
 lua:
 	rm -rf $@
-	git clone --depth 1 -b ee-v5.4.4 https://github.com/ps2dev/lua
+	git clone --depth 1 -b ee-v5.4.6 https://github.com/ps2dev/lua
 	$(MAKE) -C $@ all platform=PS2
 	$(MAKE) -C $@ install platform=PS2
 	$(MAKE) -C $@ clean platform=PS2
@@ -77,7 +77,7 @@ ode:
 
 ps2_drivers:
 	rm -rf $@
-	git clone --depth 1 -b 1.5.0 https://github.com/fjtrujy/ps2_drivers
+	git clone --depth 1 -b 1.6.0 https://github.com/fjtrujy/ps2_drivers
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean

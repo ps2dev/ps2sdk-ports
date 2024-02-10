@@ -23,7 +23,6 @@ jpgData *jpgFromRAW(void *data, int size, int mode);
 jpgData *jpgFromFilename(const char *filename, int mode);
 jpgData *jpgFromFILE(FILE *in_file, int mode);
 void jpgFileFromJpgData(const char *filename, int quality, jpgData *jpg);
-int jpgScreenshot(const char* pFilename,unsigned int VramAdress, unsigned int Width, unsigned int Height, unsigned int Psm);
 
 #ifdef __cplusplus
 }
