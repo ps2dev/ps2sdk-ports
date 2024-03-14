@@ -243,17 +243,18 @@ int Play_MPEGvideo( void *udata )
     start_frames = mpeg->_stream->totNumFrames;
     start_time = SDL_GetTicks();
 #endif
-    while( mpeg->playing )
+    mpeg->force_exit = false;
+    while( mpeg->playing && !mpeg->force_exit )
     {
         int mark = mpeg->_stream->totNumFrames;
 
         /* make sure we do a whole frame */
-        while( (mark == mpeg->_stream->totNumFrames) && mpeg->playing )
+        while( (mark == mpeg->_stream->totNumFrames) && mpeg->playing && !mpeg->force_exit )
         {
             mpegVidRsrc( 0, mpeg->_stream, 0 );
         }
 
-        if( mpeg->_stream->film_has_ended )
+        if( mpeg->_stream->film_has_ended || mpeg->force_exit )
         {
             mpeg->playing = false;
         }
@@ -282,7 +283,7 @@ MPEGvideo:: Play(void)
 			Stop();
 		}
         playing = true;
-#ifdef PROFILE_VIDEO	/* Profiling doesn't work well with threads */
+#ifdef DISABLE_VIDEO_CALLBACK_THREAD
 		Play_MPEGvideo(this);
 #else
         _thread = SDL_CreateThread( Play_MPEGvideo, this );
@@ -297,10 +298,13 @@ void
 MPEGvideo:: Stop(void)
 {
     if ( _thread ) {
-        playing = false;
+        force_exit = true;
         SDL_WaitThread(_thread, NULL);
         _thread = NULL;
     }
+    
+    playing = false;
+    
     ResetPause();
 }
 
@@ -438,6 +442,10 @@ MPEGvideo:: SetDisplay(SDL_Surface *dst, SDL_mutex *lock,
       SDL_FreeYUVOverlay(_image);
     }
     _image = SDL_CreateYUVOverlay(_srcrect.w, _srcrect.h, SDL_YV12_OVERLAY, dst);
+    if ( _image == NULL ) {
+        return false;
+    }
+
     if ( !_dstrect.w || !_dstrect.h ) {
         _dstrect.w = dst->w;
         _dstrect.h = dst->h;
@@ -502,6 +510,7 @@ MPEGvideo:: SetDisplayRegion(int x, int y, int w, int h)
     {
       SDL_FreeYUVOverlay(_image);
       _image = SDL_CreateYUVOverlay(_srcrect.w, _srcrect.h, SDL_YV12_OVERLAY, _dst);
+      /* !!! FIXME: Uhh...what if this one fails? */
     }
 
     SDL_mutexV( _mutex );

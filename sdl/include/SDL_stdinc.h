@@ -46,9 +46,6 @@
 # elif defined(HAVE_MALLOC_H)
 #  include <malloc.h>
 # endif
-# if defined(HAVE_STDDEF_H)
-#  include <stddef.h>
-# endif
 # if defined(HAVE_STDARG_H)
 #  include <stdarg.h>
 # endif
@@ -72,28 +69,6 @@
 #endif
 #if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
 # include <iconv.h>
-#endif
-#if defined(HAVE_ALLOCA) && !defined(alloca)
-# if defined(HAVE_ALLOCA_H)
-#  include <alloca.h>
-# elif defined(__GNUC__)
-#  define alloca __builtin_alloca
-# elif defined(_MSC_VER)
-#  include <malloc.h>
-#  define alloca _alloca
-# elif defined(__WATCOMC__)
-#  include <malloc.h>
-# elif defined(__BORLANDC__)
-#  include <malloc.h>
-# elif defined(__DMC__)
-#  include <stdlib.h>
-# elif defined(__AIX__)
-  #pragma alloca
-# elif defined(__MRC__)
-   void *alloca (unsigned);
-# else
-   char *alloca ();
-# endif
 #endif
 
 /** The number of elements in an array */
@@ -204,6 +179,28 @@ extern DECLSPEC void * SDLCALL SDL_realloc(void *mem, size_t size);
 extern DECLSPEC void SDLCALL SDL_free(void *mem);
 #endif
 
+#if defined(HAVE_ALLOCA) && !defined(alloca)
+# if defined(HAVE_ALLOCA_H)
+#  include <alloca.h>
+# elif defined(__GNUC__)
+#  define alloca __builtin_alloca
+# elif defined(_MSC_VER)
+#  include <malloc.h>
+#  define alloca _alloca
+# elif defined(__WATCOMC__)
+#  include <malloc.h>
+# elif defined(__BORLANDC__)
+#  include <malloc.h>
+# elif defined(__DMC__)
+#  include <stdlib.h>
+# elif defined(__AIX__)
+  #pragma alloca
+# elif defined(__MRC__)
+   void *alloca (unsigned);
+# else
+   char *alloca ();
+# endif
+#endif
 #ifdef HAVE_ALLOCA
 #define SDL_stack_alloc(type, count)    (type*)alloca(sizeof(type)*(count))
 #define SDL_stack_free(data)
@@ -258,7 +255,7 @@ extern DECLSPEC void SDLCALL SDL_qsort(void *base, size_t nmemb, size_t size,
 extern DECLSPEC void * SDLCALL SDL_memset(void *dst, int c, size_t len);
 #endif
 
-#if defined(__GNUC__) && defined(__i386__)
+#if defined(__GNUC__) && defined(i386)
 #define SDL_memset4(dst, val, len)				\
 do {								\
 	int u0, u1, u2;						\
@@ -291,7 +288,7 @@ do {						\
 /* We can count on memcpy existing on Mac OS X and being well-tuned. */
 #if defined(__MACH__) && defined(__APPLE__)
 #define SDL_memcpy(dst, src, len) memcpy(dst, src, len)
-#elif defined(__GNUC__) && defined(__i386__)
+#elif defined(__GNUC__) && defined(i386)
 #define SDL_memcpy(dst, src, len)					  \
 do {									  \
 	int u0, u1, u2;						  	  \
@@ -323,7 +320,7 @@ extern DECLSPEC void * SDLCALL SDL_memcpy(void *dst, const void *src, size_t len
 /* We can count on memcpy existing on Mac OS X and being well-tuned. */
 #if defined(__MACH__) && defined(__APPLE__)
 #define SDL_memcpy4(dst, src, len) memcpy(dst, src, (len)*4)
-#elif defined(__GNUC__) && defined(__i386__)
+#elif defined(__GNUC__) && defined(i386)
 #define SDL_memcpy4(dst, src, len)				\
 do {								\
 	int ecx, edi, esi;					\
@@ -339,7 +336,7 @@ do {								\
 #define SDL_memcpy4(dst, src, len)	SDL_memcpy(dst, src, (len) << 2)
 #endif
 
-#if defined(__GNUC__) && defined(__i386__)
+#if defined(__GNUC__) && defined(i386)
 #define SDL_revcpy(dst, src, len)			\
 do {							\
 	int u0, u1, u2;					\
@@ -505,17 +502,13 @@ extern DECLSPEC char* SDLCALL SDL_lltoa(Sint64 value, char *string, int radix);
 extern DECLSPEC char* SDLCALL SDL_ulltoa(Uint64 value, char *string, int radix);
 #endif
 
-#ifdef HAVE__STRTOI64
-#define SDL_strtoll    _strtoi64
-#elif defined(HAVE_STRTOLL)
+#ifdef HAVE_STRTOLL
 #define SDL_strtoll     strtoll
 #else
 extern DECLSPEC Sint64 SDLCALL SDL_strtoll(const char *string, char **endp, int base);
 #endif
 
-#ifdef HAVE__STRTOUI64
-#define SDL_strtoull    _strtoui64
-#elif defined(HAVE_STRTOULL)
+#ifdef HAVE_STRTOULL
 #define SDL_strtoull     strtoull
 #else
 extern DECLSPEC Uint64 SDLCALL SDL_strtoull(const char *string, char **endp, int base);
@@ -532,7 +525,7 @@ extern DECLSPEC double SDLCALL SDL_strtod(const char *string, char **endp);
 #ifdef HAVE_ATOI
 #define SDL_atoi        atoi
 #else
-#define SDL_atoi(X)     SDL_strtol(X, NULL, 10)
+#define SDL_atoi(X)     SDL_strtol(X, NULL, 0)
 #endif
 
 #ifdef HAVE_ATOF
@@ -553,18 +546,18 @@ extern DECLSPEC int SDLCALL SDL_strcmp(const char *str1, const char *str2);
 extern DECLSPEC int SDLCALL SDL_strncmp(const char *str1, const char *str2, size_t maxlen);
 #endif
 
-#if defined(HAVE__STRICMP)
-#define SDL_strcasecmp  _stricmp
-#elif defined(HAVE_STRCASECMP)
+#ifdef HAVE_STRCASECMP
 #define SDL_strcasecmp  strcasecmp
+#elif defined(HAVE__STRICMP)
+#define SDL_strcasecmp  _stricmp
 #else
 extern DECLSPEC int SDLCALL SDL_strcasecmp(const char *str1, const char *str2);
 #endif
 
-#if defined(HAVE__STRNICMP)
-#define SDL_strncasecmp _strnicmp
-#elif defined(HAVE_STRNCASECMP)
+#ifdef HAVE_STRNCASECMP
 #define SDL_strncasecmp strncasecmp
+#elif defined(HAVE__STRNICMP)
+#define SDL_strncasecmp _strnicmp
 #else
 extern DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, size_t maxlen);
 #endif
@@ -575,13 +568,13 @@ extern DECLSPEC int SDLCALL SDL_strncasecmp(const char *str1, const char *str2, 
 extern DECLSPEC int SDLCALL SDL_sscanf(const char *text, const char *fmt, ...);
 #endif
 
-#if defined(HAVE_SNPRINTF) && !(defined(__WATCOMC__) || defined(_WIN32))
+#ifdef HAVE_SNPRINTF
 #define SDL_snprintf    snprintf
 #else
 extern DECLSPEC int SDLCALL SDL_snprintf(char *text, size_t maxlen, const char *fmt, ...);
 #endif
 
-#if defined(HAVE_VSNPRINTF) && !(defined(__WATCOMC__) || defined(_WIN32))
+#ifdef HAVE_VSNPRINTF
 #define SDL_vsnprintf   vsnprintf
 #else
 extern DECLSPEC int SDLCALL SDL_vsnprintf(char *text, size_t maxlen, const char *fmt, va_list ap);

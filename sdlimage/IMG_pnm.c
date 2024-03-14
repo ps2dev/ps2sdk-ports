@@ -1,26 +1,23 @@
 /*
-    SDL_image:  An example image loading library for use with SDL
-    Copyright (C) 1999-2004 Sam Lantinga
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
-
-/* $Id$ */
 
 /*
  * PNM (portable anymap) image loader:
@@ -42,19 +39,31 @@
 /* See if an image is contained in a data source */
 int IMG_isPNM(SDL_RWops *src)
 {
+	int start;
+	int is_PNM;
 	char magic[2];
 
-	/*
-	 * PNM magic signatures:
-	 * P1	PBM, ascii format
-	 * P2	PGM, ascii format
-	 * P3	PPM, ascii format
-	 * P4	PBM, binary format
-	 * P5	PGM, binary format
-	 * P6	PPM, binary format
-	 */
-	return (SDL_RWread(src, magic, 2, 1)
-		&& magic[0] == 'P' && magic[1] >= '1' && magic[1] <= '6');
+	if ( !src )
+		return 0;
+	start = SDL_RWtell(src);
+	is_PNM = 0;
+	if ( SDL_RWread(src, magic, sizeof(magic), 1) ) {
+		/*
+		 * PNM magic signatures:
+		 * P1	PBM, ascii format
+		 * P2	PGM, ascii format
+		 * P3	PPM, ascii format
+		 * P4	PBM, binary format
+		 * P5	PGM, binary format
+		 * P6	PPM, binary format
+		 * P7	PAM, a general wrapper for PNM data
+		 */
+		if ( magic[0] == 'P' && magic[1] >= '1' && magic[1] <= '6' ) {
+			is_PNM = 1;
+		}
+	}
+	SDL_RWseek(src, start, RW_SEEK_SET);
+	return(is_PNM);
 }
 
 /* read a non-negative integer from the source. return -1 upon error */
@@ -96,6 +105,7 @@ static int ReadNumber(SDL_RWops *src)
 
 SDL_Surface *IMG_LoadPNM_RW(SDL_RWops *src)
 {
+	int start;
 	SDL_Surface *surface = NULL;
 	int width, height;
 	int maxval, y, bpl;
@@ -104,7 +114,7 @@ SDL_Surface *IMG_LoadPNM_RW(SDL_RWops *src)
 	char *error = NULL;
 	Uint8 magic[2];
 	int ascii;
-	enum { PBM, PGM, PPM } kind;
+	enum { PBM, PGM, PPM, PAM } kind;
 
 #define ERROR(s) do { error = (s); goto done; } while(0)
 
@@ -112,6 +122,7 @@ SDL_Surface *IMG_LoadPNM_RW(SDL_RWops *src)
 		/* The error message has been set in SDL_RWFromFile */
 		return NULL;
 	}
+	start = SDL_RWtell(src);
 
 	SDL_RWread(src, magic, 2, 1);
 	kind = magic[1] - '1';
@@ -220,9 +231,12 @@ SDL_Surface *IMG_LoadPNM_RW(SDL_RWops *src)
 done:
 	free(buf);
 	if(error) {
-		SDL_FreeSurface(surface);
+		SDL_RWseek(src, start, RW_SEEK_SET);
+		if ( surface ) {
+			SDL_FreeSurface(surface);
+			surface = NULL;
+		}
 		IMG_SetError(error);
-		surface = NULL;
 	}
 	return(surface);
 }

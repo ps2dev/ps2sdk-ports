@@ -11,6 +11,8 @@ LIB_SDLIMAGE 	= $(EE_LIB_DIR)libSDL_image.a
 EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/zlib -I$(PS2SDK)/ports/include/SDL
 EE_LIBS      += -lpng -lz -ljpeg -lSDL
 
+PS2_ROMFS=0
+
 EE_CFLAGS    += -DLOAD_BMP \
 		-DLOAD_GIF \
 		-DLOAD_JPG \
@@ -21,7 +23,8 @@ EE_CFLAGS    += -DLOAD_BMP \
 		-DLOAD_TGA \
 		-DLOAD_XCF \
 		-DLOAD_XPM \
-		-DLOAD_TIF
+		-DLOAD_TIF \
+		-DLOAD_XV \
 
 SDLIMAGE_OBJS =	IMG.o			\
 		IMG_bmp.o		\
@@ -33,8 +36,12 @@ SDLIMAGE_OBJS =	IMG.o			\
 		IMG_pnm.o		\
 		IMG_tga.o		\
 		IMG_tif.o		\
+		IMG_webp.o      \
 		IMG_xcf.o		\
-		IMG_xpm.o
+		IMG_xpm.o       \
+		IMG_xv.o        \
+		IMG_xxx.o
+
 
 EMBEDDED += \
 	$(PS2SDK)/ports/lib/libpng.a \
@@ -59,7 +66,7 @@ install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f $(LIB_SDLIMAGE) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
+	cp -f SDL_image.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
 	rm -f -r $(SDLIMAGE_OBJS) $(EE_LIB_DIR)

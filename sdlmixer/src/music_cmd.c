@@ -1,30 +1,28 @@
 /*
-    SDL_mixer:  An audio mixer library based on the SDL library
-    Copyright (C) 1997-2004 Sam Lantinga
+  SDL_mixer:  An audio mixer library based on the SDL library
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
-
-/* $Id$ */
+#include "SDL_config.h"
 
 /* This file supports an external command for playing music */
 
-#ifdef unix		/* This is a UNIX-specific hack */
+#ifdef CMD_MUSIC
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -50,7 +48,7 @@ MusicCMD *MusicCMD_LoadSong(const char *cmd, const char *file)
 	MusicCMD *music;
 
 	/* Allocate and fill the music structure */
-	music = (MusicCMD *)malloc(sizeof *music);
+	music = (MusicCMD *)SDL_malloc(sizeof *music);
 	if ( music == NULL ) {
 		Mix_SetError("Out of memory");
 		return(NULL);
@@ -125,7 +123,7 @@ static char **parse_args(char *command, char *last_arg)
 	if ( last_arg ) {
 		++argc;
 	}
-	argv = (char **)malloc((argc+1)*(sizeof *argv));
+	argv = (char **)SDL_malloc((argc+1)*(sizeof *argv));
 	if ( argv == NULL ) {
 		return(NULL);
 	}
@@ -144,7 +142,11 @@ static char **parse_args(char *command, char *last_arg)
 /* Start playback of a given music stream */
 void MusicCMD_Start(MusicCMD *music)
 {
+#ifdef HAVE_FORK
 	music->pid = fork();
+#else
+	music->pid = vfork();
+#endif
 	switch(music->pid) {
 	    /* Failed fork() system call */
 	    case -1:
@@ -155,6 +157,13 @@ void MusicCMD_Start(MusicCMD *music)
 	    case 0: {
 		    char command[PATH_MAX];
 		    char **argv;
+
+		    /* Unblock signals in case we're called from a thread */
+		    {
+			sigset_t mask;
+			sigemptyset(&mask);
+			sigprocmask(SIG_SETMASK, &mask, NULL);
+		    }
 
 		    /* Execute the command */
 		    strcpy(command, music->cmd);
@@ -210,7 +219,7 @@ void MusicCMD_Resume(MusicCMD *music)
 /* Close the given music stream */
 void MusicCMD_FreeSong(MusicCMD *music)
 {
-	free(music);
+	SDL_free(music);
 }
 
 /* Return non-zero if a stream is currently playing */
@@ -229,4 +238,4 @@ int MusicCMD_Active(MusicCMD *music)
 	return(active);
 }
 
-#endif /* unix */
+#endif /* CMD_MUSIC */

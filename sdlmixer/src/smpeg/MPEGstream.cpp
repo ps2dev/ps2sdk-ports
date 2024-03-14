@@ -234,7 +234,7 @@ MPEGstream:: copy_data(Uint8 *area, Sint32 size, bool short_read)
         Uint32 len;
 
         /* Get new data if necessary */
-        if ( data == stop ) {
+        if ( data >= stop ) {
             /* try to use the timestamp of the first packet */
             if ( ! next_packet(true, (timestamp == -1) || !timestamped) ) {
                 break;
@@ -259,13 +259,12 @@ MPEGstream:: copy_data(Uint8 *area, Sint32 size, bool short_read)
         copied += len;
 	pos += len;
 
+	SDL_mutexV(mutex);
+
         /* Allow 32-bit aligned short reads? */
         if ( ((copied%4) == 0) && short_read ) {
             break;
         }
-
-	SDL_mutexV(mutex);
-
     }
 
     return(copied);
@@ -274,7 +273,7 @@ MPEGstream:: copy_data(Uint8 *area, Sint32 size, bool short_read)
 int MPEGstream::copy_byte(void)
 {
   /* Get new data if necessary */
-  if ( data == stop ) {
+  if ( data >= stop ) {
     if ( ! next_packet() ) {
       return (-1);
     }

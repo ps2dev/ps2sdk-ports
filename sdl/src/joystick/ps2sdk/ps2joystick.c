@@ -28,6 +28,10 @@ static char rcsid =
  "@(#) $Id$";
 #endif
 
+#include "SDL_config.h"
+
+#ifdef SDL_INPUT_PS2
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -36,6 +40,7 @@ static char rcsid =
 #include "SDL_joystick.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
+#include "SDL_events.h"
 
 #include <tamtypes.h>
 #include <kernel.h>
@@ -508,3 +513,5 @@ void SDL_SYS_JoystickClose(SDL_Joystick *joystick)
 void SDL_SYS_JoystickQuit(void)
 {
 }
+
+#endif

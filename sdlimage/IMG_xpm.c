@@ -1,26 +1,23 @@
 /*
-    SDL_image:  An example image loading library for use with SDL
-    Copyright (C) 1999-2004 Sam Lantinga
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
-
-/* $Id$ */
 
 /*
  * XPM (X PixMap) image loader:
@@ -57,10 +54,21 @@
 /* See if an image is contained in a data source */
 int IMG_isXPM(SDL_RWops *src)
 {
+	int start;
+	int is_XPM;
 	char magic[9];
 
-	return (SDL_RWread(src, magic, sizeof(magic), 1)
-		&& memcmp(magic, "/* XPM */", 9) == 0);
+	if ( !src )
+		return 0;
+	start = SDL_RWtell(src);
+	is_XPM = 0;
+	if ( SDL_RWread(src, magic, sizeof(magic), 1) ) {
+		if ( memcmp(magic, "/* XPM */", sizeof(magic)) == 0 ) {
+			is_XPM = 1;
+		}
+	}
+	SDL_RWseek(src, start, RW_SEEK_SET);
+	return(is_XPM);
 }
 
 /* Hash table to look up colors from pixel strings */
@@ -114,8 +122,10 @@ static struct color_hash *create_colorhash(int maxnum)
 		return NULL;
 	memset(hash->table, 0, bytes);
 	hash->entries = malloc(maxnum * sizeof(struct hash_entry));
-	if(!hash->entries)
+	if(!hash->entries) {
+		free(hash->table);
 		return NULL;
+	}
 	hash->next_free = hash->entries;
 	return hash;
 }
@@ -235,6 +245,8 @@ static char *error;
  */
 static char *get_next_line(char ***lines, SDL_RWops *src, int len)
 {
+	char *linebufnew;
+
 	if(lines) {
 		return *(*lines)++;
 	} else {
@@ -250,11 +262,13 @@ static char *get_next_line(char ***lines, SDL_RWops *src, int len)
 			len += 4;	/* "\",\n\0" */
 			if(len > buflen){
 				buflen = len;
-				linebuf = realloc(linebuf, buflen);
-				if(!linebuf) {
+				linebufnew = realloc(linebuf, buflen);
+				if(!linebufnew) {
+					free(linebuf);
 					error = "Out of memory";
 					return NULL;
 				}
+				linebuf = linebufnew;
 			}
 			if(SDL_RWread(src, linebuf, len - 1, 1) <= 0) {
 				error = "Premature end of data";
@@ -268,11 +282,13 @@ static char *get_next_line(char ***lines, SDL_RWops *src, int len)
 					if(buflen == 0)
 						buflen = 16;
 					buflen *= 2;
-					linebuf = realloc(linebuf, buflen);
-					if(!linebuf) {
+					linebufnew = realloc(linebuf, buflen);
+					if(!linebufnew) {
+						free(linebuf);
 						error = "Out of memory";
 						return NULL;
 					}
+					linebuf = linebufnew;
 				}
 				if(SDL_RWread(src, linebuf + n, 1, 1) <= 0) {
 					error = "Premature end of data";
@@ -301,6 +317,7 @@ do {							\
 /* read XPM from either array or RWops */
 static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src)
 {
+	int start = 0;
 	SDL_Surface *image = NULL;
 	int index;
 	int x, y;
@@ -317,6 +334,9 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src)
 	error = NULL;
 	linebuf = NULL;
 	buflen = 0;
+
+	if ( src ) 
+		start = SDL_RWtell(src);
 
 	if(xpm)
 		xpmlines = &xpm;
@@ -402,9 +422,9 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src)
 			memcpy(nextkey, line, cpp);
 			if(indexed) {
 				SDL_Color *c = im_colors + index;
-				c->r = rgb >> 16;
-				c->g = rgb >> 8;
-				c->b = rgb;
+				c->r = (Uint8)(rgb >> 16);
+				c->g = (Uint8)(rgb >> 8);
+				c->b = (Uint8)(rgb);
 				pixel = index;
 			} else
 				pixel = rgb;
@@ -425,11 +445,11 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src)
 			/* optimization for some common cases */
 			if(cpp == 1)
 				for(x = 0; x < w; x++)
-					dst[x] = QUICK_COLORHASH(colors,
+					dst[x] = (Uint8)QUICK_COLORHASH(colors,
 								 line + x);
 			else
 				for(x = 0; x < w; x++)
-					dst[x] = get_colorhash(colors,
+					dst[x] = (Uint8)get_colorhash(colors,
 							       line + x * cpp,
 							       cpp);
 		} else {
@@ -443,8 +463,12 @@ static SDL_Surface *load_xpm(char **xpm, SDL_RWops *src)
 
 done:
 	if(error) {
-		SDL_FreeSurface(image);
-		image = NULL;
+		if ( src )
+			SDL_RWseek(src, start, RW_SEEK_SET);
+		if ( image ) {
+			SDL_FreeSurface(image);
+			image = NULL;
+		}
 		IMG_SetError(error);
 	}
 	free(keystrings);

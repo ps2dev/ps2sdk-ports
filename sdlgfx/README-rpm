@@ -1,0 +1,27 @@
+Prep environment for RPM building
+
+Example for on CentOS 6.4:
+
+yum install kernel-devel-[version]
+yum install SDL
+yum install SDL-devel
+yum install gcc
+yum install libtool
+yum install rpm-build
+
+
+To build RPM use:
+
+cd ~root
+tar xvzf SDL_gfx-2.0.25.tar.gz
+
+cp SDL_gfx-2.0.25.tar.gz /usr/src/RPM/SOURCES/SDL_gfx-2.0.25.tar.gz
+	or
+cp SDL_gfx-2.0.25.tar.gz /usr/src/redhat/SOURCES/SDL_gfx-2.0.25.tar.gz
+        or
+cp SDL_gfx-2.0.25.tar.gz /root/rpmbuild/SOURCES/SDL_gfx-2.0.25.tar.gz
+
+rpm -ba SDL_gfx-2.0.25/SDL_gfx.spec
+	or
+rpmbuild -ba SDL_gfx-2.0.25/SDL_gfx.spec
+

@@ -1,26 +1,25 @@
 /*
-    SDL_image:  An example image loading library for use with SDL
-    Copyright (C) 1999-2004 Sam Lantinga
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
 
-/* $Id$ */
+#if !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND)
 
 /* This is a GIF image file loading framework */
 
@@ -34,17 +33,22 @@
 /* See if an image is contained in a data source */
 int IMG_isGIF(SDL_RWops *src)
 {
+	int start;
 	int is_GIF;
 	char magic[6];
 
+	if ( !src )
+		return 0;
+	start = SDL_RWtell(src);
 	is_GIF = 0;
-	if ( SDL_RWread(src, magic, 6, 1) ) {
+	if ( SDL_RWread(src, magic, sizeof(magic), 1) ) {
 		if ( (strncmp(magic, "GIF", 3) == 0) &&
 		     ((memcmp(magic + 3, "87a", 3) == 0) ||
 		      (memcmp(magic + 3, "89a", 3) == 0)) ) {
 			is_GIF = 1;
 		}
 	}
+	SDL_RWseek(src, start, RW_SEEK_SET);
 	return(is_GIF);
 }
 
@@ -148,6 +152,7 @@ static Image *ReadImage(SDL_RWops * src, int len, int height, int,
 Image *
 IMG_LoadGIF_RW(SDL_RWops *src)
 {
+    int start;
     unsigned char buf[16];
     unsigned char c;
     unsigned char localColorMap[3][MAXCOLORMAPSIZE];
@@ -160,8 +165,10 @@ IMG_LoadGIF_RW(SDL_RWops *src)
     Image *image = NULL;
 
     if ( src == NULL ) {
-        goto done;
+	return NULL;
     }
+    start = SDL_RWtell(src);
+
     if (!ReadOK(src, buf, 6)) {
 	RWSetMsg("error reading magic number");
         goto done;
@@ -170,7 +177,7 @@ IMG_LoadGIF_RW(SDL_RWops *src)
 	RWSetMsg("not a GIF file");
         goto done;
     }
-    strncpy(version, (char *) buf + 3, 3);
+    memcpy(version, (char *) buf + 3, 3);
     version[3] = '\0';
 
     if ((strcmp(version, "87a") != 0) && (strcmp(version, "89a") != 0)) {
@@ -259,6 +266,9 @@ IMG_LoadGIF_RW(SDL_RWops *src)
 #endif
 
 done:
+    if ( image == NULL ) {
+        SDL_RWseek(src, start, RW_SEEK_SET);
+    }
     return image;
 }
 
@@ -310,7 +320,8 @@ DoExtension(SDL_RWops *src, int label)
 	break;
     case 0xfe:			/* Comment Extension */
 	str = "Comment Extension";
-	while (GetDataBlock(src, (unsigned char *) buf) != 0);
+	while (GetDataBlock(src, (unsigned char *) buf) != 0)
+	    ;
 	return FALSE;
     case 0xf9:			/* Graphic Control Extension */
 	str = "Graphic Control Extension";
@@ -321,7 +332,8 @@ DoExtension(SDL_RWops *src, int label)
 	if ((buf[0] & 0x1) != 0)
 	    Gif89.transparent = buf[3];
 
-	while (GetDataBlock(src, (unsigned char *) buf) != 0);
+	while (GetDataBlock(src, (unsigned char *) buf) != 0)
+	    ;
 	return FALSE;
     default:
 	str = (char *)buf;
@@ -329,7 +341,8 @@ DoExtension(SDL_RWops *src, int label)
 	break;
     }
 
-    while (GetDataBlock(src, (unsigned char *) buf) != 0);
+    while (GetDataBlock(src, (unsigned char *) buf) != 0)
+	;
 
     return FALSE;
 }
@@ -406,6 +419,10 @@ LWZReadByte(SDL_RWops *src, int flag, int input_code_size)
     static int stack[(1 << (MAX_LWZ_BITS)) * 2], *sp;
     register int i;
 
+    /* Fixed buffer overflow found by Michael Skladnikiewicz */
+    if (input_code_size > MAX_LWZ_BITS)
+        return -1;
+
     if (flag) {
 	set_code_size = input_code_size;
 	code_size = set_code_size + 1;
@@ -459,7 +476,8 @@ LWZReadByte(SDL_RWops *src, int flag, int input_code_size)
 	    if (ZeroDataBlock)
 		return -2;
 
-	    while ((count = GetDataBlock(src, buf)) > 0);
+	    while ((count = GetDataBlock(src, buf)) > 0)
+		;
 
 	    if (count != 0) {
 		/*
@@ -526,7 +544,8 @@ ReadImage(SDL_RWops * src, int len, int height, int cmapSize,
     **	If this is an "uninteresting picture" ignore it.
      */
     if (ignore) {
-	while (LWZReadByte(src, FALSE, c) >= 0);
+	while (LWZReadByte(src, FALSE, c) >= 0)
+	    ;
 	return NULL;
     }
     image = ImageNewCmap(len, height, cmapSize);
@@ -602,3 +621,5 @@ SDL_Surface *IMG_LoadGIF_RW(SDL_RWops *src)
 }
 
 #endif /* LOAD_GIF */
+
+#endif /* !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND) */

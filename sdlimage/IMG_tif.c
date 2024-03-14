@@ -1,28 +1,25 @@
 /*
-    SDL_image:  An example image loading library for use with SDL
-    Copyright (C) 1999-2004 Sam Lantinga
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
 
-/* $Id$ */
-
-
+#if !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND)
 
 /* This is a TIFF image file loading framework */
 
@@ -33,6 +30,99 @@
 #ifdef LOAD_TIF
 
 #include <tiffio.h>
+
+static struct {
+	int loaded;
+	void *handle;
+	TIFF* (*TIFFClientOpen)(const char*, const char*, thandle_t, TIFFReadWriteProc, TIFFReadWriteProc, TIFFSeekProc, TIFFCloseProc, TIFFSizeProc, TIFFMapFileProc, TIFFUnmapFileProc);
+	void (*TIFFClose)(TIFF*);
+	int (*TIFFGetField)(TIFF*, ttag_t, ...);
+	int (*TIFFReadRGBAImage)(TIFF*, uint32, uint32, uint32*, int);
+	TIFFErrorHandler (*TIFFSetErrorHandler)(TIFFErrorHandler);
+} lib;
+
+#ifdef LOAD_TIF_DYNAMIC
+int IMG_InitTIF()
+{
+	if ( lib.loaded == 0 ) {
+		lib.handle = SDL_LoadObject(LOAD_TIF_DYNAMIC);
+		if ( lib.handle == NULL ) {
+			return -1;
+		}
+		lib.TIFFClientOpen =
+			(TIFF* (*)(const char*, const char*, thandle_t, TIFFReadWriteProc, TIFFReadWriteProc, TIFFSeekProc, TIFFCloseProc, TIFFSizeProc, TIFFMapFileProc, TIFFUnmapFileProc))
+			SDL_LoadFunction(lib.handle, "TIFFClientOpen");
+		if ( lib.TIFFClientOpen == NULL ) {
+			SDL_UnloadObject(lib.handle);
+			return -1;
+		}
+		lib.TIFFClose =
+			(void (*)(TIFF*))
+			SDL_LoadFunction(lib.handle, "TIFFClose");
+		if ( lib.TIFFClose == NULL ) {
+			SDL_UnloadObject(lib.handle);
+			return -1;
+		}
+		lib.TIFFGetField =
+			(int (*)(TIFF*, ttag_t, ...))
+			SDL_LoadFunction(lib.handle, "TIFFGetField");
+		if ( lib.TIFFGetField == NULL ) {
+			SDL_UnloadObject(lib.handle);
+			return -1;
+		}
+		lib.TIFFReadRGBAImage =
+			(int (*)(TIFF*, uint32, uint32, uint32*, int))
+			SDL_LoadFunction(lib.handle, "TIFFReadRGBAImage");
+		if ( lib.TIFFReadRGBAImage == NULL ) {
+			SDL_UnloadObject(lib.handle);
+			return -1;
+		}
+		lib.TIFFSetErrorHandler =
+			(TIFFErrorHandler (*)(TIFFErrorHandler))
+			SDL_LoadFunction(lib.handle, "TIFFSetErrorHandler");
+		if ( lib.TIFFSetErrorHandler == NULL ) {
+			SDL_UnloadObject(lib.handle);
+			return -1;
+		}
+	}
+	++lib.loaded;
+
+	return 0;
+}
+void IMG_QuitTIF()
+{
+	if ( lib.loaded == 0 ) {
+		return;
+	}
+	if ( lib.loaded == 1 ) {
+		SDL_UnloadObject(lib.handle);
+	}
+	--lib.loaded;
+}
+#else
+int IMG_InitTIF()
+{
+	if ( lib.loaded == 0 ) {
+		lib.TIFFClientOpen = TIFFClientOpen;
+		lib.TIFFClose = TIFFClose;
+		lib.TIFFGetField = TIFFGetField;
+		lib.TIFFReadRGBAImage = TIFFReadRGBAImage;
+		lib.TIFFSetErrorHandler = TIFFSetErrorHandler;
+	}
+	++lib.loaded;
+
+	return 0;
+}
+void IMG_QuitTIF()
+{
+	if ( lib.loaded == 0 ) {
+		return;
+	}
+	if ( lib.loaded == 1 ) {
+	}
+	--lib.loaded;
+}
+#endif /* LOAD_TIF_DYNAMIC */
 
 /*
  * These are the thunking routine to use the SDL_RWops* routines from
@@ -63,50 +153,61 @@ static int tiff_close(thandle_t fd)
 	return 0;
 }
 
+static int tiff_map(thandle_t fd, tdata_t* pbase, toff_t* psize)
+{
+	return (0);
+}
+
+static void tiff_unmap(thandle_t fd, tdata_t base, toff_t size)
+{
+	return;
+}
+
 static toff_t tiff_size(thandle_t fd)
 {
 	Uint32 save_pos;
 	toff_t size;
 
 	save_pos = SDL_RWtell((SDL_RWops*)fd);
-	SDL_RWseek((SDL_RWops*)fd, 0, SEEK_END);
+	SDL_RWseek((SDL_RWops*)fd, 0, RW_SEEK_END);
         size = SDL_RWtell((SDL_RWops*)fd);
-	SDL_RWseek((SDL_RWops*)fd, save_pos, SEEK_SET);
+	SDL_RWseek((SDL_RWops*)fd, save_pos, RW_SEEK_SET);
 	return size;
 }
 
 int IMG_isTIF(SDL_RWops* src)
 {
-	TIFF* tiff;
-	TIFFErrorHandler prev_handler;
+	int start;
+	int is_TIF;
+	Uint8 magic[4];
 
-	/* Suppress output from libtiff */
-	prev_handler = TIFFSetErrorHandler(NULL);
-	
-	/* Attempt to process the given file data */
-	/* turn off memory mapped access with the m flag */
-	tiff = TIFFClientOpen("SDL_image", "rm", (thandle_t)src, 
-		tiff_read, tiff_write, tiff_seek, tiff_close, tiff_size, NULL, NULL);
-
-	/* Reset the default error handler, since it can be useful for info */
-	TIFFSetErrorHandler(prev_handler);
-
-	/* If it's not a TIFF, then tiff will be NULL. */
-	if(!tiff)
+	if ( !src )
 		return 0;
-
-	/* Free up any dynamically allocated memory libtiff uses */
-	TIFFClose(tiff);
-	
-	return 1;
+	start = SDL_RWtell(src);
+	is_TIF = 0;
+	if ( SDL_RWread(src, magic, 1, sizeof(magic)) == sizeof(magic) ) {
+		if ( (magic[0] == 'I' &&
+                      magic[1] == 'I' &&
+		      magic[2] == 0x2a &&
+                      magic[3] == 0x00) ||
+		     (magic[0] == 'M' &&
+                      magic[1] == 'M' &&
+		      magic[2] == 0x00 &&
+                      magic[3] == 0x2a) ) {
+			is_TIF = 1;
+		}
+	}
+	SDL_RWseek(src, start, RW_SEEK_SET);
+	return(is_TIF);
 }
 
 SDL_Surface* IMG_LoadTIF_RW(SDL_RWops* src)
 {
+	int start;
 	TIFF* tiff;
 	SDL_Surface* surface = NULL;
 	Uint32 img_width, img_height;
-	Uint32 Rmask, Gmask, Bmask, Amask, mask;
+	Uint32 Rmask, Gmask, Bmask, Amask;
 	Uint32 x, y;
 	Uint32 half;
 
@@ -114,16 +215,21 @@ SDL_Surface* IMG_LoadTIF_RW(SDL_RWops* src)
 		/* The error message has been set in SDL_RWFromFile */
 		return NULL;
 	}
+	start = SDL_RWtell(src);
+
+	if ( !IMG_Init(IMG_INIT_TIF) ) {
+		return NULL;
+	}
 
 	/* turn off memory mapped access with the m flag */
-	tiff = TIFFClientOpen("SDL_image", "rm", (thandle_t)src, 
-		tiff_read, tiff_write, tiff_seek, tiff_close, tiff_size, NULL, NULL);
+	tiff = lib.TIFFClientOpen("SDL_image", "rm", (thandle_t)src, 
+		tiff_read, tiff_write, tiff_seek, tiff_close, tiff_size, tiff_map, tiff_unmap);
 	if(!tiff)
-		return NULL;
+		goto error;
 
 	/* Retrieve the dimensions of the image from the TIFF tags */
-	TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &img_width);
-	TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &img_height);
+	lib.TIFFGetField(tiff, TIFFTAG_IMAGEWIDTH, &img_width);
+	lib.TIFFGetField(tiff, TIFFTAG_IMAGELENGTH, &img_height);
 
 	Rmask = 0x000000FF;
 	Gmask = 0x0000FF00;
@@ -132,10 +238,10 @@ SDL_Surface* IMG_LoadTIF_RW(SDL_RWops* src)
 	surface = SDL_AllocSurface(SDL_SWSURFACE, img_width, img_height, 32,
 		Rmask, Gmask, Bmask, Amask);
 	if(!surface)
-		return NULL;
+		goto error;
 	
-	if(!TIFFReadRGBAImage(tiff, img_width, img_height, surface->pixels, 0))
-		return NULL;
+	if(!lib.TIFFReadRGBAImage(tiff, img_width, img_height, surface->pixels, 0))
+		goto error;
 
 	/* libtiff loads the image upside-down, flip it back */
 	half = img_height / 2;
@@ -151,12 +257,29 @@ SDL_Surface* IMG_LoadTIF_RW(SDL_RWops* src)
 			bot[x] = tmp;
 		}
 	}
-	TIFFClose(tiff);
+	lib.TIFFClose(tiff);
 	
 	return surface;
+
+error:
+	SDL_RWseek(src, start, RW_SEEK_SET);
+	if ( surface ) {
+		SDL_FreeSurface(surface);
+	}
+	return NULL;
 }
 
 #else
+
+int IMG_InitTIF()
+{
+	IMG_SetError("TIFF images are not supported");
+	return(-1);
+}
+
+void IMG_QuitTIF()
+{
+}
 
 /* See if an image is contained in a data source */
 int IMG_isTIF(SDL_RWops *src)
@@ -171,3 +294,5 @@ SDL_Surface *IMG_LoadTIF_RW(SDL_RWops *src)
 }
 
 #endif /* LOAD_TIF */
+
+#endif /* !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND) */

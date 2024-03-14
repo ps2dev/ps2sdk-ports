@@ -1,9 +1,29 @@
+/*  
 
-/*
+SDL_rotozoom.c: rotozoomer, zoomer and shrinker for 32bit or 8bit surfaces
 
- SDL_rotozoom - rotozoomer
+Copyright (C) 2001-2023  Andreas Schiffler
 
- LGPL (c) A. Schiffler
+This software is provided 'as-is', without any express or implied
+warranty. In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+claim that you wrote the original software. If you use this software
+in a product, an acknowledgment in the product documentation would be
+appreciated but is not required.
+
+2. Altered source versions must be plainly marked as such, and must not be
+misrepresented as being the original software.
+
+3. This notice may not be removed or altered from any source
+distribution.
+
+Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 */
 
@@ -21,83 +41,81 @@ extern "C" {
 #define M_PI	3.141592654
 #endif
 
-#include "SDL.h"
+#include <SDL.h>
 
-/* ---- Defines */
+	/* ---- Defines */
 
+	/*!
+	\brief Disable anti-aliasing (no smoothing).
+	*/
 #define SMOOTHING_OFF		0
+
+	/*!
+	\brief Enable anti-aliasing (smoothing).
+	*/
 #define SMOOTHING_ON		1
 
-/* ---- Structures */
+	/* ---- Function Prototypes */
 
-    typedef struct tColorRGBA {
-	Uint8 r;
-	Uint8 g;
-	Uint8 b;
-	Uint8 a;
-    } tColorRGBA;
-
-    typedef struct tColorY {
-	Uint8 y;
-    } tColorY;
-
-
-/* ---- Prototypes */
-
-#ifdef WIN32
-#ifdef BUILD_DLL
-#define DLLINTERFACE __declspec(dllexport)
-#else
-#define DLLINTERFACE __declspec(dllimport)
+#ifdef _MSC_VER
+#  if defined(DLL_EXPORT) && !defined(LIBSDL_GFX_DLL_IMPORT)
+#    define SDL_ROTOZOOM_SCOPE __declspec(dllexport)
+#  else
+#    ifdef LIBSDL_GFX_DLL_IMPORT
+#      define SDL_ROTOZOOM_SCOPE __declspec(dllimport)
+#    endif
+#  endif
 #endif
-#else
-#define DLLINTERFACE
+#ifndef SDL_ROTOZOOM_SCOPE
+#  define SDL_ROTOZOOM_SCOPE extern
 #endif
 
-/* 
- 
- rotozoomSurface()
+	/* 
 
- Rotates and zoomes a 32bit or 8bit 'src' surface to newly created 'dst' surface.
- 'angle' is the rotation in degrees. 'zoom' a scaling factor. If 'smooth' is 1
- then the destination 32bit surface is anti-aliased. If the surface is not 8bit
- or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
+	Rotozoom functions
 
-*/
+	*/
 
-    DLLINTERFACE SDL_Surface *rotozoomSurface(SDL_Surface * src, double angle, double zoom, int smooth);
+	SDL_ROTOZOOM_SCOPE SDL_Surface *rotozoomSurface(SDL_Surface * src, double angle, double zoom, int smooth);
 
-    DLLINTERFACE SDL_Surface *rotozoomSurfaceXY
-    (SDL_Surface * src, double angle, double zoomx, double zoomy, int smooth);
-
-/* Returns the size of the target surface for a rotozoomSurface() call */
-
-    DLLINTERFACE void rotozoomSurfaceSize(int width, int height, double angle, double zoom, int *dstwidth,
-					  int *dstheight);
-
-    DLLINTERFACE void rotozoomSurfaceSizeXY
-    (int width, int height, double angle, double zoomx, double zoomy, 
-     int *dstwidth, int *dstheight);
-
-/* 
- 
- zoomSurface()
-
- Zoomes a 32bit or 8bit 'src' surface to newly created 'dst' surface.
- 'zoomx' and 'zoomy' are scaling factors for width and height. If 'smooth' is 1
- then the destination 32bit surface is anti-aliased. If the surface is not 8bit
- or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
-
-*/
-
-    DLLINTERFACE SDL_Surface *zoomSurface(SDL_Surface * src, double zoomx, double zoomy, int smooth);
-
-/* Returns the size of the target surface for a zoomSurface() call */
-
-    DLLINTERFACE void zoomSurfaceSize(int width, int height, double zoomx, double zoomy, int *dstwidth, int *dstheight);
+	SDL_ROTOZOOM_SCOPE SDL_Surface *rotozoomSurfaceXY
+		(SDL_Surface * src, double angle, double zoomx, double zoomy, int smooth);
 
 
-/* Ends C function definitions when using C++ */
+	SDL_ROTOZOOM_SCOPE void rotozoomSurfaceSize(int width, int height, double angle, double zoom, int *dstwidth,
+		int *dstheight);
+
+	SDL_ROTOZOOM_SCOPE void rotozoomSurfaceSizeXY
+		(int width, int height, double angle, double zoomx, double zoomy, 
+		int *dstwidth, int *dstheight);
+
+	/* 
+
+	Zooming functions
+
+	*/
+
+	SDL_ROTOZOOM_SCOPE SDL_Surface *zoomSurface(SDL_Surface * src, double zoomx, double zoomy, int smooth);
+
+	SDL_ROTOZOOM_SCOPE void zoomSurfaceSize(int width, int height, double zoomx, double zoomy, int *dstwidth, int *dstheight);
+
+	/* 
+
+	Shrinking functions
+
+	*/     
+
+	SDL_ROTOZOOM_SCOPE SDL_Surface *shrinkSurface(SDL_Surface * src, int factorx, int factory);
+
+	/* 
+
+	Specialized rotation functions
+
+	*/
+
+	SDL_ROTOZOOM_SCOPE SDL_Surface* rotateSurface90Degrees(SDL_Surface* src, int numClockwiseTurns);
+
+	/* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
 #endif

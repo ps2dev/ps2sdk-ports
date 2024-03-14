@@ -1,49 +1,36 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* General event handling code for SDL */
 
-#include <stdio.h>
-#include <string.h>
-
 #include "SDL.h"
-#include "SDL_thread.h"
-#include "SDL_mutex.h"
-#include "SDL_events.h"
-#include "SDL_events_c.h"
-#include "SDL_timer_c.h"
-#ifndef DISABLE_JOYSTICK
-#include "SDL_joystick_c.h"
-#endif
-#ifndef ENABLE_X11
-#define DISABLE_X11
-#endif
 #include "SDL_syswm.h"
 #include "SDL_sysevents.h"
+#include "SDL_events_c.h"
+#include "../timer/SDL_timer_c.h"
+#if !SDL_JOYSTICK_DISABLED
+#include "../joystick/SDL_joystick_c.h"
+#endif
 
 /* Public data -- the event filter */
 SDL_EventFilter SDL_EventOK = NULL;
@@ -89,10 +76,28 @@ void SDL_Unlock_EventThread(void)
 	}
 }
 
-static int SDL_GobbleEvents(void *unused)
+#ifdef __OS2__
+/*
+ * We'll increase the priority of GobbleEvents thread, so it will process
+ *  events in time for sure! For this, we need the DosSetPriority() API
+ *  from the os2.h include file.
+ */
+#define INCL_DOSPROCESS
+#include <os2.h>
+#include <time.h>
+#endif
+
+static int SDLCALL SDL_GobbleEvents(void *unused)
 {
-	SDL_SetTimerThreaded(2);
 	event_thread = SDL_ThreadID();
+
+#ifdef __OS2__
+#ifdef USE_DOSSETPRIORITY
+	/* Increase thread priority, so it will process events in time for sure! */
+	DosSetPriority(PRTYS_THREAD, PRTYC_REGULAR, +16, 0);
+#endif
+#endif
+
 	while ( SDL_EventQ.active ) {
 		SDL_VideoDevice *video = current_video;
 		SDL_VideoDevice *this  = current_video;
@@ -105,7 +110,7 @@ static int SDL_GobbleEvents(void *unused)
 		/* Queue pending key-repeat events */
 		SDL_CheckKeyRepeat();
 
-#ifndef DISABLE_JOYSTICK
+#if !SDL_JOYSTICK_DISABLED
 		/* Check for joystick state change */
 		if ( SDL_numjoysticks && (SDL_eventstate & SDL_JOYEVENTMASK) ) {
 			SDL_JoystickUpdate();
@@ -114,7 +119,7 @@ static int SDL_GobbleEvents(void *unused)
 
 		/* Give up the CPU for the rest of our timeslice */
 		SDL_EventLock.safe = 1;
-		if( SDL_timer_running ) {
+		if ( SDL_timer_running ) {
 			SDL_ThreadedTimerCheck();
 		}
 		SDL_Delay(1);
@@ -140,19 +145,19 @@ static int SDL_StartEventThread(Uint32 flags)
 {
 	/* Reset everything to zero */
 	SDL_EventThread = NULL;
-	memset(&SDL_EventLock, 0, sizeof(SDL_EventLock));
+	SDL_memset(&SDL_EventLock, 0, sizeof(SDL_EventLock));
 
 	/* Create the lock and set ourselves active */
-#ifndef DISABLE_THREADS
+#if !SDL_THREADS_DISABLED
 	SDL_EventQ.lock = SDL_CreateMutex();
 	if ( SDL_EventQ.lock == NULL ) {
-#ifdef macintosh /* On MacOS 7/8, you can't multithread, so no lock needed */
+#ifdef __MACOS__ /* MacOS classic you can't multithread, so no lock needed */
 		;
 #else
 		return(-1);
 #endif
 	}
-#endif /* !DISABLE_THREADS */
+#endif /* !SDL_THREADS_DISABLED */
 	SDL_EventQ.active = 1;
 
 	if ( (flags&SDL_INIT_EVENTTHREAD) == SDL_INIT_EVENTTHREAD ) {
@@ -162,7 +167,14 @@ static int SDL_StartEventThread(Uint32 flags)
 		}
 		SDL_EventLock.safe = 0;
 
+		/* The event thread will handle timers too */
+		SDL_SetTimerThreaded(2);
+#if (defined(__WIN32__) && !defined(_WIN32_WCE)) && !defined(HAVE_LIBC) && !defined(__SYMBIAN32__)
+#undef SDL_CreateThread
+		SDL_EventThread = SDL_CreateThread(SDL_GobbleEvents, NULL, NULL, NULL);
+#else
 		SDL_EventThread = SDL_CreateThread(SDL_GobbleEvents, NULL);
+#endif
 		if ( SDL_EventThread == NULL ) {
 			return(-1);
 		}
@@ -179,8 +191,12 @@ static void SDL_StopEventThread(void)
 		SDL_WaitThread(SDL_EventThread, NULL);
 		SDL_EventThread = NULL;
 		SDL_DestroyMutex(SDL_EventLock.lock);
+		SDL_EventLock.lock = NULL;
 	}
+#ifndef IPOD
 	SDL_DestroyMutex(SDL_EventQ.lock);
+	SDL_EventQ.lock = NULL;
+#endif
 }
 
 Uint32 SDL_EventThreadID(void)
@@ -194,6 +210,12 @@ void SDL_StopEventLoop(void)
 {
 	/* Halt the event thread, if running */
 	SDL_StopEventThread();
+
+	/* Shutdown event handlers */
+	SDL_AppActiveQuit();
+	SDL_KeyboardQuit();
+	SDL_MouseQuit();
+	SDL_QuitQuit();
 
 	/* Clean out EventQ */
 	SDL_EventQ.head = 0;
@@ -213,7 +235,7 @@ int SDL_StartEventLoop(Uint32 flags)
 
 	/* No filter to start with, process most event types */
 	SDL_EventOK = NULL;
-	memset(SDL_ProcessEvents,SDL_ENABLE,sizeof(SDL_ProcessEvents));
+	SDL_memset(SDL_ProcessEvents,SDL_ENABLE,sizeof(SDL_ProcessEvents));
 	SDL_eventstate = ~0;
 	/* It's not save to call SDL_EventState() yet */
 	SDL_eventstate &= ~(0x00000001 << SDL_SYSWMEVENT);
@@ -280,7 +302,7 @@ static int SDL_CutEvent(int spot)
 	{
 		int here, next;
 
-		/* This can probably be optimized with memcpy() -- careful! */
+		/* This can probably be optimized with SDL_memcpy() -- careful! */
 		if ( --SDL_EventQ.tail < 0 ) {
 			SDL_EventQ.tail = MAXEVENTS-1;
 		}
@@ -357,7 +379,7 @@ void SDL_PumpEvents(void)
 		/* Queue pending key-repeat events */
 		SDL_CheckKeyRepeat();
 
-#ifndef DISABLE_JOYSTICK
+#if !SDL_JOYSTICK_DISABLED
 		/* Check for joystick state change */
 		if ( SDL_numjoysticks && (SDL_eventstate & SDL_JOYEVENTMASK) ) {
 			SDL_JoystickUpdate();
@@ -467,7 +489,7 @@ int SDL_PrivateSysWMEvent(SDL_SysWMmsg *message)
 	posted = 0;
 	if ( SDL_ProcessEvents[SDL_SYSWMEVENT] == SDL_ENABLE ) {
 		SDL_Event event;
-		memset(&event, 0, sizeof(event));
+		SDL_memset(&event, 0, sizeof(event));
 		event.type = SDL_SYSWMEVENT;
 		event.syswm.msg = message;
 		if ( (SDL_EventOK == NULL) || (*SDL_EventOK)(&event) ) {

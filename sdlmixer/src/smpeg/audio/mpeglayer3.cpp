@@ -1297,7 +1297,10 @@ inline void layer3reorder_1(int version,int frequency,
   }
 }
 
-inline void layer3reorder_2(int version,int frequency,REAL  in[SBLIMIT][SSLIMIT],
+#ifdef _MSC_VER	// VC++ 6 generates bad optimized code here, I'm not sure why...
+#pragma optimize( "g", off )
+#endif
+void layer3reorder_2(int version,int frequency,REAL  in[SBLIMIT][SSLIMIT],
 			    REAL out[SBLIMIT][SSLIMIT])
 {
   SFBANDINDEX *sfBandIndex=&(sfBandIndextable[version][frequency]);
@@ -1319,6 +1322,9 @@ inline void layer3reorder_2(int version,int frequency,REAL  in[SBLIMIT][SSLIMIT]
     }
   }
 }
+#ifdef _MSC_VER
+#pragma optimize( "g", on )
+#endif
 
 
 inline void layer3antialias_1(REAL  in[SBLIMIT][SSLIMIT])
@@ -1373,7 +1379,7 @@ void MPEGaudio::layer3reorderandantialias(int ch,int gr,
   {
     if(gi->mixed_block_flag)
     {
-      fprintf(stderr,"Notchecked!");
+      //fprintf(stderr,"Notchecked!");
       layer3reorder_1  (version,frequency,in,out);    // Not checked...
       layer3antialias_1(out);
     }

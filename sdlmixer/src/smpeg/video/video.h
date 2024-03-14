@@ -413,36 +413,17 @@ extern unsigned int cacheMiss[8][8];
 #define __SCO__ 1
 #endif
 
-#if defined(__i386__) || defined(__VAX__) || defined(__MIPSEL__) || defined(__alpha__) || defined(__SCO__)
-#undef  BIG_ENDIAN_ARCHITECTURE
-#define LITTLE_ENDIAN_ARCHITECTURE 1
+#include "SDL_endian.h"
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+#ifdef LITTLE_ENDIAN_ARCHITECTURE
+#undef LITTLE_ENDIAN_ARCHITECTURE
 #endif
-
-#if defined(__RS6000__) || defined(__SPARC__) || defined(__mc68000__) || defined(__HPUX__) || defined(__MIPSEB__) || defined(convex) || defined(__convex__) || defined(__powerpc__)
-#undef  LITTLE_ENDIAN_ARCHITECTURE
-#define BIG_ENDIAN_ARCHITECTURE 1
-#endif
-
-#if !defined(LITTLE_ENDIAN_ARCHITECTURE) && !defined(BIG_ENDIAN_ARCHITECTURE)
-#ifdef WIN32
-#undef  BIG_ENDIAN_ARCHITECTURE
-#define LITTLE_ENDIAN_ARCHITECTURE
-#else
-#ifdef __BIG_ENDIAN__
-#undef  LITTLE_ENDIAN_ARCHITECTURE
 #define BIG_ENDIAN_ARCHITECTURE 1
 #else
-#include <endian.h>
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-#undef  BIG_ENDIAN_ARCHITECTURE
+#ifdef BIG_ENDIAN_ARCHITECTURE
+#undef BIG_ENDIAN_ARCHITECTURE
+#endif
 #define LITTLE_ENDIAN_ARCHITECTURE 1
-#endif
-#if __BYTE_ORDER == __BIG_ENDIAN
-#undef  LITTLE_ENDIAN_ARCHITECTURE
-#define BIG_ENDIAN_ARCHITECTURE 1
-#endif
-#endif
-#endif
 #endif
 
 #if !defined(LITTLE_ENDIAN_ARCHITECTURE) && !defined(BIG_ENDIAN_ARCHITECTURE)

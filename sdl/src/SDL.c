@@ -1,54 +1,48 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* Initialization code for SDL */
 
-#include <stdlib.h>		/* For getenv() */
-#ifdef ENABLE_PTH
+#include "SDL.h"
+#include "SDL_fatal.h"
+#if !SDL_VIDEO_DISABLED
+#include "video/SDL_leaks.h"
+#endif
+
+#if SDL_THREAD_PTH
 #include <pth.h>
 #endif
 
-#include "SDL.h"
-#include "SDL_endian.h"
-#include "SDL_fatal.h"
-#ifndef DISABLE_VIDEO
-#include "SDL_leaks.h"
-#endif
-
 /* Initialization/Cleanup routines */
-#ifndef DISABLE_JOYSTICK
+#if !SDL_JOYSTICK_DISABLED
 extern int  SDL_JoystickInit(void);
 extern void SDL_JoystickQuit(void);
 #endif
-#ifndef DISABLE_CDROM
+#if !SDL_CDROM_DISABLED
 extern int  SDL_CDROMInit(void);
 extern void SDL_CDROMQuit(void);
 #endif
-#ifndef DISABLE_TIMERS
+#if !SDL_TIMERS_DISABLED
 extern void SDL_StartTicks(void);
 extern int  SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
@@ -60,7 +54,9 @@ static SDL_version version =
 
 /* The initialized subsystems */
 static Uint32 SDL_initialized = 0;
+#if !SDL_TIMERS_DISABLED
 static Uint32 ticks_started = 0;
+#endif
 
 #ifdef CHECK_LEAKS
 int surfaces_allocated = 0;
@@ -68,38 +64,7 @@ int surfaces_allocated = 0;
 
 int SDL_InitSubSystem(Uint32 flags)
 {
-#ifndef DISABLE_VIDEO
-	/* Initialize the video/event subsystem */
-	if ( (flags & SDL_INIT_VIDEO) && !(SDL_initialized & SDL_INIT_VIDEO) ) {
-		if ( SDL_VideoInit(getenv("SDL_VIDEODRIVER"),
-		                   (flags&SDL_INIT_EVENTTHREAD)) < 0 ) {
-			return(-1);
-		}
-		SDL_initialized |= SDL_INIT_VIDEO;
-	}
-#else
-	if ( flags & SDL_INIT_VIDEO ) {
-		SDL_SetError("SDL not built with video support");
-		return(-1);
-	}
-#endif
-
-#ifndef DISABLE_AUDIO
-	/* Initialize the audio subsystem */
-	if ( (flags & SDL_INIT_AUDIO) && !(SDL_initialized & SDL_INIT_AUDIO) ) {
-		if ( SDL_AudioInit(getenv("SDL_AUDIODRIVER")) < 0 ) {
-			return(-1);
-		}
-		SDL_initialized |= SDL_INIT_AUDIO;
-	}
-#else
-	if ( flags & SDL_INIT_AUDIO ) {
-		SDL_SetError("SDL not built with audio support");
-		return(-1);
-	}
-#endif
-
-#ifndef DISABLE_TIMERS
+#if !SDL_TIMERS_DISABLED
 	/* Initialize the timer subsystem */
 	if ( ! ticks_started ) {
 		SDL_StartTicks();
@@ -118,7 +83,38 @@ int SDL_InitSubSystem(Uint32 flags)
 	}
 #endif
 
-#ifndef DISABLE_JOYSTICK
+#if !SDL_VIDEO_DISABLED
+	/* Initialize the video/event subsystem */
+	if ( (flags & SDL_INIT_VIDEO) && !(SDL_initialized & SDL_INIT_VIDEO) ) {
+		if ( SDL_VideoInit(SDL_getenv("SDL_VIDEODRIVER"),
+		                   (flags&SDL_INIT_EVENTTHREAD)) < 0 ) {
+			return(-1);
+		}
+		SDL_initialized |= SDL_INIT_VIDEO;
+	}
+#else
+	if ( flags & SDL_INIT_VIDEO ) {
+		SDL_SetError("SDL not built with video support");
+		return(-1);
+	}
+#endif
+
+#if !SDL_AUDIO_DISABLED
+	/* Initialize the audio subsystem */
+	if ( (flags & SDL_INIT_AUDIO) && !(SDL_initialized & SDL_INIT_AUDIO) ) {
+		if ( SDL_AudioInit(SDL_getenv("SDL_AUDIODRIVER")) < 0 ) {
+			return(-1);
+		}
+		SDL_initialized |= SDL_INIT_AUDIO;
+	}
+#else
+	if ( flags & SDL_INIT_AUDIO ) {
+		SDL_SetError("SDL not built with audio support");
+		return(-1);
+	}
+#endif
+
+#if !SDL_JOYSTICK_DISABLED
 	/* Initialize the joystick subsystem */
 	if ( (flags & SDL_INIT_JOYSTICK) &&
 	     !(SDL_initialized & SDL_INIT_JOYSTICK) ) {
@@ -134,7 +130,7 @@ int SDL_InitSubSystem(Uint32 flags)
 	}
 #endif
 
-#ifndef DISABLE_CDROM
+#if !SDL_CDROM_DISABLED
 	/* Initialize the CD-ROM subsystem */
 	if ( (flags & SDL_INIT_CDROM) && !(SDL_initialized & SDL_INIT_CDROM) ) {
 		if ( SDL_CDROMInit() < 0 ) {
@@ -153,7 +149,7 @@ int SDL_InitSubSystem(Uint32 flags)
 
 int SDL_Init(Uint32 flags)
 {
-#if !defined(DISABLE_THREADS) && defined(ENABLE_PTH)
+#if !SDL_THREADS_DISABLED && SDL_THREAD_PTH
 	if (!pth_init()) {
 		return -1;
 	}
@@ -177,34 +173,34 @@ int SDL_Init(Uint32 flags)
 void SDL_QuitSubSystem(Uint32 flags)
 {
 	/* Shut down requested initialized subsystems */
-#ifndef DISABLE_CDROM
+#if !SDL_CDROM_DISABLED
 	if ( (flags & SDL_initialized & SDL_INIT_CDROM) ) {
 		SDL_CDROMQuit();
 		SDL_initialized &= ~SDL_INIT_CDROM;
 	}
 #endif
-#ifndef DISABLE_JOYSTICK
+#if !SDL_JOYSTICK_DISABLED
 	if ( (flags & SDL_initialized & SDL_INIT_JOYSTICK) ) {
 		SDL_JoystickQuit();
 		SDL_initialized &= ~SDL_INIT_JOYSTICK;
 	}
 #endif
-#ifndef DISABLE_TIMERS
-	if ( (flags & SDL_initialized & SDL_INIT_TIMER) ) {
-		SDL_TimerQuit();
-		SDL_initialized &= ~SDL_INIT_TIMER;
-	}
-#endif
-#ifndef DISABLE_AUDIO
+#if !SDL_AUDIO_DISABLED
 	if ( (flags & SDL_initialized & SDL_INIT_AUDIO) ) {
 		SDL_AudioQuit();
 		SDL_initialized &= ~SDL_INIT_AUDIO;
 	}
 #endif
-#ifndef DISABLE_VIDEO
+#if !SDL_VIDEO_DISABLED
 	if ( (flags & SDL_initialized & SDL_INIT_VIDEO) ) {
 		SDL_VideoQuit();
 		SDL_initialized &= ~SDL_INIT_VIDEO;
+	}
+#endif
+#if !SDL_TIMERS_DISABLED
+	if ( (flags & SDL_initialized & SDL_INIT_TIMER) ) {
+		SDL_TimerQuit();
+		SDL_initialized &= ~SDL_INIT_TIMER;
 	}
 #endif
 }
@@ -220,22 +216,36 @@ Uint32 SDL_WasInit(Uint32 flags)
 void SDL_Quit(void)
 {
 	/* Quit all subsystems */
+#ifdef DEBUG_BUILD
+  printf("[SDL_Quit] : Enter! Calling QuitSubSystem()\n"); fflush(stdout);
+#endif
 	SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
 
 #ifdef CHECK_LEAKS
+#ifdef DEBUG_BUILD
+  printf("[SDL_Quit] : CHECK_LEAKS\n"); fflush(stdout);
+#endif
+
 	/* Print the number of surfaces not freed */
 	if ( surfaces_allocated != 0 ) {
 		fprintf(stderr, "SDL Warning: %d SDL surfaces extant\n", 
 							surfaces_allocated);
 	}
 #endif
+#ifdef DEBUG_BUILD
+  printf("[SDL_Quit] : SDL_UninstallParachute()\n"); fflush(stdout);
+#endif
 
 	/* Uninstall any parachute signal handlers */
 	SDL_UninstallParachute();
 
-#if !defined(DISABLE_THREADS) && defined(ENABLE_PTH)
+#if !SDL_THREADS_DISABLED && SDL_THREAD_PTH
 	pth_kill();
 #endif
+#ifdef DEBUG_BUILD
+  printf("[SDL_Quit] : Returning!\n"); fflush(stdout);
+#endif
+
 }
 
 /* Return the library version number */
@@ -244,11 +254,85 @@ const SDL_version * SDL_Linked_Version(void)
 	return(&version);
 }
 
-#if defined(_WIN32_WCE) || (defined(__WATCOMC__) && defined(BUILD_DLL))
-/* Need to include DllMain() on Windows CE and Watcom C for some reason.. */
+#if defined(__OS2__)
+/* Building for OS/2 */
+#ifdef __WATCOMC__
+
+#define INCL_DOSERRORS
+#define INCL_DOSEXCEPTIONS
+#include <os2.h>
+
+/* Exception handler to prevent the Audio thread hanging, making a zombie process! */
+ULONG _System SDL_Main_ExceptionHandler(PEXCEPTIONREPORTRECORD pERepRec,
+                                        PEXCEPTIONREGISTRATIONRECORD pERegRec,
+                                        PCONTEXTRECORD pCtxRec,
+                                        PVOID p)
+{
+  if (pERepRec->fHandlerFlags & EH_EXIT_UNWIND)
+    return XCPT_CONTINUE_SEARCH;
+  if (pERepRec->fHandlerFlags & EH_UNWINDING)
+    return XCPT_CONTINUE_SEARCH;
+  if (pERepRec->fHandlerFlags & EH_NESTED_CALL)
+    return XCPT_CONTINUE_SEARCH;
+
+  /* Do cleanup at every fatal exception! */
+  if (((pERepRec->ExceptionNum & XCPT_SEVERITY_CODE) == XCPT_FATAL_EXCEPTION) &&
+      (pERepRec->ExceptionNum != XCPT_BREAKPOINT) &&
+      (pERepRec->ExceptionNum != XCPT_SINGLE_STEP)
+     )
+  {
+    if (SDL_initialized & SDL_INIT_AUDIO)
+    {
+      /* This removes the zombie audio thread in case of emergency. */
+#ifdef DEBUG_BUILD
+      printf("[SDL_Main_ExceptionHandler] : Calling SDL_CloseAudio()!\n");
+#endif
+      SDL_CloseAudio();
+    }
+  }
+  return (XCPT_CONTINUE_SEARCH);
+}
+
+
+EXCEPTIONREGISTRATIONRECORD SDL_Main_xcpthand = {0, SDL_Main_ExceptionHandler};
+
+/* The main DLL entry for DLL Initialization and Uninitialization: */
+unsigned _System LibMain(unsigned hmod, unsigned termination)
+{
+  if (termination)
+  {
+#ifdef DEBUG_BUILD
+/*    printf("[SDL DLL Unintialization] : Removing exception handler\n"); */
+#endif
+    DosUnsetExceptionHandler(&SDL_Main_xcpthand);
+    return 1;
+  } else
+  {
+#ifdef DEBUG_BUILD
+    /* Make stdout and stderr unbuffered! */
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
+#endif
+    /* Fire up exception handler */
+#ifdef DEBUG_BUILD
+/*    printf("[SDL DLL Initialization] : Setting exception handler\n"); */
+#endif
+    /* Set exception handler */
+    DosSetExceptionHandler(&SDL_Main_xcpthand);
+
+    return 1;
+  }
+}
+#endif /* __WATCOMC__ */
+
+#elif defined(__WIN32__)  && !defined(__SYMBIAN32__)
+
+#if !defined(HAVE_LIBC) || (defined(__WATCOMC__) && defined(BUILD_DLL))
+/* Need to include DllMain() on Watcom C for some reason.. */
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-BOOL APIENTRY DllMain( HANDLE hModule, 
+BOOL APIENTRY _DllMainCRTStartup( HANDLE hModule, 
                        DWORD  ul_reason_for_call, 
                        LPVOID lpReserved )
 {
@@ -261,4 +345,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 	}
 	return TRUE;
 }
-#endif /* _WIN32_WCE and building DLL with Watcom C */
+#endif /* building DLL with Watcom C */
+
+#endif /* OS/2 elif __WIN32__ */

@@ -160,18 +160,28 @@ int main(int argc, char *argv[])
 	for ( i=0; i<SDL_NumJoysticks(); ++i ) {
 		name = SDL_JoystickName(i);
 		printf("Joystick %d: %s\n",i,name ? name : "Unknown Joystick");
+		joystick = SDL_JoystickOpen(i);
+		if (joystick == NULL) {
+			fprintf(stderr, "SDL_JoystickOpen(%d) failed: %s\n", i, SDL_GetError());
+		} else {
+			printf("       axes: %d\n", SDL_JoystickNumAxes(joystick));
+			printf("      balls: %d\n", SDL_JoystickNumBalls(joystick));
+			printf("       hats: %d\n", SDL_JoystickNumHats(joystick));
+			printf("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
+			SDL_JoystickClose(joystick);
+		}
 	}
 
-	/* changes made in ps2sdk version */
-	joystick = SDL_JoystickOpen(0);
-	if ( joystick == NULL ) {
-		printf("Couldn't open joystick %d: %s\n", 0,
-		       SDL_GetError());
-	} else {
-		WatchJoystick(joystick);
-		SDL_JoystickClose(joystick);
+	if ( argv[1] ) {
+		joystick = SDL_JoystickOpen(atoi(argv[1]));
+		if ( joystick == NULL ) {
+			printf("Couldn't open joystick %d: %s\n", atoi(argv[1]),
+			       SDL_GetError());
+		} else {
+			WatchJoystick(joystick);
+			SDL_JoystickClose(joystick);
+		}
 	}
-
 	SDL_QuitSubSystem(SDL_INIT_VIDEO|SDL_INIT_JOYSTICK);
 
 	return(0);

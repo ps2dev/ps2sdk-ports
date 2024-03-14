@@ -1,41 +1,87 @@
+
+/* Test program to check the resolution of the SDL timer on the current
+   platform
+*/
+
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "SDL.h"
+
+#define DEFAULT_RESOLUTION	1
+
+static int ticks = 0;
+
+static Uint32 SDLCALL ticktock(Uint32 interval)
+{
+	++ticks;
+	return(interval);
+}
+
+static Uint32 SDLCALL callback(Uint32 interval, void *param)
+{
+  printf("Timer %d : param = %d\n", interval, (int)(uintptr_t)param);
+  return interval;
+}
 
 int main(int argc, char *argv[])
 {
-	int now_ms, before_ms;
-	int now_sec, before_sec;
+	int desired;
+	SDL_TimerID t1, t2, t3;
 
-	if (SDL_Init(SDL_INIT_TIMER) < 0)
-	{
-		fprintf(stderr, "failed to initialize SDL\n");
-		return 1;
+	if ( SDL_Init(SDL_INIT_TIMER) < 0 ) {
+		fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+		return(1);
 	}
 
-	atexit(SDL_Quit);
-
-	/* test 1: print pseudo timer since SDL start */
-	printf("test 1: 60 seconds timer\n");
-	before_sec = -1;
-	now_ms = SDL_GetTicks();
-	while (now_ms < 60*1000)
-	{
-		now_sec = now_ms / 1000;
-		if (now_sec != before_sec)
-		{
-			printf("Time: %02d:%02d\n", now_sec / 60, now_sec % 60);
-			before_sec = now_sec;
-		}
-
-		now_ms = SDL_GetTicks();
+	/* Start the timer */
+	desired = 0;
+	if ( argv[1] ) {
+		desired = atoi(argv[1]);
 	}
+	if ( desired == 0 ) {
+		desired = DEFAULT_RESOLUTION;
+	}
+	SDL_SetTimer(desired, ticktock);
 
-	/* test 2: test SDL_Delay */
-	printf("test 2: sleeping for 30 seconds with SDL_Delay\n");
-	before_ms = SDL_GetTicks();
-	SDL_Delay(30*1000);
-	now_ms = SDL_GetTicks();
-	printf("Ticks differ %d (should be 30000)\n", now_ms - before_ms);
+	/* Wait 10 seconds */
+	printf("Waiting 10 seconds\n");
+	SDL_Delay(10*1000);
 
-	printf("test ended\n");
-	return 0;
+	/* Stop the timer */
+	SDL_SetTimer(0, NULL);
+
+	/* Print the results */
+	if ( ticks ) {
+		fprintf(stderr,
+		"Timer resolution: desired = %d ms, actual = %f ms\n",
+					desired, (double)(10*1000)/ticks);
+	}
+	
+	/* Test multiple timers */
+	printf("Testing multiple timers...\n");
+	t1 = SDL_AddTimer(100, callback, (void*)1);
+	if(!t1)
+	  fprintf(stderr,"Could not create timer 1: %s\n", SDL_GetError());
+	t2 = SDL_AddTimer(50, callback, (void*)2);
+	if(!t2)
+	  fprintf(stderr,"Could not create timer 2: %s\n", SDL_GetError());
+	t3 = SDL_AddTimer(233, callback, (void*)3);
+	if(!t3)
+	  fprintf(stderr,"Could not create timer 3: %s\n", SDL_GetError());
+	
+	/* Wait 10 seconds */
+	printf("Waiting 10 seconds\n");
+	SDL_Delay(10*1000);
+
+	printf("Removing timer 1 and waiting 5 more seconds\n");
+	SDL_RemoveTimer(t1);
+
+	SDL_Delay(5*1000);
+
+	SDL_RemoveTimer(t2);
+	SDL_RemoveTimer(t3);
+
+	SDL_Quit();
+	return(0);
 }

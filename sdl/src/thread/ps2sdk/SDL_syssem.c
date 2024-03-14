@@ -30,6 +30,8 @@ static char rcsid =
  "@(#) $Id$";
 #endif
 
+#include "SDL_config.h"
+
 /* An implementation of semaphores using mutexes and condition variables */
 
 #include <stdlib.h>

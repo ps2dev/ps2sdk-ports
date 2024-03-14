@@ -1,34 +1,26 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
+#include "SDL_config.h"
 
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
-
-#include <stdio.h>
-#include <string.h>
-
-#include "SDL_types.h"
 #include "SDL_video.h"
 #include "SDL_blit.h"
 
@@ -304,7 +296,7 @@ static void BlitBto3Key(SDL_BlitInfo *info)
 			}
 			bit = (byte&0x80)>>7;
 			if ( bit != ckey ) {
-				memcpy(dst, &palmap[bit*4], 3);
+				SDL_memcpy(dst, &palmap[bit*4], 3);
 			}
 			byte <<= 1;
 			dst += 3;
@@ -452,6 +444,10 @@ SDL_loblit SDL_CalculateBlit0(SDL_Surface *surface, int blit_index)
 {
 	int which;
 
+	if ( surface->format->BitsPerPixel != 1 ) {
+		/* We don't support sub 8-bit packed pixel modes */
+		return NULL;
+	}
 	if ( surface->map->dst->format->BitsPerPixel < 8 ) {
 		which = 0;
 	} else {

@@ -1,34 +1,27 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* Application focus/iconification handling code for SDL */
-
-#include <stdio.h>
-#include <string.h>
 
 #include "SDL_events.h"
 #include "SDL_events_c.h"
@@ -45,6 +38,9 @@ int SDL_AppActiveInit(void)
 
 	/* That's it! */
 	return(0);
+}
+void SDL_AppActiveQuit(void)
+{
 }
 
 Uint8 SDL_GetAppState(void)
@@ -77,7 +73,7 @@ int SDL_PrivateAppActive(Uint8 gain, Uint8 state)
 	posted = 0;
 	if ( SDL_ProcessEvents[SDL_ACTIVEEVENT] == SDL_ENABLE ) {
 		SDL_Event event;
-		memset(&event, 0, sizeof(event));
+		SDL_memset(&event, 0, sizeof(event));
 		event.type = SDL_ACTIVEEVENT;
 		event.active.gain = gain;
 		event.active.state = state;
@@ -90,6 +86,10 @@ int SDL_PrivateAppActive(Uint8 gain, Uint8 state)
 	/* If we lost keyboard focus, post key-up events */
 	if ( (state & SDL_APPINPUTFOCUS) && !gain ) {
 		SDL_ResetKeyboard();
+	}
+	/* If we were minimized, post button-up events */
+	if ( (state & SDL_APPACTIVE) && !gain ) {
+		SDL_ResetMouse();
 	}
 	return(posted);
 }

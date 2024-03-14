@@ -78,7 +78,7 @@ void SetPFlag P((BOOLEAN val ));
 void ParseReconBlock P((int n, VidStream *vid_stream ));
 void ParseAwayBlock P((int n , VidStream *vid_stream ));
 
-/* motionvector.c */
+/* motionvec.c */
 void ComputeForwVector P((int *recon_right_for_ptr , int *recon_down_for_ptr , VidStream *the_stream ));
 void ComputeBackVector P((int *recon_right_back_ptr , int *recon_down_back_ptr, VidStream *the_stream ));
 

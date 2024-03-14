@@ -24,10 +24,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define RW_SEEK_SET SEEK_SET
-#define RW_SEEK_CUR SEEK_CUR
-#define RW_SEEK_END SEEK_END
-
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
 #endif

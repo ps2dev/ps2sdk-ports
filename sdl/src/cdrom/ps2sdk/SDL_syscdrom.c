@@ -28,8 +28,10 @@ static char rcsid =
  "@(#) $Id$";
 #endif
 
-/* Functions for system-level CD-ROM audio control */
+#include "SDL_config.h"
 
+/* Functions for system-level CD-ROM audio control */
+#ifdef SDL_CDROM_PS2
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -171,3 +173,5 @@ int SDL_SYS_CDInit(void)
 	SDL_CDcaps.Close = SDL_SYS_CDClose;
 	return 0;
 }
+
+#endif

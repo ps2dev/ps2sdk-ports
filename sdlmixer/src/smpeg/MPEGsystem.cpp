@@ -12,7 +12,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #ifndef __BEOS__
-// #include <sys/select.h>
+#include <sys/select.h>
 #endif
 #endif
 
@@ -954,7 +954,7 @@ double MPEGsystem::TotalTime()
 {
   off_t size, pos;
   off_t file_ptr;
-  Uint8 * buffer, * p = NULL;
+  Uint8 * buffer, * p;
   double time;
 
   /* Lock to avoid concurrent access to the stream */
@@ -973,7 +973,7 @@ double MPEGsystem::TotalTime()
   }
 
   file_ptr = 0;
-  buffer = new Uint8[MPEG_BUFFER_SIZE];
+  p = buffer = new Uint8[MPEG_BUFFER_SIZE];
   time = 0;
 
   /* If audio, compute total time according to bitrate of the first header and total size */
@@ -1004,8 +1004,8 @@ double MPEGsystem::TotalTime()
     while(p >= MPEG_BUFFER_SIZE + buffer);
 
     /* Extract time info from the first header */
-    Uint32 framesize;
-    double frametime;
+    Uint32 framesize = 0;
+    double frametime = 0.0;
     Uint32 totalsize;
 
     audio_header(p, &framesize, &frametime);
@@ -1093,7 +1093,7 @@ double MPEGsystem::TimeElapsedAudio(int atByte)
 {
   off_t size, pos;
   off_t file_ptr;
-  Uint8 * buffer, * p = NULL;
+  Uint8 * buffer, * p;
   double time;
   
   if (atByte < 0)
@@ -1117,7 +1117,7 @@ double MPEGsystem::TimeElapsedAudio(int atByte)
   }
 
   file_ptr = 0;
-  buffer = new Uint8[MPEG_BUFFER_SIZE];
+  p = buffer = new Uint8[MPEG_BUFFER_SIZE];
 
   /* If audio, compute total time according to bitrate of the first header and total size */
   /* Note: this doesn't work on variable bitrate streams */
@@ -1147,8 +1147,8 @@ double MPEGsystem::TimeElapsedAudio(int atByte)
     while(p >= MPEG_BUFFER_SIZE + buffer);
 
     /* Extract time info from the first header */
-    Uint32 framesize;
-    double frametime;
+    Uint32 framesize = 0;
+    double frametime = 0.0;
     Uint32 totalsize;
 
     audio_header(p, &framesize, &frametime);
@@ -1165,7 +1165,7 @@ double MPEGsystem::TimeElapsedAudio(int atByte)
       time = -1;
   }
 
-  delete buffer;
+  delete[] buffer;
 
   /* Get back to saved position */
   if((pos = SDL_RWseek(source, pos, SEEK_SET)) < 0)

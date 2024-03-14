@@ -1,45 +1,31 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
-
-#ifndef DISABLE_FILE
+#include "SDL_config.h"
 
 /* Microsoft WAVE file loading routines */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_error.h"
 #include "SDL_audio.h"
 #include "SDL_wave.h"
-#include "SDL_endian.h"
 
-#ifndef NELEMS
-#define NELEMS(array)	((sizeof array)/(sizeof array[0]))
-#endif
 
 static int ReadChunk(SDL_RWops *src, Chunk *chunk);
 
@@ -61,7 +47,6 @@ static struct MS_ADPCM_decoder {
 static int InitMS_ADPCM(WaveFMT *format)
 {
 	Uint8 *rogue_feel;
-	Uint16 extra_info;
 	int i;
 
 	/* Set the rogue pointer to the MS_ADPCM specific data */
@@ -74,7 +59,6 @@ static int InitMS_ADPCM(WaveFMT *format)
 					 SDL_SwapLE16(format->bitspersample);
 	rogue_feel = (Uint8 *)format+sizeof(*format);
 	if ( sizeof(*format) == 16 ) {
-		extra_info = ((rogue_feel[1]<<8)|rogue_feel[0]);
 		rogue_feel += sizeof(Uint16);
 	}
 	MS_ADPCM_state.wSamplesPerBlock = ((rogue_feel[1]<<8)|rogue_feel[0]);
@@ -122,9 +106,9 @@ static Sint32 MS_ADPCM_nibble(struct MS_ADPCM_decodestate *state,
 	if ( delta < 16 ) {
 		delta = 16;
 	}
-	state->iDelta = delta;
+	state->iDelta = (Uint16)delta;
 	state->iSamp2 = state->iSamp1;
-	state->iSamp1 = new_sample;
+	state->iSamp1 = (Sint16)new_sample;
 	return(new_sample);
 }
 
@@ -144,7 +128,7 @@ static int MS_ADPCM_decode(Uint8 **audio_buf, Uint32 *audio_len)
 	*audio_len = (encoded_len/MS_ADPCM_state.wavefmt.blockalign) * 
 				MS_ADPCM_state.wSamplesPerBlock*
 				MS_ADPCM_state.wavefmt.channels*sizeof(Sint16);
-	*audio_buf = (Uint8 *)malloc(*audio_len);
+	*audio_buf = (Uint8 *)SDL_malloc(*audio_len);
 	if ( *audio_buf == NULL ) {
 		SDL_Error(SDL_ENOMEM);
 		return(-1);
@@ -223,7 +207,7 @@ static int MS_ADPCM_decode(Uint8 **audio_buf, Uint32 *audio_len)
 		}
 		encoded_len -= MS_ADPCM_state.wavefmt.blockalign;
 	}
-	free(freeable);
+	SDL_free(freeable);
 	return(0);
 }
 
@@ -241,7 +225,6 @@ static struct IMA_ADPCM_decoder {
 static int InitIMA_ADPCM(WaveFMT *format)
 {
 	Uint8 *rogue_feel;
-	Uint16 extra_info;
 
 	/* Set the rogue pointer to the IMA_ADPCM specific data */
 	IMA_ADPCM_state.wavefmt.encoding = SDL_SwapLE16(format->encoding);
@@ -253,7 +236,6 @@ static int InitIMA_ADPCM(WaveFMT *format)
 					 SDL_SwapLE16(format->bitspersample);
 	rogue_feel = (Uint8 *)format+sizeof(*format);
 	if ( sizeof(*format) == 16 ) {
-		extra_info = ((rogue_feel[1]<<8)|rogue_feel[0]);
 		rogue_feel += sizeof(Uint16);
 	}
 	IMA_ADPCM_state.wSamplesPerBlock = ((rogue_feel[1]<<8)|rogue_feel[0]);
@@ -343,13 +325,13 @@ static int IMA_ADPCM_decode(Uint8 **audio_buf, Uint32 *audio_len)
 	struct IMA_ADPCM_decodestate *state;
 	Uint8 *freeable, *encoded, *decoded;
 	Sint32 encoded_len, samplesleft;
-	int c, channels;
+	unsigned int c, channels;
 
 	/* Check to make sure we have enough variables in the state array */
 	channels = IMA_ADPCM_state.wavefmt.channels;
-	if ( channels > NELEMS(IMA_ADPCM_state.state) ) {
+	if ( channels > SDL_arraysize(IMA_ADPCM_state.state) ) {
 		SDL_SetError("IMA ADPCM decoder can only handle %d channels",
-						NELEMS(IMA_ADPCM_state.state));
+					SDL_arraysize(IMA_ADPCM_state.state));
 		return(-1);
 	}
 	state = IMA_ADPCM_state.state;
@@ -361,7 +343,7 @@ static int IMA_ADPCM_decode(Uint8 **audio_buf, Uint32 *audio_len)
 	*audio_len = (encoded_len/IMA_ADPCM_state.wavefmt.blockalign) * 
 				IMA_ADPCM_state.wSamplesPerBlock*
 				IMA_ADPCM_state.wavefmt.channels*sizeof(Sint16);
-	*audio_buf = (Uint8 *)malloc(*audio_len);
+	*audio_buf = (Uint8 *)SDL_malloc(*audio_len);
 	if ( *audio_buf == NULL ) {
 		SDL_Error(SDL_ENOMEM);
 		return(-1);
@@ -385,8 +367,8 @@ static int IMA_ADPCM_decode(Uint8 **audio_buf, Uint32 *audio_len)
 			}
 
 			/* Store the initial sample we start with */
-			decoded[0] = state[c].sample&0xFF;
-			decoded[1] = state[c].sample>>8;
+			decoded[0] = (Uint8)(state[c].sample&0xFF);
+			decoded[1] = (Uint8)(state[c].sample>>8);
 			decoded += 2;
 		}
 
@@ -403,7 +385,7 @@ static int IMA_ADPCM_decode(Uint8 **audio_buf, Uint32 *audio_len)
 		}
 		encoded_len -= IMA_ADPCM_state.wavefmt.blockalign;
 	}
-	free(freeable);
+	SDL_free(freeable);
 	return(0);
 }
 
@@ -418,8 +400,9 @@ SDL_AudioSpec * SDL_LoadWAV_RW (SDL_RWops *src, int freesrc,
 
 	/* WAV magic header */
 	Uint32 RIFFchunk;
-	Uint32 wavelen;
+	Uint32 wavelen = 0;
 	Uint32 WAVEmagic;
+	Uint32 headerDiff = 0;
 
 	/* FMT chunk */
 	WaveFMT *format = NULL;
@@ -446,18 +429,22 @@ SDL_AudioSpec * SDL_LoadWAV_RW (SDL_RWops *src, int freesrc,
 		was_error = 1;
 		goto done;
 	}
+	headerDiff += sizeof(Uint32); /* for WAVE */
 
 	/* Read the audio data format chunk */
 	chunk.data = NULL;
 	do {
 		if ( chunk.data != NULL ) {
-			free(chunk.data);
+			SDL_free(chunk.data);
+			chunk.data = NULL;
 		}
 		lenread = ReadChunk(src, &chunk);
 		if ( lenread < 0 ) {
 			was_error = 1;
 			goto done;
 		}
+		/* 2 Uint32's for chunk header+len, plus the lenread */
+		headerDiff += lenread + 2 * sizeof(Uint32);
 	} while ( (chunk.magic == FACT) || (chunk.magic == LIST) );
 
 	/* Decode the audio data format */
@@ -488,13 +475,18 @@ SDL_AudioSpec * SDL_LoadWAV_RW (SDL_RWops *src, int freesrc,
 			}
 			IMA_ADPCM_encoded = 1;
 			break;
+		case MP3_CODE:
+			SDL_SetError("MPEG Layer 3 data not supported",
+					SDL_SwapLE16(format->encoding));
+			was_error = 1;
+			goto done;
 		default:
 			SDL_SetError("Unknown WAVE data format: 0x%.4x",
 					SDL_SwapLE16(format->encoding));
 			was_error = 1;
 			goto done;
 	}
-	memset(spec, 0, (sizeof *spec));
+	SDL_memset(spec, 0, (sizeof *spec));
 	spec->freq = SDL_SwapLE32(format->frequency);
 	switch (SDL_SwapLE16(format->bitspersample)) {
 		case 4:
@@ -526,7 +518,8 @@ SDL_AudioSpec * SDL_LoadWAV_RW (SDL_RWops *src, int freesrc,
 	*audio_buf = NULL;
 	do {
 		if ( *audio_buf != NULL ) {
-			free(*audio_buf);
+			SDL_free(*audio_buf);
+			*audio_buf = NULL;
 		}
 		lenread = ReadChunk(src, &chunk);
 		if ( lenread < 0 ) {
@@ -535,7 +528,9 @@ SDL_AudioSpec * SDL_LoadWAV_RW (SDL_RWops *src, int freesrc,
 		}
 		*audio_len = lenread;
 		*audio_buf = chunk.data;
+		if(chunk.magic != DATA) headerDiff += lenread + 2 * sizeof(Uint32);
 	} while ( chunk.magic != DATA );
+	headerDiff += 2 * sizeof(Uint32); /* for the data chunk and len */
 
 	if ( MS_ADPCM_encoded ) {
 		if ( MS_ADPCM_decode(audio_buf, audio_len) < 0 ) {
@@ -556,10 +551,15 @@ SDL_AudioSpec * SDL_LoadWAV_RW (SDL_RWops *src, int freesrc,
 
 done:
 	if ( format != NULL ) {
-		free(format);
+		SDL_free(format);
 	}
-	if ( freesrc && src ) {
-		SDL_RWclose(src);
+	if ( src ) {
+		if ( freesrc ) {
+			SDL_RWclose(src);
+		} else {
+			/* seek to the end of the file (given by the RIFF chunk) */
+			SDL_RWseek(src, wavelen - chunk.length - headerDiff, RW_SEEK_CUR);
+		}
 	}
 	if ( was_error ) {
 		spec = NULL;
@@ -573,7 +573,7 @@ done:
 void SDL_FreeWAV(Uint8 *audio_buf)
 {
 	if ( audio_buf != NULL ) {
-		free(audio_buf);
+		SDL_free(audio_buf);
 	}
 }
 
@@ -581,17 +581,16 @@ static int ReadChunk(SDL_RWops *src, Chunk *chunk)
 {
 	chunk->magic	= SDL_ReadLE32(src);
 	chunk->length	= SDL_ReadLE32(src);
-	chunk->data = (Uint8 *)malloc(chunk->length);
+	chunk->data = (Uint8 *)SDL_malloc(chunk->length);
 	if ( chunk->data == NULL ) {
 		SDL_Error(SDL_ENOMEM);
 		return(-1);
 	}
 	if ( SDL_RWread(src, chunk->data, chunk->length, 1) != 1 ) {
 		SDL_Error(SDL_EFREAD);
-		free(chunk->data);
+		SDL_free(chunk->data);
+		chunk->data = NULL;
 		return(-1);
 	}
 	return(chunk->length);
 }
-
-#endif /* ENABLE_FILE */

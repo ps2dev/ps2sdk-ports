@@ -1,0 +1,29 @@
+.TH GTV 1
+.SH NAME
+gtv \- MPEG audio (MP3) and video (MPEG-1) player with GTK+ GUI
+
+.SH SYNOPSIS
+\fBgtv\fR \fIfile\fR
+
+.SH DESCRIPTION
+.I gtv
+is an MPEG audio and video player that uses the SDL MPEG Player Library.
+It can play back MPEG audio (layer 1, 2 and 3), MPEG video (MPEG-1) and
+MPEG system (audio and video combined) files. MPEG-2 video files (as found
+on DVDs) are not supported.
+.PP
+The video player works best on a 16 bit color depth X11 display,
+it works on other color depths with reduced speed as well. You'll need a
+CPU with 300 MHz or more to play back an MPEG system stream with 25 frames
+per second (fps) at full speed.
+
+.SH "SEE ALSO"
+SMPEG home page at http://www.lokigames.com/development/smpeg.php3
+.SH AUTHOR
+The SDL MPEG Player Library was written by Karl Robillard and Sam Lantinga
+of Loki Entertainment Software. Please report any bugs and/or fixes to
+smpeg@lokigames.com.
+.PP
+This manual page was written by Stefan Gybas <sgybas@debian.org> for the
+Debian GNU/Linux system, but may be used elsewhere under the GPL.
+

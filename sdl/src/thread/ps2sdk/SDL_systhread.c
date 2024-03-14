@@ -30,10 +30,13 @@ static char rcsid =
  "@(#) $Id$";
 #endif
 
+#include "SDL_config.h"
+
 /* Thread management routines for SDL */
 
 #include "SDL_error.h"
 #include "SDL_thread.h"
+#include "SDL_thread_c.h"
 #include "SDL_systhread.h"
 
 #ifdef	DISABLE_THREADS

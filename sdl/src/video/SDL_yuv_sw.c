@@ -1,29 +1,25 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* This is the software implementation of the YUV video overlay support */
 
@@ -87,10 +83,6 @@ static char rcsid =
  * SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
  */
 
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_error.h"
 #include "SDL_video.h"
 #include "SDL_cpuinfo.h"
 #include "SDL_stretch_c.h"
@@ -129,6 +121,7 @@ struct private_yuvhwdata {
 
 /* The colorspace conversion functions */
 
+#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
 extern void Color565DitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
                                      unsigned char *lum, unsigned char *cr,
                                      unsigned char *cb, unsigned char *out,
@@ -137,6 +130,7 @@ extern void ColorRGBDitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
                                      unsigned char *lum, unsigned char *cr,
                                      unsigned char *cb, unsigned char *out,
                                      int rows, int cols, int mod );
+#endif 
 
 static void Color16DitherYV12Mod1X( int *colortab, Uint32 *rgb_2_pix,
                                     unsigned char *lum, unsigned char *cr,
@@ -173,27 +167,27 @@ static void Color16DitherYV12Mod1X( int *colortab, Uint32 *rgb_2_pix,
             ++cr; ++cb;
 
             L = *lum++;
-            *row1++ = (rgb_2_pix[ L + cr_r ] |
-                       rgb_2_pix[ L + crb_g ] |
-                       rgb_2_pix[ L + cb_b ]);
+            *row1++ = (unsigned short)(rgb_2_pix[ L + cr_r ] |
+                                       rgb_2_pix[ L + crb_g ] |
+                                       rgb_2_pix[ L + cb_b ]);
 
             L = *lum++;
-            *row1++ = (rgb_2_pix[ L + cr_r ] |
-                       rgb_2_pix[ L + crb_g ] |
-                       rgb_2_pix[ L + cb_b ]);
+            *row1++ = (unsigned short)(rgb_2_pix[ L + cr_r ] |
+                                       rgb_2_pix[ L + crb_g ] |
+                                       rgb_2_pix[ L + cb_b ]);
 
 
             /* Now, do second row.  */
 
             L = *lum2++;
-            *row2++ = (rgb_2_pix[ L + cr_r ] |
-                       rgb_2_pix[ L + crb_g ] |
-                       rgb_2_pix[ L + cb_b ]);
+            *row2++ = (unsigned short)(rgb_2_pix[ L + cr_r ] |
+                                       rgb_2_pix[ L + crb_g ] |
+                                       rgb_2_pix[ L + cb_b ]);
 
             L = *lum2++;
-            *row2++ = (rgb_2_pix[ L + cr_r ] |
-                       rgb_2_pix[ L + crb_g ] |
-                       rgb_2_pix[ L + cb_b ]);
+            *row2++ = (unsigned short)(rgb_2_pix[ L + cr_r ] |
+                                       rgb_2_pix[ L + crb_g ] |
+                                       rgb_2_pix[ L + cb_b ]);
         }
 
         /*
@@ -644,14 +638,14 @@ static void Color16DitherYUY2Mod1X( int *colortab, Uint32 *rgb_2_pix,
             cr += 4; cb += 4;
 
             L = *lum; lum += 2;
-            *row++ = (rgb_2_pix[ L + cr_r ] |
-                       rgb_2_pix[ L + crb_g ] |
-                       rgb_2_pix[ L + cb_b ]);
+            *row++ = (unsigned short)(rgb_2_pix[ L + cr_r ] |
+                                      rgb_2_pix[ L + crb_g ] |
+                                      rgb_2_pix[ L + cb_b ]);
 
             L = *lum; lum += 2;
-            *row++ = (rgb_2_pix[ L + cr_r ] |
-                       rgb_2_pix[ L + crb_g ] |
-                       rgb_2_pix[ L + cb_b ]);
+            *row++ = (unsigned short)(rgb_2_pix[ L + cr_r ] |
+                                      rgb_2_pix[ L + crb_g ] |
+                                      rgb_2_pix[ L + cb_b ]);
 
         }
 
@@ -966,12 +960,12 @@ SDL_Overlay *SDL_CreateYUV_SW(_THIS, int width, int height, Uint32 format, SDL_S
 	}
 
 	/* Create the overlay structure */
-	overlay = (SDL_Overlay *)malloc(sizeof *overlay);
+	overlay = (SDL_Overlay *)SDL_malloc(sizeof *overlay);
 	if ( overlay == NULL ) {
 		SDL_OutOfMemory();
 		return(NULL);
 	}
-	memset(overlay, 0, (sizeof *overlay));
+	SDL_memset(overlay, 0, (sizeof *overlay));
 
 	/* Fill in the basic members */
 	overlay->format = format;
@@ -982,7 +976,7 @@ SDL_Overlay *SDL_CreateYUV_SW(_THIS, int width, int height, Uint32 format, SDL_S
 	overlay->hwfuncs = &sw_yuvfuncs;
 
 	/* Create the pixel data and lookup tables */
-	swdata = (struct private_yuvhwdata *)malloc(sizeof *swdata);
+	swdata = (struct private_yuvhwdata *)SDL_malloc(sizeof *swdata);
 	overlay->hwdata = swdata;
 	if ( swdata == NULL ) {
 		SDL_OutOfMemory();
@@ -991,13 +985,13 @@ SDL_Overlay *SDL_CreateYUV_SW(_THIS, int width, int height, Uint32 format, SDL_S
 	}
 	swdata->stretch = NULL;
 	swdata->display = display;
-	swdata->pixels = (Uint8 *) malloc(width*height*2);
-	swdata->colortab = (int *)malloc(4*256*sizeof(int));
+	swdata->pixels = (Uint8 *) SDL_malloc(width*height*2);
+	swdata->colortab = (int *)SDL_malloc(4*256*sizeof(int));
 	Cr_r_tab = &swdata->colortab[0*256];
 	Cr_g_tab = &swdata->colortab[1*256];
 	Cb_g_tab = &swdata->colortab[2*256];
 	Cb_b_tab = &swdata->colortab[3*256];
-	swdata->rgb_2_pix = (Uint32 *)malloc(3*768*sizeof(Uint32));
+	swdata->rgb_2_pix = (Uint32 *)SDL_malloc(3*768*sizeof(Uint32));
 	r_2_pix_alloc = &swdata->rgb_2_pix[0*768];
 	g_2_pix_alloc = &swdata->rgb_2_pix[1*768];
 	b_2_pix_alloc = &swdata->rgb_2_pix[2*768];
@@ -1067,7 +1061,7 @@ SDL_Overlay *SDL_CreateYUV_SW(_THIS, int width, int height, Uint32 format, SDL_S
 	    case SDL_YV12_OVERLAY:
 	    case SDL_IYUV_OVERLAY:
 		if ( display->format->BytesPerPixel == 2 ) {
-#if defined(i386) && defined(__GNUC__) && defined(USE_ASMBLIT)
+#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
 			/* inline assembly functions */
 			if ( SDL_HasMMX() && (Rmask == 0xF800) &&
 			                     (Gmask == 0x07E0) &&
@@ -1089,7 +1083,7 @@ SDL_Overlay *SDL_CreateYUV_SW(_THIS, int width, int height, Uint32 format, SDL_S
 			swdata->Display2X = Color24DitherYV12Mod2X;
 		}
 		if ( display->format->BytesPerPixel == 4 ) {
-#if defined(i386) && defined(__GNUC__) && defined(USE_ASMBLIT)
+#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
 			/* inline assembly functions */
 			if ( SDL_HasMMX() && (Rmask == 0x00FF0000) &&
 			                     (Gmask == 0x0000FF00) &&
@@ -1170,43 +1164,49 @@ void SDL_UnlockYUV_SW(_THIS, SDL_Overlay *overlay)
 	return;
 }
 
-int SDL_DisplayYUV_SW(_THIS, SDL_Overlay *overlay, SDL_Rect *dstrect)
+int SDL_DisplayYUV_SW(_THIS, SDL_Overlay *overlay, SDL_Rect *src, SDL_Rect *dst)
 {
 	struct private_yuvhwdata *swdata;
-	SDL_Surface *stretch;
-	SDL_Surface *display;
+	int stretch;
 	int scale_2x;
+	SDL_Surface *display;
 	Uint8 *lum, *Cr, *Cb;
-	Uint8 *dst;
+	Uint8 *dstp;
 	int mod;
 
 	swdata = overlay->hwdata;
-	scale_2x = 0;
 	stretch = 0;
-	if ( (overlay->w != dstrect->w) || (overlay->h != dstrect->h) ) {
-		if ( (dstrect->w == 2*overlay->w) &&
-		     (dstrect->h == 2*overlay->h) ) {
+	scale_2x = 0;
+	if ( src->x || src->y || src->w < overlay->w || src->h < overlay->h ) {
+		/* The source rectangle has been clipped.
+		   Using a scratch surface is easier than adding clipped
+		   source support to all the blitters, plus that would
+		   slow them down in the general unclipped case.
+		*/
+		stretch = 1;
+	} else if ( (src->w != dst->w) || (src->h != dst->h) ) {
+		if ( (dst->w == 2*src->w) &&
+		     (dst->h == 2*src->h) ) {
 			scale_2x = 1;
 		} else {
-			if ( ! swdata->stretch ) {
-				display = swdata->display;
-				swdata->stretch = SDL_CreateRGBSurface(
-					SDL_SWSURFACE,
-					overlay->w, overlay->h,
-					display->format->BitsPerPixel,
-					display->format->Rmask,
-					display->format->Gmask,
-					display->format->Bmask, 0);
-				if ( ! swdata->stretch ) {
-					return(-1);
-				}
-			}
-			stretch = swdata->stretch;
+			stretch = 1;
 		}
 	}
-
 	if ( stretch ) {
-		display = stretch;
+		if ( ! swdata->stretch ) {
+			display = swdata->display;
+			swdata->stretch = SDL_CreateRGBSurface(
+				SDL_SWSURFACE,
+				overlay->w, overlay->h,
+				display->format->BitsPerPixel,
+				display->format->Rmask,
+				display->format->Gmask,
+				display->format->Bmask, 0);
+			if ( ! swdata->stretch ) {
+				return(-1);
+			}
+		}
+		display = swdata->stretch;
 	} else {
 		display = swdata->display;
 	}
@@ -1246,31 +1246,31 @@ int SDL_DisplayYUV_SW(_THIS, SDL_Overlay *overlay, SDL_Rect *dstrect)
 		}
 	}
 	if ( stretch ) {
-		dst = (Uint8 *)stretch->pixels;
+		dstp = (Uint8 *)swdata->stretch->pixels;
 	} else {
-		dst = (Uint8 *)display->pixels
-			+ dstrect->x * display->format->BytesPerPixel
-			+ dstrect->y * display->pitch;
+		dstp = (Uint8 *)display->pixels
+			+ dst->x * display->format->BytesPerPixel
+			+ dst->y * display->pitch;
 	}
 	mod = (display->pitch / display->format->BytesPerPixel);
 
 	if ( scale_2x ) {
 		mod -= (overlay->w * 2);
 		swdata->Display2X(swdata->colortab, swdata->rgb_2_pix,
-		                  lum, Cr, Cb, dst, overlay->h, overlay->w,mod);
+		                  lum, Cr, Cb, dstp, overlay->h, overlay->w, mod);
 	} else {
 		mod -= overlay->w;
 		swdata->Display1X(swdata->colortab, swdata->rgb_2_pix,
-		                  lum, Cr, Cb, dst, overlay->h, overlay->w,mod);
+		                  lum, Cr, Cb, dstp, overlay->h, overlay->w, mod);
 	}
 	if ( SDL_MUSTLOCK(display) ) {
 		SDL_UnlockSurface(display);
 	}
 	if ( stretch ) {
 		display = swdata->display;
-		SDL_SoftStretch(stretch, NULL, display, dstrect);
+		SDL_SoftStretch(swdata->stretch, src, display, dst);
 	}
-	SDL_UpdateRects(display, 1, dstrect);
+	SDL_UpdateRects(display, 1, dst);
 
 	return(0);
 }
@@ -1285,14 +1285,15 @@ void SDL_FreeYUV_SW(_THIS, SDL_Overlay *overlay)
 			SDL_FreeSurface(swdata->stretch);
 		}
 		if ( swdata->pixels ) {
-			free(swdata->pixels);
+			SDL_free(swdata->pixels);
 		}
 		if ( swdata->colortab ) {
-			free(swdata->colortab);
+			SDL_free(swdata->colortab);
 		}
 		if ( swdata->rgb_2_pix ) {
-			free(swdata->rgb_2_pix);
+			SDL_free(swdata->rgb_2_pix);
 		}
-		free(swdata);
+		SDL_free(swdata);
+		overlay->hwdata = NULL;
 	}
 }

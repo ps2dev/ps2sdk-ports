@@ -16,7 +16,7 @@ MPEGlist::~MPEGlist()
   if(prev) prev->next = next;
   if(data)
   {
-    delete data;
+    delete[] data;
     data = 0;
   }
 }
@@ -35,7 +35,7 @@ MPEGlist * MPEGlist::Alloc(Uint32 Buffer_Size)
     next->data = new Uint8[Buffer_Size];
     if(!next->data)
     {
-      fprintf(stderr, "Alloc : Not enough memory\n");
+      //fprintf(stderr, "Alloc : Not enough memory\n");
       return(0);
     }
   } else {

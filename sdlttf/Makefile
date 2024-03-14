@@ -24,7 +24,7 @@ install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
-	cp -f ./include/*.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
+	cp -f SDL_ttf.h $(DESTDIR)$(PS2SDK)/ports/include/SDL
 
 clean:
 	rm -f -r $(EE_OBJS) $(EE_LIB_DIR)

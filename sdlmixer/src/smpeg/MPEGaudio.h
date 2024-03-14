@@ -32,12 +32,16 @@
 #include "MPEGring.h"
 #endif
 
+void Play_MPEGaudioSDL(void *udata, Uint8 *stream, int len);
+#ifdef THREADED_AUDIO
+    int Decode_MPEGaudio(void *udata);
+#endif
+
 class MPEGstream;
 
 /* MPEG/WAVE Sound library
-
    (C) 1997 by Woo-jae Jung */
-
+    
 /**************************/
 /* Define values for MPEG */
 /**************************/
@@ -106,7 +110,11 @@ typedef struct
 typedef struct
 {
   int tablename;
+#ifdef __PS2__
+  int xlen,ylen;
+#else
   unsigned int xlen,ylen;
+#endif
   unsigned int linbits;
   unsigned int treelen;
   const unsigned int (*val)[2];
@@ -150,12 +158,6 @@ private:
 
 /* The actual MPEG audio class */
 class MPEGaudio : public MPEGerror, public MPEGaudioaction {
-
-    friend void Play_MPEGaudioSDL(void *udata, Uint8 *stream, int len);
-    friend int Play_MPEGaudio(MPEGaudio *audio, Uint8 *stream, int len);
-#ifdef THREADED_AUDIO
-    friend int Decode_MPEGaudio(void *udata);
-#endif
 
 public:
     MPEGaudio(MPEGstream *stream, bool initSDL = true);
@@ -212,6 +214,7 @@ private:
   /* MPEG header variables */
   /*************************/
 private:
+  int last_speed;
   int layer,protection,bitrateindex,padding,extendedmode;
   enum _mpegversion  {mpeg1,mpeg2}                               version;
   enum _mode    {fullstereo,joint,dual,single}                   mode;
@@ -223,6 +226,7 @@ private:
 private:
   bool forcetomonoflag;
   bool forcetostereoflag;
+  bool swapendianflag;
   int  downfrequency;
 
 public:
@@ -366,6 +370,20 @@ public:
 #define N_TIMESTAMPS 5
 
   double timestamp[N_TIMESTAMPS];
+
+  /* Functions which access MPEGaudio internals */
+  friend void Play_MPEGaudioSDL(void *udata, Uint8 *stream, int len);
+  friend int Play_MPEGaudio(MPEGaudio *audio, Uint8 *stream, int len);
+#ifdef THREADED_AUDIO
+  friend int Decode_MPEGaudio(void *udata);
+#endif
 };
+
+/* Need to duplicate the prototypes, this is not a typo :) */
+void Play_MPEGaudioSDL(void *udata, Uint8 *stream, int len);
+int Play_MPEGaudio(MPEGaudio *audio, Uint8 *stream, int len);
+#ifdef THREADED_AUDIO
+int Decode_MPEGaudio(void *udata);
+#endif
 
 #endif /* _MPEGAUDIO_H_ */

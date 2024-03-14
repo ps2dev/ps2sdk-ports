@@ -16,6 +16,7 @@ EE_INCS      += -I./include -I$(PS2SDK)/ports/include -I$(PS2SDK)/ports/include/
 EE_LIBS      += -lSDL
 
 EE_OBJS =	SDL_framerate.o	\
+        SDL_gfxBlitFunc.o \
 		SDL_gfxPrimitives.o	\
 		SDL_imageFilter.o	\
 		SDL_rotozoom.o
@@ -33,7 +34,7 @@ $(EE_OBJS_DIR)%.o : %.c
 	$(EE_C_COMPILE) -c $< -o $@
 
 sample: all
-	$(MAKE) -C Test all
+	$(MAKE) -C Ps2-Test all
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include/SDL
@@ -43,7 +44,7 @@ install: all
 
 clean:
 	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
-	$(MAKE) -C Test clean
+	$(MAKE) -C Ps2-Test clean
 
 include $(PS2SDK)/samples/Makefile.pref
 include $(PS2SDK)/samples/Makefile.eeglobal

@@ -1,23 +1,22 @@
 /*
-    SDL_mixer:  An audio mixer library based on the SDL library
-    Copyright (C) 1997-2004 Sam Lantinga
+  SDL_mixer:  An audio mixer library based on the SDL library
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
 
 /* $Id$ */
@@ -31,6 +30,7 @@
 #include <string.h>
 
 #include "SDL_mixer.h"
+#include "dynamic_ogg.h"
 #include "music_ogg.h"
 
 /* This is the format of the audio mixer data */
@@ -51,39 +51,6 @@ void OGG_setvolume(OGG_music *music, int volume)
 	music->volume = volume;
 }
 
-/* Load an OGG stream from the given file */
-OGG_music *OGG_new(const char *file)
-{
-	OGG_music *music;
-	FILE *fp;
-
-	music = (OGG_music *)malloc(sizeof *music);
-	if ( music ) {
-		/* Initialize the music structure */
-		memset(music, 0, (sizeof *music));
-		OGG_stop(music);
-		OGG_setvolume(music, MIX_MAX_VOLUME);
-		music->section = -1;
-
-		fp = fopen(file, "rb");
-		if ( fp == NULL ) {
-			SDL_SetError("Couldn't open %s", file);
-			free(music);
-			return(NULL);
-		}
-		if ( ov_open(fp, &music->vf, NULL, 0) < 0 ) {
-			SDL_SetError("Not an Ogg Vorbis audio stream");
-			free(music);
-			fclose(fp);
-			return(NULL);
-		}
-	} else {
-		SDL_SetError("Out of memory");
-	}
-	return(music);
-}
-
-
 static size_t sdl_read_func(void *ptr, size_t size, size_t nmemb, void *datasource)
 {
     return SDL_RWread((SDL_RWops*)datasource, ptr, size, nmemb);
@@ -94,43 +61,53 @@ static int sdl_seek_func(void *datasource, ogg_int64_t offset, int whence)
     return SDL_RWseek((SDL_RWops*)datasource, (int)offset, whence);
 }
 
-static int sdl_close_func(void *datasource)
-{
-    return SDL_RWclose((SDL_RWops*)datasource);
-}
-
 static long sdl_tell_func(void *datasource)
 {
     return SDL_RWtell((SDL_RWops*)datasource);
 }
 
 /* Load an OGG stream from an SDL_RWops object */
-OGG_music *OGG_new_RW(SDL_RWops *rw)
+OGG_music *OGG_new_RW(SDL_RWops *rw, int freerw)
 {
 	OGG_music *music;
 	ov_callbacks callbacks;
 
+	if ( !Mix_Init(MIX_INIT_OGG) ) {
+		if ( freerw ) {
+			SDL_RWclose(rw);
+		}
+		return(NULL);
+	}
+
+	SDL_memset(&callbacks, 0, sizeof(callbacks));
 	callbacks.read_func = sdl_read_func;
 	callbacks.seek_func = sdl_seek_func;
-	callbacks.close_func = sdl_close_func;
 	callbacks.tell_func = sdl_tell_func;
 
-	music = (OGG_music *)malloc(sizeof *music);
+	music = (OGG_music *)SDL_malloc(sizeof *music);
 	if ( music ) {
 		/* Initialize the music structure */
 		memset(music, 0, (sizeof *music));
+		music->rw = rw;
+		music->freerw = freerw;
 		OGG_stop(music);
 		OGG_setvolume(music, MIX_MAX_VOLUME);
 		music->section = -1;
 
-		if ( ov_open_callbacks(rw, &music->vf, NULL, 0, callbacks) < 0 ) {
+		if ( vorbis.ov_open_callbacks(rw, &music->vf, NULL, 0, callbacks) < 0 ) {
+			SDL_free(music);
+			if ( freerw ) {
+				SDL_RWclose(rw);
+			}
 			SDL_SetError("Not an Ogg Vorbis audio stream");
-			free(music);
-			SDL_RWclose(rw);
 			return(NULL);
 		}
 	} else {
-		SDL_SetError("Out of memory");
+		if ( freerw ) {
+			SDL_RWclose(rw);
+		}
+		SDL_OutOfMemory();
+		return(NULL);
 	}
 	return(music);
 }
@@ -155,7 +132,11 @@ static void OGG_getsome(OGG_music *music)
 	char data[4096];
 	SDL_AudioCVT *cvt;
 
-	len = ov_read(&music->vf, data, sizeof(data), 0, 2, 1, &section);
+#ifdef OGG_USE_TREMOR
+	len = vorbis.ov_read(&music->vf, data, sizeof(data), &section);
+#else
+	len = vorbis.ov_read(&music->vf, data, sizeof(data), 0, 2, 1, &section);
+#endif
 	if ( len <= 0 ) {
 		if ( len == 0 ) {
 			music->playing = 0;
@@ -166,13 +147,13 @@ static void OGG_getsome(OGG_music *music)
 	if ( section != music->section ) {
 		vorbis_info *vi;
 
-		vi = ov_info(&music->vf, -1);
+		vi = vorbis.ov_info(&music->vf, -1);
 		SDL_BuildAudioCVT(cvt, AUDIO_S16, vi->channels, vi->rate,
 		                       mixer.format,mixer.channels,mixer.freq);
 		if ( cvt->buf ) {
-			free(cvt->buf);
+			SDL_free(cvt->buf);
 		}
-		cvt->buf = (Uint8 *)malloc(sizeof(data)*cvt->len_mult);
+		cvt->buf = (Uint8 *)SDL_malloc(sizeof(data)*cvt->len_mult);
 		music->section = section;
 	}
 	if ( cvt->buf ) {
@@ -192,7 +173,7 @@ static void OGG_getsome(OGG_music *music)
 }
 
 /* Play some of a stream previously started with OGG_play() */
-void OGG_playAudio(OGG_music *music, Uint8 *snd, int len)
+int OGG_playAudio(OGG_music *music, Uint8 *snd, int len)
 {
 	int mixable;
 
@@ -215,6 +196,8 @@ void OGG_playAudio(OGG_music *music, Uint8 *snd, int len)
 		len -= mixable;
 		snd += mixable;
 	}
+	
+	return len;
 }
 
 /* Stop playback of a stream previously started with OGG_play() */
@@ -228,17 +211,24 @@ void OGG_delete(OGG_music *music)
 {
 	if ( music ) {
 		if ( music->cvt.buf ) {
-			free(music->cvt.buf);
+			SDL_free(music->cvt.buf);
 		}
-		ov_clear(&music->vf);
-		free(music);
+		if ( music->freerw ) {
+			SDL_RWclose(music->rw);
+		}
+		vorbis.ov_clear(&music->vf);
+		SDL_free(music);
 	}
 }
 
 /* Jump (seek) to a given position (time is in seconds) */
 void OGG_jump_to_time(OGG_music *music, double time)
 {
-       ov_time_seek( &music->vf, time );
+#ifdef OGG_USE_TREMOR
+       vorbis.ov_time_seek( &music->vf, (ogg_int64_t)time );
+#else
+       vorbis.ov_time_seek( &music->vf, time );
+#endif
 }
 
 #endif /* OGG_MUSIC */

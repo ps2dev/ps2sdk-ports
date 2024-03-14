@@ -47,7 +47,7 @@ MPEG::MPEG(int Mpeg_FD, bool SDLaudio) :
     return;
   }
 
-  source = SDL_RWFromFP(file,false);
+  source = SDL_RWFromFP(file,(SDL_bool) false);
   if (!source) {
     InitErrorState();
     SetError(SDL_GetError());
@@ -98,7 +98,8 @@ void MPEG::Init(SDL_RWops *mpeg_source, bool SDLaudio)
     videoaction = NULL;
     audio = NULL;
     video = NULL;
-    audioaction_enabled = videoaction_enabled = false;
+    audioaction_enabled = SDLaudio;
+    videoaction_enabled = false;
     loop = false;
     pause = false;
 
@@ -133,6 +134,7 @@ void MPEG::InitErrorState() {
     video = NULL;
     system = NULL;
     error = NULL;
+    source = NULL;
 
     audiostream = videostream = NULL;
     audioaction = NULL;

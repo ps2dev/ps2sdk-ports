@@ -20,6 +20,10 @@
     slouken@libsdl.org
 */
 
+#include "SDL_config.h"
+
+#ifdef SDL_TIMER_PS2
+
 #ifdef SAVE_RCSID
 static char rcsid =
  "@(#) $Id$";
@@ -66,7 +70,7 @@ void SDL_StartTicks(void)
 
 Uint32 SDL_GetTicks(void)
 {
-	return ticks;
+	return (Uint32)ticks;
 }
 
 void SDL_Delay(Uint32 ms)
@@ -160,3 +164,5 @@ void SDL_SYS_StopTimer(void)
 	printf("FIXME: StopTimer not implemented!\n");
 	return;
 }
+
+#endif

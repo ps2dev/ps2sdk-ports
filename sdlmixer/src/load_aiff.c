@@ -1,29 +1,31 @@
 /*
-    SDL_mixer:  An audio mixer library based on the SDL library
-    Copyright (C) 1997-2004 Sam Lantinga
+  SDL_mixer:  An audio mixer library based on the SDL library
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 
-    This is the source needed to decode an AIFF file into a waveform.
-    It's pretty straightforward once you get going. The only
-    externally-callable function is Mix_LoadAIFF_RW(), which is meant to
-    act as identically to SDL_LoadWAV_RW() as possible.
+  This is the source needed to decode an AIFF file into a waveform.
+  It's pretty straightforward once you get going. The only
+  externally-callable function is Mix_LoadAIFF_RW(), which is meant to
+  act as identically to SDL_LoadWAV_RW() as possible.
 
-    This file by Torbjörn Andersson (torbjorn.andersson@eurotime.se)
-    8SVX file support added by Marc Le Douarain (mavati@club-internet.fr)
-    in december 2002.
+  This file by Torbjörn Andersson (torbjorn.andersson@eurotime.se)
+  8SVX file support added by Marc Le Douarain (mavati@club-internet.fr)
+  in december 2002.
 */
 
 /* $Id$ */
@@ -31,7 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL/SDL_endian.h>
+#include "SDL_endian.h"
 #include "SDL_mixer.h"
 #include "load_aiff.h"
 
@@ -177,7 +179,7 @@ SDL_AudioSpec *Mix_LoadAIFF_RW (SDL_RWops *src, int freesrc,
 			next_chunk++;
 	} while ( ( ( (AIFFmagic == AIFF) && ( !found_SSND || !found_COMM ) )
 		  || ( (AIFFmagic == _8SVX ) && ( !found_VHDR || !found_BODY ) ) )
-		  && SDL_RWseek(src, next_chunk, SEEK_SET) != 1 );
+		  && SDL_RWseek(src, next_chunk, RW_SEEK_SET) != 1 );
 
 	if ( (AIFFmagic == AIFF) && !found_SSND ) {
 		SDL_SetError("Bad AIFF (no SSND chunk)");
@@ -222,12 +224,12 @@ SDL_AudioSpec *Mix_LoadAIFF_RW (SDL_RWops *src, int freesrc,
 	spec->samples = 4096;		/* Good default buffer size */
 
 	*audio_len = channels * numsamples * (samplesize / 8);
-	*audio_buf = (Uint8 *)malloc(*audio_len);
+	*audio_buf = (Uint8 *)SDL_malloc(*audio_len);
 	if ( *audio_buf == NULL ) {
 		SDL_SetError("Out of memory");
 		return(NULL);
 	}
-	SDL_RWseek(src, start, SEEK_SET);
+	SDL_RWseek(src, start, RW_SEEK_SET);
 	if ( SDL_RWread(src, *audio_buf, *audio_len, 1) != 1 ) {
 		SDL_SetError("Unable to read audio data");
 		return(NULL);

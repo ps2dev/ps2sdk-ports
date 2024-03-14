@@ -1,26 +1,27 @@
 /*
-    SDL_image:  An example image loading library for use with SDL
-    Copyright (C) 1999-2004 Sam Lantinga
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
 
-/* $Id$ */
+#if !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND)
+
+/* This is a Targa image file loading framework */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -83,14 +84,11 @@ enum tga_type {
 #define LE16(p) ((p)[0] + ((p)[1] << 8))
 #define SETLE16(p, v) ((p)[0] = (v), (p)[1] = (v) >> 8)
 
-static void unsupported(void)
-{
-    IMG_SetError("unsupported TGA format");
-}
-
 /* Load a TGA type image from an SDL datasource */
 SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
 {
+    int start;
+    const char *error = NULL;
     struct TGAheader hdr;
     int rle = 0;
     int alpha = 0;
@@ -98,7 +96,7 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
     int grey = 0;
     int ckey = -1;
     int ncols, w, h;
-    SDL_Surface *img;
+    SDL_Surface *img = NULL;
     Uint32 rmask, gmask, bmask, amask;
     Uint8 *dst;
     int i;
@@ -111,9 +109,12 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
         /* The error message has been set in SDL_RWFromFile */
         return NULL;
     }
+    start = SDL_RWtell(src);
 
-    if(!SDL_RWread(src, &hdr, sizeof(hdr), 1))
+    if(!SDL_RWread(src, &hdr, sizeof(hdr), 1)) {
+        error = "Error reading TGA data";
 	goto error;
+    }
     ncols = LE16(hdr.cmap_len);
     switch(hdr.type) {
     case TGA_TYPE_RLE_INDEXED:
@@ -121,7 +122,7 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
 	/* fallthrough */
     case TGA_TYPE_INDEXED:
 	if(!hdr.has_cmap || hdr.pixel_bits != 8 || ncols > 256)
-	    goto error;
+	    goto unsupported;
 	indexed = 1;
 	break;
 
@@ -137,14 +138,13 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
 	/* fallthrough */
     case TGA_TYPE_BW:
 	if(hdr.pixel_bits != 8)
-	    goto error;
+	    goto unsupported;
 	/* Treat greyscale as 8bpp indexed images */
 	indexed = grey = 1;
 	break;
 
     default:
-        unsupported();
-	return NULL;
+        goto unsupported;
     }
 
     bpp = (hdr.pixel_bits + 7) >> 3;
@@ -152,8 +152,7 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
     switch(hdr.pixel_bits) {
     case 8:
 	if(!indexed) {
-	    unsupported();
-	    return NULL;
+            goto unsupported;
 	}
 	break;
 
@@ -185,23 +184,25 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
 	break;
 
     default:
-	unsupported();
-	return NULL;
+        goto unsupported;
     }
 
     if((hdr.flags & TGA_INTERLEAVE_MASK) != TGA_INTERLEAVE_NONE
        || hdr.flags & TGA_ORIGIN_RIGHT) {
-	unsupported();
-	return NULL;
+        goto unsupported;
     }
     
-    SDL_RWseek(src, hdr.infolen, SEEK_CUR); /* skip info field */
+    SDL_RWseek(src, hdr.infolen, RW_SEEK_CUR); /* skip info field */
 
     w = LE16(hdr.width);
     h = LE16(hdr.height);
     img = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h,
 			       bpp * 8,
 			       rmask, gmask, bmask, amask);
+    if(img == NULL) {
+        error = "Out of memory";
+        goto error;
+    }
 
     if(hdr.has_cmap) {
 	int palsiz = ncols * ((hdr.cmap_bits + 7) >> 3);
@@ -237,7 +238,7 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
 		SDL_SetColorKey(img, SDL_SRCCOLORKEY, ckey);
 	} else {
 	    /* skip unneeded colormap */
-	    SDL_RWseek(src, palsiz, SEEK_CUR);
+	    SDL_RWseek(src, palsiz, RW_SEEK_CUR);
 	}
     }
 
@@ -310,8 +311,15 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
     }
     return img;
 
+unsupported:
+    error = "Unsupported TGA format";
+
 error:
-    IMG_SetError("Error reading TGA data");
+    SDL_RWseek(src, start, RW_SEEK_SET);
+    if ( img ) {
+        SDL_FreeSurface(img);
+    }
+    IMG_SetError(error);
     return NULL;
 }
 
@@ -324,3 +332,5 @@ SDL_Surface *IMG_LoadTGA_RW(SDL_RWops *src)
 }
 
 #endif /* LOAD_TGA */
+
+#endif /* !defined(__APPLE__) || defined(SDL_IMAGE_USE_COMMON_BACKEND) */

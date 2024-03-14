@@ -32,6 +32,37 @@ struct _SMPEG {
     MPEG *obj;
 };
 
+
+static inline int sanityCheckByteorder(void)
+{
+    int sane = 0;
+    union {
+        Uint32 ui32;
+        Uint8 ui8[4];
+    } swapper;
+
+    swapper.ui32 = 0x00000001;
+
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    sane = (swapper.ui8[0] == 0x01);
+#else
+    sane = (swapper.ui8[3] == 0x01);
+#endif
+
+    if (!sane) {
+        fprintf(stderr,
+          "\n\n"
+          "*************************************************************\n"
+          " SMPEG ERROR: SDL is wrong about this platform's byte order!\n"
+          "   You need to fix your SDL install before SMPEG can work!\n"
+          "*************************************************************\n"
+          "\n\n");
+    }
+
+    return(sane);
+}
+
+
 /* Create a new SMPEG object from an MPEG file.
    On return, if 'info' is not NULL, it will be filled with information 
    about the MPEG object.
@@ -44,6 +75,9 @@ struct _SMPEG {
 SMPEG* SMPEG_new(const char *file, SMPEG_Info* info, int sdl_audio)
 {
     SMPEG *mpeg;
+
+    if (!sanityCheckByteorder())
+        return(NULL);
 
     /* Create a new SMPEG object! */
     mpeg = new SMPEG;
@@ -60,6 +94,9 @@ SMPEG* SMPEG_new(const char *file, SMPEG_Info* info, int sdl_audio)
 SMPEG* SMPEG_new_descr(int file, SMPEG_Info* info, int sdl_audio)
 {
     SMPEG *mpeg;
+
+    if (!sanityCheckByteorder())
+        return(NULL);
 
     /* Create a new SMPEG object! */
     mpeg = new SMPEG;
@@ -81,6 +118,9 @@ SMPEG* SMPEG_new_data(void *data, int size, SMPEG_Info* info, int sdl_audio)
 {
     SMPEG *mpeg;
 
+    if (!sanityCheckByteorder())
+        return(NULL);
+
     /* Create a new SMPEG object! */
     mpeg = new SMPEG;
     mpeg->obj = new MPEG(data, size, sdl_audio ? true : false);
@@ -95,6 +135,9 @@ SMPEG* SMPEG_new_data(void *data, int size, SMPEG_Info* info, int sdl_audio)
 SMPEG* SMPEG_new_rwops(SDL_RWops *src, SMPEG_Info* info, int sdl_audio)
 {
     SMPEG *mpeg;
+
+    if (!sanityCheckByteorder())
+        return(NULL);
 
     /* Create a new SMPEG object! */
     mpeg = new SMPEG;
@@ -325,11 +368,14 @@ void SMPEG_actualSpec( SMPEG *mpeg, SDL_AudioSpec *spec )
 */
 char *SMPEG_error( SMPEG* mpeg )
 {
-    char *error;
+    char *error = NULL;
 
-    error = NULL;
-    if ( mpeg->obj->WasError() ) {
-        error = mpeg->obj->TheError();
+    if (mpeg == NULL) {
+        error = (char *) "NULL mpeg (unknown error)";
+    } else {
+        if ( mpeg->obj->WasError() ) {
+            error = mpeg->obj->TheError();
+        }
     }
     return(error);
 }

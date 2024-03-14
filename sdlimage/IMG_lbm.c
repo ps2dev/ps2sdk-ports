@@ -1,26 +1,23 @@
 /*
-    SDL_image:  An example image loading library for use with SDL
-    Copyright (C) 1999-2004 Sam Lantinga
+  SDL_image:  An example image loading library for use with SDL
+  Copyright (C) 1997-2012 Sam Lantinga <slouken@libsdl.org>
 
-    This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
-    License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
 
-    This library is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-
-    Sam Lantinga
-    slouken@libsdl.org
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
 */
-
-/* $Id$ */
 
 /* This is a ILBM image file loading framework
    Load IFF pictures, PBM & ILBM packing methods, with or without stencil
@@ -30,6 +27,7 @@
    EHB and HAM (specific Amiga graphic chip modes) support added by Marc Le Douarain
    (http://www.multimania.com/mavati) in December 2003.
    Stencil and colorkey fixes by David Raulo (david.raulo AT free DOT fr) in February 2004.
+   Buffer overflow fix in RLE decompression by David Raulo in January 2008.
 */
 
 #include <stdio.h>
@@ -56,18 +54,22 @@ typedef struct
     Uint8 pad1;			/* dummy value, for padding */
     Uint16 tcolor;		/* transparent color */
     Uint8 xAspect,		/* pixel aspect ratio */
-         yAspect;
+          yAspect;
     Sint16  Lpage;		/* width of the screen in pixels */
     Sint16  Hpage;		/* height of the screen in pixels */
 } BMHD;
 
 int IMG_isLBM( SDL_RWops *src )
 {
+	int start;
 	int   is_LBM;
 	Uint8 magic[4+4+4];
 
+	if ( !src ) 
+		return 0;
+	start = SDL_RWtell(src);
 	is_LBM = 0;
-	if ( SDL_RWread( src, magic, 4+4+4, 1 ) )
+	if ( SDL_RWread( src, magic, sizeof(magic), 1 ) )
 	{
 		if ( !memcmp( magic, "FORM", 4 ) &&
 			( !memcmp( magic + 8, "PBM ", 4 ) ||
@@ -76,15 +78,17 @@ int IMG_isLBM( SDL_RWops *src )
 			is_LBM = 1;
 		}
 	}
+	SDL_RWseek(src, start, RW_SEEK_SET);
 	return( is_LBM );
 }
 
 SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 {
+	int start;
 	SDL_Surface *Image;
 	Uint8       id[4], pbm, colormap[MAXCOLORS*3], *MiniBuf, *ptr, count, color, msk;
 	Uint32      size, bytesloaded, nbcolors;
-	Uint32      i, j, bytesperline, nbplanes, plane, h;
+	Uint32      i, j, bytesperline, nbplanes, stencil, plane, h;
 	Uint32      remainingbytes;
 	Uint32      width;
 	BMHD	      bmhd;
@@ -99,6 +103,8 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 		/* The error message has been set in SDL_RWFromFile */
 		return NULL;
 	}
+	start = SDL_RWtell(src);
+
 	if ( !SDL_RWread( src, id, 4, 1 ) )
 	{
 		error="error reading IFF chunk";
@@ -213,7 +219,7 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 			if ( size & 1 )	++size;  	/* padding ! */
 			size -= bytesloaded;
 			/* skip the remaining bytes of this chunk */
-			if ( size )	SDL_RWseek( src, size, SEEK_CUR );
+			if ( size )	SDL_RWseek( src, size, RW_SEEK_CUR );
 		}
 	}
 
@@ -231,12 +237,13 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 		nbplanes = 1;
 	}
 
-	if ( bmhd.mask & 1 ) ++nbplanes;   /* There is a mask ( 'stencil' ) */
+	stencil = (bmhd.mask & 1);   /* There is a mask ( 'stencil' ) */
 
 	/* Allocate memory for a temporary buffer ( used for
            decompression/deinterleaving ) */
 
-	if ( ( MiniBuf = (void *)malloc( bytesperline * nbplanes ) ) == NULL )
+	MiniBuf = (void *)malloc( bytesperline * (nbplanes + stencil) );
+	if ( MiniBuf == NULL )
 	{
 		error="no enough memory for temporary buffer";
 		goto done;
@@ -253,7 +260,8 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 	/* There is no palette in 24 bits ILBM file */
 	if ( nbcolors>0 && flagHAM==0 )
 	{
-		int nbrcolorsfinal = 1 << nbplanes;
+		/* FIXME: Should this include the stencil? See comment below */
+		int nbrcolorsfinal = 1 << (nbplanes + stencil);
 		ptr = &colormap[0];
 
 		for ( i=0; i<nbcolors; i++ )
@@ -291,7 +299,8 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 			Image->format->palette->colors[i].g = Image->format->palette->colors[i%nbcolors].g;
 			Image->format->palette->colors[i].b = Image->format->palette->colors[i%nbcolors].b;
 		}
-		Image->format->palette->ncolors = nbrcolorsfinal;
+		if ( !pbm )
+			Image->format->palette->ncolors = nbrcolorsfinal;
 	}
 
 	/* Get the bitmap */
@@ -300,7 +309,7 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 	{
 		/* uncompress the datas of each planes */
 
-		for ( plane=0; plane < nbplanes; plane++ )
+		for ( plane=0; plane < (nbplanes+stencil); plane++ )
 		{
 			ptr = MiniBuf + ( plane * bytesperline );
 
@@ -321,9 +330,9 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 						count ^= 0xFF;
 						count += 2; /* now it */
 
-						if ( !SDL_RWread( src, &color, 1, 1 ) )
+						if ( ( count > remainingbytes ) || !SDL_RWread( src, &color, 1, 1 ) )
 						{
-						   error="error reading BODY chunk";
+							error="error reading BODY chunk";
 							goto done;
 						}
 						memset( ptr, color, count );
@@ -332,7 +341,7 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 					{
 						++count;
 
-						if ( !SDL_RWread( src, ptr, count, 1 ) )
+						if ( ( count > remainingbytes ) || !SDL_RWread( src, ptr, count, 1 ) )
 						{
 						   error="error reading BODY chunk";
 							goto done;
@@ -376,7 +385,7 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 				{
 					memset( ptr, 0, 8 );
 
-					for ( plane=0; plane < nbplanes; plane++ )
+					for ( plane=0; plane < (nbplanes + stencil); plane++ )
 					{
 						color = *( MiniBuf + i + ( plane * bytesperline ) );
 						msk = 0x80;
@@ -442,15 +451,15 @@ SDL_Surface *IMG_LoadLBM_RW( SDL_RWops *src )
 						}
 						if ( SDL_BYTEORDER == SDL_LIL_ENDIAN )
 						{
-							*ptr++ = finalcolor>>16;
-							*ptr++ = finalcolor>>8;
-							*ptr++ = finalcolor;
+							*ptr++ = (Uint8)(finalcolor>>16);
+							*ptr++ = (Uint8)(finalcolor>>8);
+							*ptr++ = (Uint8)(finalcolor);
 						}
 						else
 						{
-							*ptr++ = finalcolor;
-							*ptr++ = finalcolor>>8;
-							*ptr++ = finalcolor>>16;
+							*ptr++ = (Uint8)(finalcolor);
+							*ptr++ = (Uint8)(finalcolor>>8);
+							*ptr++ = (Uint8)(finalcolor>>16);
 						}
 
 						maskBit = maskBit>>1;
@@ -466,9 +475,12 @@ done:
 
 	if ( error )
 	{
+		SDL_RWseek(src, start, RW_SEEK_SET);
+		if ( Image ) {
+			SDL_FreeSurface( Image );
+			Image = NULL;
+		}
 		IMG_SetError( error );
-		SDL_FreeSurface( Image );
-		Image = NULL;
 	}
 
 	return( Image );

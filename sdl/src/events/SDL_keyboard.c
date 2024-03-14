@@ -1,40 +1,30 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* General keyboard handling code for SDL */
 
-#include <stdio.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_error.h"
-#include "SDL_events.h"
 #include "SDL_timer.h"
+#include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "SDL_sysevents.h"
 
@@ -44,7 +34,7 @@ static Uint8  SDL_KeyState[SDLK_LAST];
 static SDLMod SDL_ModState;
 int SDL_TranslateUNICODE = 0;
 
-static char *keynames[SDLK_LAST];	/* Array of keycode names */
+static const char *keynames[SDLK_LAST];	/* Array of keycode names */
 
 /*
  * jk 991215 - added
@@ -58,25 +48,48 @@ struct {
 	SDL_Event evt;    /* the event we are supposed to repeat */
 } SDL_KeyRepeat;
 
+/* Global no-lock-keys support */
+static Uint8 SDL_NoLockKeys;
+
+#define SDL_NLK_CAPS 0x01
+#define SDL_NLK_NUM  0x02
+
 /* Public functions */
 int SDL_KeyboardInit(void)
 {
+	const char* env;
 	SDL_VideoDevice *video = current_video;
 	SDL_VideoDevice *this  = current_video;
-	Uint16 i;
 
 	/* Set default mode of UNICODE translation */
 	SDL_EnableUNICODE(DEFAULT_UNICODE_TRANSLATION);
 
 	/* Initialize the tables */
 	SDL_ModState = KMOD_NONE;
-	for ( i=0; i<SDL_TABLESIZE(keynames); ++i )
-		keynames[i] = NULL;
-	for ( i=0; i<SDL_TABLESIZE(SDL_KeyState); ++i )
-		SDL_KeyState[i] = SDL_RELEASED;
+	SDL_memset((void*)keynames, 0, sizeof(keynames));
+	SDL_memset(SDL_KeyState, 0, sizeof(SDL_KeyState));
 	video->InitOSKeymap(this);
 
 	SDL_EnableKeyRepeat(0, 0);
+
+	/* Allow environment override to disable special lock-key behavior */
+	SDL_NoLockKeys = 0;
+	env = SDL_getenv("SDL_DISABLE_LOCK_KEYS");
+	if (env) {
+		switch (SDL_atoi(env)) {
+			case 1:
+				SDL_NoLockKeys = SDL_NLK_CAPS | SDL_NLK_NUM;
+				break;
+			case 2:
+				SDL_NoLockKeys = SDL_NLK_CAPS;
+				break;
+			case 3:
+				SDL_NoLockKeys = SDL_NLK_NUM;
+				break;
+			default:
+				break;
+		}
+	}
 
 	/* Fill in the blanks in keynames */
 	keynames[SDLK_BACKSPACE] = "backspace";
@@ -321,6 +334,9 @@ int SDL_KeyboardInit(void)
 	/* Done.  Whew. */
 	return(0);
 }
+void SDL_KeyboardQuit(void)
+{
+}
 
 /* We lost the keyboard, so post key up messages for all pressed keys */
 void SDL_ResetKeyboard(void)
@@ -328,7 +344,7 @@ void SDL_ResetKeyboard(void)
 	SDL_keysym keysym;
 	SDLKey key;
 
-	memset(&keysym, 0, (sizeof keysym));
+	SDL_memset(&keysym, 0, (sizeof keysym));
 	for ( key=SDLK_FIRST; key<SDLK_LAST; ++key ) {
 		if ( SDL_KeyState[key] == SDL_PRESSED ) {
 			keysym.sym = key;
@@ -366,7 +382,7 @@ void SDL_SetModState (SDLMod modstate)
 
 char *SDL_GetKeyName(SDLKey key)
 {
-	char *keyname;
+	const char *keyname;
 
 	keyname = NULL;
 	if ( key < SDLK_LAST ) {
@@ -375,7 +391,8 @@ char *SDL_GetKeyName(SDLKey key)
 	if ( keyname == NULL ) {
 		keyname = "unknown key";
 	}
-	return(keyname);
+	/* FIXME: make this function const in 1.3 */
+	return (char *)(keyname);
 }
 
 /* These are global for SDL_eventloop.c */
@@ -385,7 +402,7 @@ int SDL_PrivateKeyboard(Uint8 state, SDL_keysym *keysym)
 	int posted, repeatable;
 	Uint16 modstate;
 
-	memset(&event, 0, sizeof(event));
+	SDL_memset(&event, 0, sizeof(event));
 
 #if 0
 printf("The '%s' key has been %s\n", SDL_GetKeyName(keysym->sym), 
@@ -399,14 +416,20 @@ printf("The '%s' key has been %s\n", SDL_GetKeyName(keysym->sym),
 	if ( state == SDL_PRESSED ) {
 		keysym->mod = (SDLMod)modstate;
 		switch (keysym->sym) {
+			case SDLK_UNKNOWN:
+				break;
 			case SDLK_NUMLOCK:
 				modstate ^= KMOD_NUM;
+				if ( SDL_NoLockKeys & SDL_NLK_NUM )
+					break;
 				if ( ! (modstate&KMOD_NUM) )
 					state = SDL_RELEASED;
 				keysym->mod = (SDLMod)modstate;
 				break;
 			case SDLK_CAPSLOCK:
 				modstate ^= KMOD_CAPS;
+				if ( SDL_NoLockKeys & SDL_NLK_CAPS )
+					break;
 				if ( ! (modstate&KMOD_CAPS) )
 					state = SDL_RELEASED;
 				keysym->mod = (SDLMod)modstate;
@@ -444,8 +467,16 @@ printf("The '%s' key has been %s\n", SDL_GetKeyName(keysym->sym),
 		}
 	} else {
 		switch (keysym->sym) {
+			case SDLK_UNKNOWN:
+				break;
 			case SDLK_NUMLOCK:
+				if ( SDL_NoLockKeys & SDL_NLK_NUM )
+					break;
+				/* Only send keydown events */
+				return(0);
 			case SDLK_CAPSLOCK:
+				if ( SDL_NoLockKeys & SDL_NLK_CAPS )
+					break;
 				/* Only send keydown events */
 				return(0);
 			case SDLK_LCTRL:
@@ -491,7 +522,8 @@ printf("The '%s' key has been %s\n", SDL_GetKeyName(keysym->sym),
 			/*
 			 * jk 991215 - Added
 			 */
-			if ( SDL_KeyRepeat.timestamp ) {
+			if ( SDL_KeyRepeat.timestamp &&
+			     SDL_KeyRepeat.evt.key.keysym.sym == keysym->sym ) {
 				SDL_KeyRepeat.timestamp = 0;
 			}
 			break;
@@ -500,14 +532,19 @@ printf("The '%s' key has been %s\n", SDL_GetKeyName(keysym->sym),
 			return(0);
 	}
 
-	/* Drop events that don't change state */
-	if ( SDL_KeyState[keysym->sym] == state ) {
-		return(0);
-	}
+	if ( keysym->sym != SDLK_UNKNOWN ) {
+		/* Drop events that don't change state */
+		if ( SDL_KeyState[keysym->sym] == state ) {
+#if 0
+printf("Keyboard event didn't change state - dropped!\n");
+#endif
+			return(0);
+		}
 
-	/* Update internal keyboard state */
-	SDL_ModState = (SDLMod)modstate;
-	SDL_KeyState[keysym->sym] = state;
+		/* Update internal keyboard state */
+		SDL_ModState = (SDLMod)modstate;
+		SDL_KeyState[keysym->sym] = state;
+	}
 
 	/* Post the event, if desired */
 	posted = 0;
@@ -567,5 +604,11 @@ int SDL_EnableKeyRepeat(int delay, int interval)
 	SDL_KeyRepeat.interval = interval;
 	SDL_KeyRepeat.timestamp = 0;
 	return(0);
+}
+
+void SDL_GetKeyRepeat(int *delay, int *interval)
+{
+	*delay = SDL_KeyRepeat.delay;
+	*interval = SDL_KeyRepeat.interval;
 }
 

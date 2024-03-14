@@ -81,9 +81,9 @@ romfs:
 	$(MAKE) -C $@ clean
 
 sdl: cmakelibs
-	$(MAKE) -C $@
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@ clean
+	$(MAKE) -C $@ -f Makefile.ps2
+	$(MAKE) -C $@ -f Makefile.ps2 install
+	$(MAKE) -C $@ -f Makefile.ps2 clean
 
 sdlgfx: sdlimage
 	$(MAKE) -C $@

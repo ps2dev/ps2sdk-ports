@@ -62,6 +62,6 @@ extern DECLSPEC SMPEG_Filter * SMPEGfilter_bilinear(void);
 extern DECLSPEC SMPEG_Filter * SMPEGfilter_deblocking(void);
 
 #ifdef __cplusplus
-};
+}
 #endif
 #endif /* _MPEGFILTER_H_ */

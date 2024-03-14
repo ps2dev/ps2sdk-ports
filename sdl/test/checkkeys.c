@@ -8,7 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <SDL.h>
+#include "SDL.h"
+
+/* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
+static void quit(int rc)
+{
+	SDL_Quit();
+	exit(rc);
+}
 
 static void print_modifiers(void)
 {
@@ -66,27 +73,13 @@ static void PrintKey(SDL_keysym *sym, int pressed)
 			/* This is a Latin-1 program, so only show 8-bits */
 			if ( !(sym->unicode & 0xFF00) )
 				printf(" (%c)", sym->unicode);
+			else
+				printf(" (0x%X)", sym->unicode);
 #endif
 		}
 	}
 	print_modifiers();
 	printf("\n");
-}
-
-static void PrintMouseButton(SDL_MouseButtonEvent *buttonevt)
-{
-
-   printf("Button %d is %s ", buttonevt->button, 
-                  buttonevt->state ? "pressed" : "released");
-   printf("\n");
-}
-
-static void PrintMouseMotion(SDL_MouseMotionEvent *motionevt)
-{
-
-   printf("Mouse is at (%d, %d) with relative move (%i, %i)",
-					motionevt->x, motionevt->y, motionevt->xrel, motionevt->yrel);
-   printf("\n");
 }
 
 int main(int argc, char *argv[])
@@ -98,9 +91,8 @@ int main(int argc, char *argv[])
 	/* Initialize SDL */
 	if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
 		fprintf(stderr, "Couldn't initialize SDL: %s\n",SDL_GetError());
-		exit(1);
+		return(1);
 	}
-	atexit(SDL_Quit);
 
 	videoflags = SDL_SWSURFACE;
 	while( argc > 1 ) {
@@ -109,15 +101,15 @@ int main(int argc, char *argv[])
 			videoflags |= SDL_FULLSCREEN;
 		} else {
 			fprintf(stderr, "Usage: %s [-fullscreen]\n", argv[0]);
-			exit(1);
+			quit(1);
 		}
 	}
 
-	/* Set 640x480xdefault bpp video mode */
+	/* Set 640x480 video mode */
 	if ( SDL_SetVideoMode(640, 480, 0, videoflags) == NULL ) {
-		fprintf(stderr, "Couldn't set 640x480 video mode : %s\n",
+		fprintf(stderr, "Couldn't set 640x480 video mode: %s\n",
 							SDL_GetError());
-		exit(2);
+		quit(2);
 	}
 
 	/* Enable UNICODE translation for keyboard input */
@@ -126,9 +118,6 @@ int main(int argc, char *argv[])
 	/* Enable auto repeat for keyboard input */
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,
 	                    SDL_DEFAULT_REPEAT_INTERVAL);
-
-
-    printf("Waiting for Keys & Mouse(pad) events...\n");
 
 	/* Watch keystrokes */
 	done = 0;
@@ -143,14 +132,7 @@ int main(int argc, char *argv[])
 				PrintKey(&event.key.keysym, 0);
 				break;
 			case SDL_MOUSEBUTTONDOWN:
-				PrintMouseButton(&event.button);
-				break;		
-			case SDL_MOUSEBUTTONUP:
-				PrintMouseButton(&event.button);
-				break;	
-			case SDL_MOUSEMOTION:
-				PrintMouseMotion(&event.motion);
-				break;	                                		
+				/* Any button press quits the app... */
 			case SDL_QUIT:
 				done = 1;
 				break;
@@ -158,5 +140,7 @@ int main(int argc, char *argv[])
 				break;
 		}
 	}
+
+	SDL_Quit();
 	return(0);
 }

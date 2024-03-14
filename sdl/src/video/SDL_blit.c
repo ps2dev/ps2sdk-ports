@@ -1,44 +1,37 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
+#include "SDL_config.h"
 
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_error.h"
 #include "SDL_video.h"
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
-#include "SDL_memops.h"
 
-#if (defined(i386) || defined(__x86_64__)) && defined(__GNUC__) && defined(USE_ASMBLIT)
+#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__)) && SDL_ASSEMBLY_ROUTINES
 #define MMX_ASMBLIT
+#if (__GNUC__ > 2)  /* SSE instructions aren't in GCC 2. */
+#define SSE_ASMBLIT
+#endif
 #endif
 
 #if defined(MMX_ASMBLIT)
@@ -116,7 +109,7 @@ static int SDL_SoftBlit(SDL_Surface *src, SDL_Rect *srcrect,
 }
 
 #ifdef MMX_ASMBLIT
-static __inline__ void SDL_memcpyMMX(char* to,char* from,int len)
+static __inline__ void SDL_memcpyMMX(Uint8 *to, const Uint8 *from, int len)
 {
 	int i;
 
@@ -132,7 +125,8 @@ static __inline__ void SDL_memcpyMMX(char* to,char* from,int len)
 		SDL_memcpy(to, from, len&7);
 }
 
-static __inline__ void SDL_memcpySSE(char* to,char* from,int len)
+#ifdef SSE_ASMBLIT
+static __inline__ void SDL_memcpySSE(Uint8 *to, const Uint8 *from, int len)
 {
 	int i;
 
@@ -156,6 +150,7 @@ static __inline__ void SDL_memcpySSE(char* to,char* from,int len)
 		SDL_memcpy(to, from, len&7);
 }
 #endif
+#endif
 
 static void SDL_BlitCopy(SDL_BlitInfo *info)
 {
@@ -169,7 +164,8 @@ static void SDL_BlitCopy(SDL_BlitInfo *info)
 	dst = info->d_pixels;
 	srcskip = w+info->s_skip;
 	dstskip = w+info->d_skip;
-#ifdef MMX_ASMBLIT
+
+#ifdef SSE_ASMBLIT
 	if(SDL_HasSSE())
 	{
 		while ( h-- ) {
@@ -182,6 +178,8 @@ static void SDL_BlitCopy(SDL_BlitInfo *info)
 		::);
 	}
 	else
+#endif
+#ifdef MMX_ASMBLIT
 	if(SDL_HasMMX())
 	{
 		while ( h-- ) {
@@ -216,7 +214,7 @@ static void SDL_BlitCopyOverlap(SDL_BlitInfo *info)
 	dstskip = w+info->d_skip;
 	if ( dst < src ) {
 		while ( h-- ) {
-			SDL_memcpy(dst, src, w);
+			SDL_memmove(dst, src, w);
 			src += srcskip;
 			dst += dstskip;
 		}
@@ -279,6 +277,17 @@ int SDL_CalculateBlit(SDL_Surface *surface)
 			SDL_VideoDevice *this  = current_video;
 			video->CheckHWBlit(this, surface, surface->map->dst);
 		}
+	}
+	
+	/* if an alpha pixel format is specified, we can accelerate alpha blits */
+	if (((surface->flags & SDL_HWSURFACE) == SDL_HWSURFACE )&&(current_video->displayformatalphapixel)) 
+	{
+		if ( (surface->flags & SDL_SRCALPHA) ) 
+			if ( current_video->info.blit_hw_A ) {
+				SDL_VideoDevice *video = current_video;
+				SDL_VideoDevice *this  = current_video;
+				video->CheckHWBlit(this, surface, surface->map->dst);
+			}
 	}
 
 	/* Get the blit function index, based on surface mode */

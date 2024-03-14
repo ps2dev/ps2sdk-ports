@@ -1,0 +1,377 @@
+diff --git a/Android.mk b/Android.mk
+new file mode 100644
+index 0000000..aa23069
+--- /dev/null
++++ b/Android.mk
+@@ -0,0 +1,21 @@
++LOCAL_PATH := $(call my-dir)
++
++include $(CLEAR_VARS)
++
++LOCAL_MODULE := SDL_gfx
++
++LOCAL_CFLAGS := -I$(LOCAL_PATH) -I$(LOCAL_PATH)/../SDL/include
++
++LOCAL_CPP_EXTENSION := .cpp
++
++# Note this simple makefile var substitution, you can find even simpler examples in different Android projects
++LOCAL_SRC_FILES := $(notdir $(wildcard $(LOCAL_PATH)/*.c))
++
++LOCAL_SHARED_LIBRARIES := SDL2
++
++ifeq (,$(findstring $(LOCAL_MODULE), $(APP_AVAILABLE_STATIC_LIBS)))
++include $(BUILD_SHARED_LIBRARY)
++else
++include $(BUILD_STATIC_LIBRARY)
++endif
++
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+new file mode 100644
+index 0000000..610ea5a
+--- /dev/null
++++ b/CMakeLists.txt
+@@ -0,0 +1,26 @@
++cmake_minimum_required (VERSION 2.8)
++project (SDL_gfx)
++set (SDL_gfx_VERSION_MAJOR 3)
++set (SDL_gfx_VERSION_MINOR 0)
++
++set (CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
++find_package (SDL2 REQUIRED)
++
++include_directories (
++	"${SDL2_INCLUDE_DIR}"
++	)
++
++file(GLOB SOURCE_FILES ${CMAKE_SOURCE_DIR}/*.c)
++file(GLOB INCLUDE_FILES ${CMAKE_SOURCE_DIR}/*.h)
++
++add_library (SDL_gfx SHARED
++	${SOURCE_FILES}
++	${INCLUDE_FILES}
++	)
++
++target_link_libraries (SDL_gfx
++	${SDL2_LIBRARY}
++	)
++
++install (TARGETS SDL_gfx DESTINATION lib)
++install (FILES ${INCLUDE_FILES} DESTINATION include/SDL)
+diff --git a/SDL_gfxBlitFunc.c b/SDL_gfxBlitFunc.c
+index 1c0f68e..c204829 100644
+--- a/SDL_gfxBlitFunc.c
++++ b/SDL_gfxBlitFunc.c
+@@ -364,19 +364,11 @@ int _SDL_gfxBlitRGBACall(SDL_Surface * src, SDL_Rect * srcrect, SDL_Surface * ds
+ 		/*
+ 		* Set up the blit information 
+ 		*/
+-#if (SDL_MINOR_VERSION == 3)
+ 		info.s_pixels = (Uint8 *) src->pixels               + (Uint16) srcrect->y * src->pitch + (Uint16) srcrect->x * src->format->BytesPerPixel;
+-#else
+-		info.s_pixels = (Uint8 *) src->pixels + src->offset + (Uint16) srcrect->y * src->pitch + (Uint16) srcrect->x * src->format->BytesPerPixel;
+-#endif
+ 		info.s_width = srcrect->w;
+ 		info.s_height = srcrect->h;
+ 		info.s_skip = (int)(src->pitch - info.s_width * src->format->BytesPerPixel);
+-#if (SDL_MINOR_VERSION == 3)
+ 		info.d_pixels = (Uint8 *) dst->pixels               + (Uint16) dstrect->y * dst->pitch + (Uint16) dstrect->x * dst->format->BytesPerPixel;
+-#else
+-		info.d_pixels = (Uint8 *) dst->pixels + dst->offset + (Uint16) dstrect->y * dst->pitch + (Uint16) dstrect->x * dst->format->BytesPerPixel;
+-#endif
+ 		info.d_width = dstrect->w;
+ 		info.d_height = dstrect->h;
+ 		info.d_skip = (int)(dst->pitch - info.d_width * dst->format->BytesPerPixel);
+diff --git a/SDL_gfxPrimitives.c b/SDL_gfxPrimitives.c
+index ae8b998..b5a18b2 100644
+--- a/SDL_gfxPrimitives.c
++++ b/SDL_gfxPrimitives.c
+@@ -5980,7 +5980,7 @@ int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color)
+ 	*/
+ 	if (gfxPrimitivesFont[ci] == NULL) {
+ 		gfxPrimitivesFont[ci] =
+-			SDL_CreateRGBSurface(SDL_SWSURFACE | SDL_HWSURFACE | SDL_SRCALPHA,
++			SDL_CreateRGBSurface(0,
+ 			charWidth, charHeight, 32,
+ 			0xFF000000, 0x00FF0000, 0x0000FF00, 0x000000FF);
+ 		/*
+@@ -6004,7 +6004,7 @@ int characterColor(SDL_Surface * dst, Sint16 x, Sint16 y, char c, Uint32 color)
+ 		/*
+ 		* Redraw character 
+ 		*/
+-		SDL_SetAlpha(gfxPrimitivesFont[ci], SDL_SRCALPHA, 255);
++		SDL_SetSurfaceAlphaMod(gfxPrimitivesFont[ci], 255);
+ 		gfxPrimitivesFontColor[ci] = color;
+ 
+ 		/* Lock font-surface */
+diff --git a/SDL_rotozoom.c b/SDL_rotozoom.c
+index 53fc90c..6fa43ab 100644
+--- a/SDL_rotozoom.c
++++ b/SDL_rotozoom.c
+@@ -83,14 +83,7 @@ to a situation where the program can segfault.
+ Uint32 _colorkey(SDL_Surface *src)
+ {
+ 	Uint32 key = 0; 
+-#if (SDL_MINOR_VERSION == 3)
+ 	SDL_GetColorKey(src, &key);
+-#else
+-	if (src) 
+-	{
+-		key = src->format->colorkey;
+-	}
+-#endif
+ 	return key;
+ }
+ 
+@@ -1058,22 +1051,14 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 	int is32bit;
+ 	int i, src_converted;
+ 	int flipx,flipy;
+-	Uint8 r,g,b;
+-	Uint32 colorkey = 0;
+-	int colorKeyAvailable = 0;
+ 
+ 	/*
+ 	* Sanity check 
+ 	*/
+-	if (src == NULL)
++	if (src == NULL) {
+ 		return (NULL);
+-
+-	if (src->flags & SDL_SRCCOLORKEY)
+-	{
+-		colorkey = _colorkey(src);
+-		SDL_GetRGB(colorkey, src->format, &r, &g, &b);
+-		colorKeyAvailable = 1;
+ 	}
++
+ 	/*
+ 	* Determine if source surface is 32bit or 8bit 
+ 	*/
+@@ -1096,13 +1081,9 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 			0xff000000,  0x00ff0000, 0x0000ff00, 0x000000ff
+ #endif
+ 			);
+-		if(colorKeyAvailable)
+-			SDL_SetColorKey(src, 0, 0);
+ 
+ 		SDL_BlitSurface(src, NULL, rz_src, NULL);
+ 
+-		if(colorKeyAvailable)
+-			SDL_SetColorKey(src, SDL_SRCCOLORKEY, colorkey);
+ 		src_converted = 1;
+ 		is32bit = 1;
+ 	}
+@@ -1171,12 +1152,6 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 		/* Adjust for guard rows */
+ 		rz_dst->h = dstheight;
+ 
+-		if (colorKeyAvailable == 1){
+-			colorkey = SDL_MapRGB(rz_dst->format, r, g, b);
+-
+-			SDL_FillRect(rz_dst, NULL, colorkey );
+-		}
+-
+ 		/*
+ 		* Lock source surface 
+ 		*/
+@@ -1195,11 +1170,6 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 				(int) (sanglezoominv), (int) (canglezoominv), 
+ 				flipx, flipy,
+ 				smooth);
+-			/*
+-			* Turn on source-alpha support 
+-			*/
+-			SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255);
+-			SDL_SetColorKey(rz_dst, SDL_SRCCOLORKEY | SDL_RLEACCEL, _colorkey(rz_src));
+ 		} else {
+ 			/*
+ 			* Copy palette and colorkey info 
+@@ -1214,7 +1184,6 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 			transformSurfaceY(rz_src, rz_dst, dstwidthhalf, dstheighthalf,
+ 				(int) (sanglezoominv), (int) (canglezoominv),
+ 				flipx, flipy);
+-			SDL_SetColorKey(rz_dst, SDL_SRCCOLORKEY | SDL_RLEACCEL, _colorkey(rz_src));
+ 		}
+ 		/*
+ 		* Unlock source surface 
+@@ -1263,12 +1232,6 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 		/* Adjust for guard rows */
+ 		rz_dst->h = dstheight;
+ 
+-		if (colorKeyAvailable == 1){
+-			colorkey = SDL_MapRGB(rz_dst->format, r, g, b);
+-
+-			SDL_FillRect(rz_dst, NULL, colorkey );
+-		}
+-
+ 		/*
+ 		* Lock source surface 
+ 		*/
+@@ -1285,11 +1248,6 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 			*/
+ 			_zoomSurfaceRGBA(rz_src, rz_dst, flipx, flipy, smooth);
+ 
+-			/*
+-			* Turn on source-alpha support 
+-			*/
+-			SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255);
+-			SDL_SetColorKey(rz_dst, SDL_SRCCOLORKEY | SDL_RLEACCEL, _colorkey(rz_src));
+ 		} else {
+ 			/*
+ 			* Copy palette and colorkey info 
+@@ -1303,7 +1261,6 @@ SDL_Surface *rotozoomSurfaceXY(SDL_Surface * src, double angle, double zoomx, do
+ 			* Call the 8bit transformation routine to do the zooming 
+ 			*/
+ 			_zoomSurfaceY(rz_src, rz_dst, flipx, flipy);
+-			SDL_SetColorKey(rz_dst, SDL_SRCCOLORKEY | SDL_RLEACCEL, _colorkey(rz_src));
+ 		}
+ 
+ 		/*
+@@ -1490,10 +1447,6 @@ SDL_Surface *zoomSurface(SDL_Surface * src, double zoomx, double zoomy, int smoo
+ 		* Call the 32bit transformation routine to do the zooming (using alpha) 
+ 		*/
+ 		_zoomSurfaceRGBA(rz_src, rz_dst, flipx, flipy, smooth);
+-		/*
+-		* Turn on source-alpha support 
+-		*/
+-		SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255);
+ 	} else {
+ 		/*
+ 		* Copy palette and colorkey info 
+@@ -1506,7 +1459,6 @@ SDL_Surface *zoomSurface(SDL_Surface * src, double zoomx, double zoomy, int smoo
+ 		* Call the 8bit transformation routine to do the zooming 
+ 		*/
+ 		_zoomSurfaceY(rz_src, rz_dst, flipx, flipy);
+-		SDL_SetColorKey(rz_dst, SDL_SRCCOLORKEY | SDL_RLEACCEL, _colorkey(rz_src));
+ 	}
+ 	/*
+ 	* Unlock source surface 
+@@ -1649,15 +1601,6 @@ SDL_Surface *shrinkSurface(SDL_Surface *src, int factorx, int factory)
+ 			haveError = 1;
+ 			goto exitShrinkSurface;
+ 		}
+-
+-		/*
+-		* Turn on source-alpha support 
+-		*/
+-		result = SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255);
+-		if (result!=0) {
+-			haveError = 1;
+-			goto exitShrinkSurface;
+-		}
+ 	} else {
+ 		/*
+ 		* Copy palette and colorkey info 
+@@ -1674,15 +1617,6 @@ SDL_Surface *shrinkSurface(SDL_Surface *src, int factorx, int factory)
+ 			haveError = 1;
+ 			goto exitShrinkSurface;
+ 		}
+-
+-		/*
+-		* Set colorkey on target
+-		*/
+-		result = SDL_SetColorKey(rz_dst, SDL_SRCCOLORKEY | SDL_RLEACCEL, _colorkey(rz_src));
+-		if (result!=0) {
+-			haveError = 1;
+-			goto exitShrinkSurface;
+-		}		
+ 	}
+ 
+ exitShrinkSurface:
+diff --git a/cmake/modules/FindSDL2.cmake b/cmake/modules/FindSDL2.cmake
+new file mode 100644
+index 0000000..5dbc1fc
+--- /dev/null
++++ b/cmake/modules/FindSDL2.cmake
+@@ -0,0 +1,91 @@
++# - Find SDL2 library and headers
++#
++# Find module for SDL 2.0 (http://www.libsdl.org/).
++# It defines the following variables:
++#  SDL2_INCLUDE_DIRS - The location of the headers, e.g., SDL.h.
++#  SDL2_LIBRARIES - The libraries to link against to use SDL2.
++#  SDL2_FOUND - If false, do not try to use SDL2.
++#  SDL2_VERSION_STRING - Human-readable string containing the version of SDL2.
++#
++# This module responds to the the flag:
++#  SDL2_BUILDING_LIBRARY
++#    If this is defined, then no SDL2_main will be linked in because
++#    only applications need main().
++#    Otherwise, it is assumed you are building an application and this
++#    module will attempt to locate and set the the proper link flags
++#    as part of the returned SDL2_LIBRARIES variable.
++#
++# Also defined, but not for general use are:
++#   SDL2_INCLUDE_DIR - The directory that contains SDL.h.
++#   SDL2_LIBRARY - The location of the SDL2 library.
++#   SDL2MAIN_LIBRARY - The location of the SDL2main library.
++#
++
++#=============================================================================
++# Copyright 2013 Benjamin Eikel
++#
++# Distributed under the OSI-approved BSD License (the "License");
++# see accompanying file Copyright.txt for details.
++#
++# This software is distributed WITHOUT ANY WARRANTY; without even the
++# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
++# See the License for more information.
++#=============================================================================
++# (To distribute this file outside of CMake, substitute the full
++#  License text for the above reference.)
++
++find_package(PkgConfig QUIET)
++pkg_check_modules(PC_SDL2 QUIET sdl2)
++
++find_path(SDL2_INCLUDE_DIR
++  NAMES SDL.h
++  HINTS
++    ${PC_SDL2_INCLUDEDIR}
++    ${PC_SDL2_INCLUDE_DIRS}
++  PATH_SUFFIXES SDL2
++)
++
++find_library(SDL2_LIBRARY
++  NAMES SDL2
++  HINTS
++    ${PC_SDL2_LIBDIR}
++    ${PC_SDL2_LIBRARY_DIRS}
++  PATH_SUFFIXES x64 x86
++)
++
++if(NOT SDL2_BUILDING_LIBRARY)
++  find_library(SDL2MAIN_LIBRARY
++    NAMES SDL2main
++    HINTS
++      ${PC_SDL2_LIBDIR}
++      ${PC_SDL2_LIBRARY_DIRS}
++    PATH_SUFFIXES x64 x86
++  )
++endif()
++
++if(SDL2_INCLUDE_DIR AND EXISTS "${SDL2_INCLUDE_DIR}/SDL_version.h")
++  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MAJOR_LINE REGEX "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+[0-9]+$")
++  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_MINOR_LINE REGEX "^#define[ \t]+SDL_MINOR_VERSION[ \t]+[0-9]+$")
++  file(STRINGS "${SDL2_INCLUDE_DIR}/SDL_version.h" SDL2_VERSION_PATCH_LINE REGEX "^#define[ \t]+SDL_PATCHLEVEL[ \t]+[0-9]+$")
++  string(REGEX REPLACE "^#define[ \t]+SDL_MAJOR_VERSION[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_MAJOR "${SDL2_VERSION_MAJOR_LINE}")
++  string(REGEX REPLACE "^#define[ \t]+SDL_MINOR_VERSION[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_MINOR "${SDL2_VERSION_MINOR_LINE}")
++  string(REGEX REPLACE "^#define[ \t]+SDL_PATCHLEVEL[ \t]+([0-9]+)$" "\\1" SDL2_VERSION_PATCH "${SDL2_VERSION_PATCH_LINE}")
++  set(SDL2_VERSION_STRING ${SDL2_VERSION_MAJOR}.${SDL2_VERSION_MINOR}.${SDL2_VERSION_PATCH})
++  unset(SDL2_VERSION_MAJOR_LINE)
++  unset(SDL2_VERSION_MINOR_LINE)
++  unset(SDL2_VERSION_PATCH_LINE)
++  unset(SDL2_VERSION_MAJOR)
++  unset(SDL2_VERSION_MINOR)
++  unset(SDL2_VERSION_PATCH)
++endif()
++
++set(SDL2_INCLUDE_DIRS ${SDL2_INCLUDE_DIR})
++set(SDL2_LIBRARIES ${SDL2MAIN_LIBRARY} ${SDL2_LIBRARY})
++
++include(FindPackageHandleStandardArgs)
++
++find_package_handle_standard_args(SDL2
++                                  REQUIRED_VARS SDL2_INCLUDE_DIR SDL2_LIBRARY
++                                  VERSION_VAR SDL2_VERSION_STRING)
++
++mark_as_advanced(SDL2_INCLUDE_DIR SDL2_LIBRARY)

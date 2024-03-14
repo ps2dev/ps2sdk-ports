@@ -1,29 +1,25 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /*
  * RLE encoding for software colorkey and alpha-channel acceleration
@@ -90,19 +86,13 @@ static char rcsid =
  *   beginning of an opaque line.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "SDL_types.h"
 #include "SDL_video.h"
-#include "SDL_error.h"
 #include "SDL_sysvideo.h"
 #include "SDL_blit.h"
-#include "SDL_memops.h"
 #include "SDL_RLEaccel_c.h"
 
-#if (defined(i386) || defined(__x86_64__)) && defined(__GNUC__) && defined(USE_ASMBLIT)
+/* Force MMX to 0; this blows up on almost every major compiler now. --ryan. */
+#if 0 && defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__)) && SDL_ASSEMBLY_ROUTINES
 #define MMX_ASMBLIT
 #endif
 
@@ -121,9 +111,9 @@ static char rcsid =
 #define PIXEL_COPY(to, from, len, bpp)			\
 do {							\
     if(bpp == 4) {					\
-	SDL_memcpy4(to, from, (unsigned)(len));		\
+	SDL_memcpy4(to, from, (size_t)(len));		\
     } else {						\
-	SDL_memcpy(to, from, (unsigned)(len) * (bpp));	\
+	SDL_memcpy(to, from, (size_t)(len) * (bpp));	\
     }							\
 } while(0)
 
@@ -434,7 +424,7 @@ do {							\
 	    d = (d | d << 16) & 0x07e0f81f;		\
 	    d += (s - d) * ALPHA >> 5;			\
 	    d &= 0x07e0f81f;				\
-	    *dst++ = d | d >> 16;			\
+	    *dst++ = (Uint16)(d | d >> 16);			\
 	}						\
     } while(0)
 
@@ -451,7 +441,7 @@ do {							\
 	    d = (d | d << 16) & 0x03e07c1f;		\
 	    d += (s - d) * ALPHA >> 5;			\
 	    d &= 0x03e07c1f;				\
-	    *dst++ = d | d >> 16;			\
+	    *dst++ = (Uint16)(d | d >> 16);			\
 	}						\
     } while(0)
 
@@ -493,17 +483,17 @@ do {							\
 	    PIXEL_FROM_RGB(d, fmt, rd, gd, bd);				\
 	    switch(bpp) {						\
 	    case 2:							\
-		*(Uint16 *)dst = d;					\
+		*(Uint16 *)dst = (Uint16)d;					\
 		break;							\
 	    case 3:							\
 		if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {			\
-		    dst[0] = d >> 16;					\
-		    dst[1] = d >> 8;					\
-		    dst[2] = d;						\
+		    dst[0] = (Uint8)(d >> 16);					\
+		    dst[1] = (Uint8)(d >> 8);					\
+		    dst[2] = (Uint8)(d);						\
 		} else {						\
-		    dst[0] = d;						\
-		    dst[1] = d >> 8;					\
-		    dst[2] = d >> 16;					\
+		    dst[0] = (Uint8)d;						\
+		    dst[1] = (Uint8)(d >> 8);					\
+		    dst[2] = (Uint8)(d >> 16);					\
 		}							\
 		break;							\
 	    case 4:							\
@@ -586,10 +576,10 @@ do {							\
 /* helper: blend a single 16 bit pixel at 50% */
 #define BLEND16_50(dst, src, mask)			\
     do {						\
-        Uint32 s = *src++;				\
+	Uint32 s = *src++;				\
 	Uint32 d = *dst;				\
-	*dst++ = (((s & mask) + (d & mask)) >> 1)	\
-	         + (s & d & (~mask & 0xffff));		\
+	*dst++ = (Uint16)((((s & mask) + (d & mask)) >> 1) +	\
+	                  (s & d & (~mask & 0xffff)));		\
     } while(0)
 
 /* basic 16bpp blender. mask is the pixels to keep when adding. */
@@ -598,12 +588,12 @@ do {							\
 	unsigned n = (length);						\
 	Uint16 *src = (Uint16 *)(from);					\
 	Uint16 *dst = (Uint16 *)(to);					\
-	if(((unsigned int)src ^ (unsigned int)dst) & 3) {		\
+	if(((uintptr_t)src ^ (uintptr_t)dst) & 3) {			\
 	    /* source and destination not in phase, blit one by one */	\
 	    while(n--)							\
 		BLEND16_50(dst, src, mask);				\
 	} else {							\
-	    if((unsigned int)src & 3) {					\
+	    if((uintptr_t)src & 3) {					\
 		/* first odd pixel */					\
 		BLEND16_50(dst, src, mask);				\
 		n--;							\
@@ -982,32 +972,32 @@ done:
  */
 #define BLIT_TRANSL_565(src, dst)		\
     do {					\
-        Uint32 s = src;				\
+	Uint32 s = src;				\
 	Uint32 d = dst;				\
 	unsigned alpha = (s & 0x3e0) >> 5;	\
 	s &= 0x07e0f81f;			\
 	d = (d | d << 16) & 0x07e0f81f;		\
 	d += (s - d) * alpha >> 5;		\
 	d &= 0x07e0f81f;			\
-	dst = d | d >> 16;			\
+	dst = (Uint16)(d | d >> 16);			\
     } while(0)
 
 #define BLIT_TRANSL_555(src, dst)		\
     do {					\
-        Uint32 s = src;				\
+	Uint32 s = src;				\
 	Uint32 d = dst;				\
 	unsigned alpha = (s & 0x3e0) >> 5;	\
 	s &= 0x03e07c1f;			\
 	d = (d | d << 16) & 0x03e07c1f;		\
 	d += (s - d) * alpha >> 5;		\
 	d &= 0x03e07c1f;			\
-	dst = d | d >> 16;			\
+	dst = (Uint16)(d | d >> 16);			\
     } while(0)
 
 /* used to save the destination format in the encoding. Designed to be
    macro-compatible with SDL_PixelFormat but without the unneeded fields */
 typedef struct {
-    	Uint8  BytesPerPixel;
+	Uint8  BytesPerPixel;
 	Uint8  Rloss;
 	Uint8  Gloss;
 	Uint8  Bloss;
@@ -1066,7 +1056,7 @@ static void RLEAlphaClipBlit(int w, Uint8 *srcbuf, SDL_Surface *dst,
 	    } while(ofs < w);						  \
 	    /* skip padding if necessary */				  \
 	    if(sizeof(Ptype) == 2)					  \
-		srcbuf += (unsigned int)srcbuf & 2;			  \
+		srcbuf += (uintptr_t)srcbuf & 2;			  \
 	    /* blit translucent pixels on the same line */		  \
 	    ofs = 0;							  \
 	    do {							  \
@@ -1158,7 +1148,7 @@ int SDL_RLEAlphaBlit(SDL_Surface *src, SDL_Rect *srcrect,
 		    } while(ofs < w);
 
 		    /* skip padding */
-		    srcbuf += (unsigned int)srcbuf & 2;
+		    srcbuf += (uintptr_t)srcbuf & 2;
 
 		    /* skip translucent line */
 		    ofs = 0;
@@ -1222,7 +1212,7 @@ int SDL_RLEAlphaBlit(SDL_Surface *src, SDL_Rect *srcrect,
 		} while(ofs < w);					 \
 		/* skip padding if necessary */				 \
 		if(sizeof(Ptype) == 2)					 \
-		    srcbuf += (unsigned int)srcbuf & 2;			 \
+		    srcbuf += (uintptr_t)srcbuf & 2;		 	 \
 		/* blit translucent pixels on the same line */		 \
 		ofs = 0;						 \
 		do {							 \
@@ -1475,7 +1465,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     }
 
     maxsize += sizeof(RLEDestFormat);
-    rlebuf = (Uint8 *)malloc(maxsize);
+    rlebuf = (Uint8 *)SDL_malloc(maxsize);
     if(!rlebuf) {
 	SDL_OutOfMemory();
 	return -1;
@@ -1558,7 +1548,7 @@ static int RLEAlphaSurface(SDL_Surface *surface)
 	    } while(x < w);
 
 	    /* Make sure the next output address is 32-bit aligned */
-	    dst += (unsigned int)dst & 2;
+	    dst += (uintptr_t)dst & 2;
 
 	    /* Next, encode all translucent pixels of the same scan line */
 	    x = 0;
@@ -1605,13 +1595,13 @@ static int RLEAlphaSurface(SDL_Surface *surface)
     /* Now that we have it encoded, release the original pixels */
     if((surface->flags & SDL_PREALLOC) != SDL_PREALLOC
        && (surface->flags & SDL_HWSURFACE) != SDL_HWSURFACE) {
-	free( surface->pixels );
+	SDL_free( surface->pixels );
 	surface->pixels = NULL;
     }
 
     /* realloc the buffer to release unused memory */
     {
-	Uint8 *p = realloc(rlebuf, dst - rlebuf);
+	Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
 	if(!p)
 	    p = rlebuf;
 	surface->map->sw_data->aux_data = p;
@@ -1632,10 +1622,11 @@ static Uint32 getpix_16(Uint8 *srcbuf)
 
 static Uint32 getpix_24(Uint8 *srcbuf)
 {
-    if(SDL_BYTEORDER == SDL_LIL_ENDIAN)
-	return srcbuf[0] + (srcbuf[1] << 8) + (srcbuf[2] << 16);
-    else
-	return (srcbuf[0] << 16) + (srcbuf[1] << 8) + srcbuf[2];
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    return srcbuf[0] + (srcbuf[1] << 8) + (srcbuf[2] << 16);
+#else
+    return (srcbuf[0] << 16) + (srcbuf[1] << 8) + srcbuf[2];
+#endif
 }
 
 static Uint32 getpix_32(Uint8 *srcbuf)
@@ -1654,9 +1645,8 @@ static int RLEColorkeySurface(SDL_Surface *surface)
         Uint8 *rlebuf, *dst;
 	int maxn;
 	int y;
-	Uint8 *srcbuf, *curbuf, *lastline;
+	Uint8 *srcbuf, *lastline;
 	int maxsize = 0;
-	int skip, run;
 	int bpp = surface->format->BytesPerPixel;
 	getpix_func getpix;
 	Uint32 ckey, rgbmask;
@@ -1682,7 +1672,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
 	    break;
 	}
 
-	rlebuf = (Uint8 *)malloc(maxsize);
+	rlebuf = (Uint8 *)SDL_malloc(maxsize);
 	if ( rlebuf == NULL ) {
 		SDL_OutOfMemory();
 		return(-1);
@@ -1690,9 +1680,7 @@ static int RLEColorkeySurface(SDL_Surface *surface)
 
 	/* Set up the conversion */
 	srcbuf = (Uint8 *)surface->pixels;
-	curbuf = srcbuf;
 	maxn = bpp == 4 ? 65535 : 255;
-	skip = run = 0;
 	dst = rlebuf;
 	rgbmask = ~surface->format->Amask;
 	ckey = surface->format->colorkey & rgbmask;
@@ -1738,14 +1726,14 @@ static int RLEColorkeySurface(SDL_Surface *surface)
 		}
 		len = MIN(run, maxn);
 		ADD_COUNTS(skip, len);
-		memcpy(dst, srcbuf + runstart * bpp, len * bpp);
+		SDL_memcpy(dst, srcbuf + runstart * bpp, len * bpp);
 		dst += len * bpp;
 		run -= len;
 		runstart += len;
 		while(run) {
 		    len = MIN(run, maxn);
 		    ADD_COUNTS(0, len);
-		    memcpy(dst, srcbuf + runstart * bpp, len * bpp);
+		    SDL_memcpy(dst, srcbuf + runstart * bpp, len * bpp);
 		    dst += len * bpp;
 		    runstart += len;
 		    run -= len;
@@ -1764,14 +1752,14 @@ static int RLEColorkeySurface(SDL_Surface *surface)
 	/* Now that we have it encoded, release the original pixels */
 	if((surface->flags & SDL_PREALLOC) != SDL_PREALLOC
 	   && (surface->flags & SDL_HWSURFACE) != SDL_HWSURFACE) {
-	    free( surface->pixels );
+	    SDL_free( surface->pixels );
 	    surface->pixels = NULL;
 	}
 
 	/* realloc the buffer to release unused memory */
 	{
 	    /* If realloc returns NULL, the original block is left intact */
-	    Uint8 *p = realloc(rlebuf, dst - rlebuf);
+	    Uint8 *p = SDL_realloc(rlebuf, dst - rlebuf);
 	    if(!p)
 		p = rlebuf;
 	    surface->map->sw_data->aux_data = p;
@@ -1852,12 +1840,12 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
 	uncopy_opaque = uncopy_transl = uncopy_32;
     }
 
-    surface->pixels = malloc(surface->h * surface->pitch);
+    surface->pixels = SDL_malloc(surface->h * surface->pitch);
     if ( !surface->pixels ) {
         return(SDL_FALSE);
     }
     /* fill background with transparent pixels */
-    memset(surface->pixels, 0, surface->h * surface->pitch);
+    SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
 
     dst = surface->pixels;
     srcbuf = (Uint8 *)(df + 1);
@@ -1884,7 +1872,7 @@ static SDL_bool UnRLEAlpha(SDL_Surface *surface)
 
 	/* skip padding if needed */
 	if(bpp == 2)
-	    srcbuf += (unsigned int)srcbuf & 2;
+	    srcbuf += (uintptr_t)srcbuf & 2;
 	
 	/* copy translucent pixels */
 	ofs = 0;
@@ -1916,7 +1904,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
 		unsigned alpha_flag;
 
 		/* re-create the original surface */
-		surface->pixels = malloc(surface->h * surface->pitch);
+		surface->pixels = SDL_malloc(surface->h * surface->pitch);
 		if ( !surface->pixels ) {
 			/* Oh crap... */
 			surface->flags |= SDL_RLEACCEL;
@@ -1944,7 +1932,7 @@ void SDL_UnRLESurface(SDL_Surface *surface, int recode)
 	}
 
 	if ( surface->map && surface->map->sw_data->aux_data ) {
-	    free(surface->map->sw_data->aux_data);
+	    SDL_free(surface->map->sw_data->aux_data);
 	    surface->map->sw_data->aux_data = NULL;
 	}
     }

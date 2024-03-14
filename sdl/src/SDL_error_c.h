@@ -1,29 +1,25 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* This file defines a structure that carries language-independent
    error messages
@@ -44,7 +40,7 @@ typedef struct SDL_error {
 	   is not in the hashtable, or no hashtable is available, the key is
 	   used directly as an error message format string.
 	*/
-	unsigned char key[ERR_MAX_STRLEN];
+	char key[ERR_MAX_STRLEN];
 
 	/* These are the arguments for the error functions */
 	int argc;
@@ -55,7 +51,7 @@ typedef struct SDL_error {
 #endif
 		int value_i;
 		double value_f;
-		unsigned char buf[ERR_MAX_STRLEN];
+		char buf[ERR_MAX_STRLEN];
 	} args[ERR_MAX_ARGS];
 } SDL_error;
 

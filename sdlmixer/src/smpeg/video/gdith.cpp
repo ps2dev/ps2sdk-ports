@@ -285,6 +285,10 @@ void MPEGvideo::DisplayFrame( VidStream * vid_stream )
 {
   SMPEG_FilterInfo info;
 
+  if ( !_image ) {
+    return;
+  }
+
   if ( _filter_mutex )
     SDL_mutexP( _filter_mutex );
 
@@ -312,7 +316,7 @@ void MPEGvideo::DisplayFrame( VidStream * vid_stream )
   if((_filter->flags & SMPEG_FILTER_INFO_MB_ERROR) && vid_stream->current->mb_qscale)
   {
     /* Retreive macroblock quantization error info */
-    info.yuv_mb_square_error = vid_stream->current->mb_qscale;
+    info.yuv_mb_square_error = (Uint16 *)vid_stream->current->mb_qscale;
   }
     
   if( _filter )
@@ -333,10 +337,10 @@ void MPEGvideo::DisplayFrame( VidStream * vid_stream )
     pitches[1] = _w / 2;
     pitches[2] = _w / 2;
     src.pitches = pitches;
-    pixels[0] = vid_stream->current->image;
-    pixels[1] = vid_stream->current->image + pitches[0] * _h;
-    pixels[2] = vid_stream->current->image + pitches[0] * _h +
-                                             pitches[1] * _h / 2;
+    pixels[0] = (Uint8 *)vid_stream->current->image;
+    pixels[1] = (Uint8 *)vid_stream->current->image + pitches[0] * _h;
+    pixels[2] = (Uint8 *)vid_stream->current->image + pitches[0] * _h +
+                                                      pitches[1] * _h / 2;
     src.pixels = pixels;
 #endif
 

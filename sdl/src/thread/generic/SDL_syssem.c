@@ -1,41 +1,34 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 /* An implementation of semaphores using mutexes and condition variables */
 
-#include <stdlib.h>
-
-#include "SDL_error.h"
 #include "SDL_timer.h"
 #include "SDL_thread.h"
 #include "SDL_systhread_c.h"
 
 
-#ifdef DISABLE_THREADS
+#if SDL_THREADS_DISABLED
 
 SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
@@ -91,10 +84,10 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 {
 	SDL_sem *sem;
 
-	sem = (SDL_sem *)malloc(sizeof(*sem));
+	sem = (SDL_sem *)SDL_malloc(sizeof(*sem));
 	if ( ! sem ) {
 		SDL_OutOfMemory();
-		return(0);
+		return NULL;
 	}
 	sem->count = initial_value;
 	sem->waiters_count = 0;
@@ -103,10 +96,10 @@ SDL_sem *SDL_CreateSemaphore(Uint32 initial_value)
 	sem->count_nonzero = SDL_CreateCond();
 	if ( ! sem->count_lock || ! sem->count_nonzero ) {
 		SDL_DestroySemaphore(sem);
-		return(0);
+		return NULL;
 	}
 
-	return(sem);
+	return sem;
 }
 
 /* WARNING:
@@ -121,10 +114,12 @@ void SDL_DestroySemaphore(SDL_sem *sem)
 			SDL_Delay(10);
 		}
 		SDL_DestroyCond(sem->count_nonzero);
-		SDL_mutexP(sem->count_lock);
-		SDL_mutexV(sem->count_lock);
-		SDL_DestroyMutex(sem->count_lock);
-		free(sem);
+		if ( sem->count_lock ) {
+			SDL_mutexP(sem->count_lock);
+			SDL_mutexV(sem->count_lock);
+			SDL_DestroyMutex(sem->count_lock);
+		}
+		SDL_free(sem);
 	}
 }
 
@@ -170,7 +165,9 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
 		                             sem->count_lock, timeout);
 	}
 	--sem->waiters_count;
-	--sem->count;
+	if (retval == 0) {
+		--sem->count;
+	}
 	SDL_UnlockMutex(sem->count_lock);
 
 	return retval;
@@ -211,4 +208,4 @@ int SDL_SemPost(SDL_sem *sem)
 	return 0;
 }
 
-#endif /* DISABLE_THREADS */
+#endif /* SDL_THREADS_DISABLED */

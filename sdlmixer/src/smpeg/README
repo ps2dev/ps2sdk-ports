@@ -1,8 +1,8 @@
 
                       SDL MPEG Player Library (SMPEG)
 
-                             Version 0.4.4
-                           September 28, 2000
+                             Version 0.4.5
+                             July 17, 2001
 								
 
 Written by Karl Robillard and Sam Lantinga, Loki Software, Inc.
@@ -53,7 +53,7 @@ Known Issues:
 
 Reporting bugs:
 
-	Please report any bugs and/or fixes to smpeg@lokigames.com.
+	Please report any bugs and/or fixes to icculus@icculus.org.
 
 
 Looking at the code:

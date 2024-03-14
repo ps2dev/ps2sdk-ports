@@ -1,29 +1,25 @@
 /*
     SDL - Simple DirectMedia Layer
-    Copyright (C) 1997-2004 Sam Lantinga
+    Copyright (C) 1997-2012 Sam Lantinga
 
     This library is free software; you can redistribute it and/or
-    modify it under the terms of the GNU Library General Public
+    modify it under the terms of the GNU Lesser General Public
     License as published by the Free Software Foundation; either
-    version 2 of the License, or (at your option) any later version.
+    version 2.1 of the License, or (at your option) any later version.
 
     This library is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-    Library General Public License for more details.
+    Lesser General Public License for more details.
 
-    You should have received a copy of the GNU Library General Public
-    License along with this library; if not, write to the Free
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    You should have received a copy of the GNU Lesser General Public
+    License along with this library; if not, write to the Free Software
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
     Sam Lantinga
     slouken@libsdl.org
 */
-
-#ifdef SAVE_RCSID
-static char rcsid =
- "@(#) $Id$";
-#endif
+#include "SDL_config.h"
 
 #ifndef _SDL_sysvideo_h
 #define _SDL_sysvideo_h
@@ -37,22 +33,9 @@ static char rcsid =
    This is designed to be easily converted to C++ in the future.
  */
 
-/* OpenGL is pretty much available on all Windows systems */
-#ifdef WIN32
-#ifndef _WIN32_WCE
-#define HAVE_OPENGL
-#endif
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#endif
-
-#ifdef HAVE_OPENGL
-#ifdef MACOSX
-#include <OpenGL/gl.h>  /* OpenGL.framework */
-#else
-#include <GL/gl.h>
-#endif /* MACOSX */
-#endif /* HAVE_OPENGL */
+#if SDL_VIDEO_OPENGL
+#include "SDL_opengl.h"
+#endif /* SDL_VIDEO_OPENGL */
 
 /* The SDL video driver */
 typedef struct SDL_VideoDevice SDL_VideoDevice;
@@ -134,6 +117,9 @@ struct SDL_VideoDevice {
 	/* Information about the video hardware */
 	SDL_VideoInfo info;
 
+	/* The pixel format used when SDL_CreateRGBSurface creates SDL_HWSURFACEs with alpha */
+	SDL_PixelFormat* displayformatalphapixel;
+	
 	/* Allocates a surface in video memory */
 	int (*AllocHWSurface)(_THIS, SDL_Surface *surface);
 
@@ -187,18 +173,18 @@ struct SDL_VideoDevice {
 	/* Retrieves the address of a function in the gl library */
 	void* (*GL_GetProcAddress)(_THIS, const char *proc);
 
-        /* Get attribute information from the windowing system. */
-        int (*GL_GetAttribute)(_THIS, SDL_GLattr attrib, int* value);
+	/* Get attribute information from the windowing system. */
+	int (*GL_GetAttribute)(_THIS, SDL_GLattr attrib, int* value);
 
-        /* Make the context associated with this driver current */
-        int (*GL_MakeCurrent)(_THIS);
+	/* Make the context associated with this driver current */
+	int (*GL_MakeCurrent)(_THIS);
 
 	/* Swap the current buffers in double buffer mode. */
 	void (*GL_SwapBuffers)(_THIS);
 
   	/* OpenGL functions for SDL_OPENGLBLIT */
-#ifdef HAVE_OPENGL
-#ifndef WIN32
+#if SDL_VIDEO_OPENGL
+#if !defined(__WIN32__)
 #define WINAPI
 #endif
 #define SDL_PROC(ret,func,params) ret (WINAPI *func) params;
@@ -306,6 +292,8 @@ struct SDL_VideoDevice {
 		int stereo;
 		int multisamplebuffers;
 		int multisamplesamples;
+		int accelerated;
+		int swap_control;
 		int driver_loaded;
 		char driver_path[256];
 		void* dll_handle;
@@ -329,94 +317,106 @@ typedef struct VideoBootStrap {
 	SDL_VideoDevice *(*create)(int devindex);
 } VideoBootStrap;
 
-#ifdef ENABLE_X11
-extern VideoBootStrap X11_bootstrap;
-#endif
-#ifdef ENABLE_DGA
-extern VideoBootStrap DGA_bootstrap;
-#endif
-#ifdef ENABLE_NANOX
-extern VideoBootStrap NX_bootstrap;
-#endif
-#ifdef ENABLE_FBCON
-extern VideoBootStrap FBCON_bootstrap;
-#endif
-#ifdef ENABLE_DIRECTFB
-extern VideoBootStrap DirectFB_bootstrap;
-#endif
-#ifdef ENABLE_PS2SDK
-extern VideoBootStrap PS2SDK_bootstrap;
-#endif
-#ifdef ENABLE_PS2GS
-extern VideoBootStrap PS2GS_bootstrap;
-#endif
-#ifdef ENABLE_GGI
-extern VideoBootStrap GGI_bootstrap;
-#endif
-#ifdef ENABLE_VGL
-extern VideoBootStrap VGL_bootstrap;
-#endif
-#ifdef ENABLE_SVGALIB
-extern VideoBootStrap SVGALIB_bootstrap;
-#endif
-#ifdef ENABLE_AALIB
-extern VideoBootStrap AALIB_bootstrap;
-#endif
-#ifdef ENABLE_WINDIB
-extern VideoBootStrap WINDIB_bootstrap;
-#endif
-#ifdef ENABLE_DIRECTX
-extern VideoBootStrap DIRECTX_bootstrap;
-#endif
-#ifdef ENABLE_BWINDOW
-extern VideoBootStrap BWINDOW_bootstrap;
-#endif
-/* MacOS X gets the proper defines from configure */
-#if defined(macintosh) && !defined(MACOSX)
-#define ENABLE_TOOLBOX
-#if !TARGET_API_MAC_CARBON
-#define ENABLE_DRAWSPROCKET
-#endif
-#endif
-#ifdef ENABLE_TOOLBOX
-extern VideoBootStrap TOOLBOX_bootstrap;
-#endif
-#ifdef ENABLE_DRAWSPROCKET
-extern VideoBootStrap DSp_bootstrap;
-#endif
-#ifdef ENABLE_QUARTZ
+#if SDL_VIDEO_DRIVER_QUARTZ
 extern VideoBootStrap QZ_bootstrap;
 #endif
-#ifdef ENABLE_CYBERGRAPHICS
-extern VideoBootStrap CGX_bootstrap;
+#if SDL_VIDEO_DRIVER_X11
+extern VideoBootStrap X11_bootstrap;
 #endif
-#ifdef ENABLE_PHOTON
-extern VideoBootStrap ph_bootstrap;
+#if SDL_VIDEO_DRIVER_DGA
+extern VideoBootStrap DGA_bootstrap;
 #endif
-#ifdef ENABLE_EPOC
-extern VideoBootStrap EPOC_bootstrap;
+#if SDL_VIDEO_DRIVER_NANOX
+extern VideoBootStrap NX_bootstrap;
 #endif
-#ifdef ENABLE_DUMMYVIDEO
-extern VideoBootStrap DUMMY_bootstrap;
+#if SDL_VIDEO_DRIVER_IPOD
+extern VideoBootStrap iPod_bootstrap;
 #endif
-#ifdef ENABLE_XBIOS
-extern VideoBootStrap XBIOS_bootstrap;
-#endif
-#ifdef ENABLE_GEM
-extern VideoBootStrap GEM_bootstrap;
-#endif
-#ifdef ENABLE_QTOPIA
+#if SDL_VIDEO_DRIVER_QTOPIA
 extern VideoBootStrap Qtopia_bootstrap;
 #endif
-#ifdef ENABLE_PICOGUI
+#if SDL_VIDEO_DRIVER_WSCONS
+extern VideoBootStrap WSCONS_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_FBCON
+extern VideoBootStrap FBCON_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_DIRECTFB
+extern VideoBootStrap DirectFB_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_PS2
+extern VideoBootStrap PS2SDK_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_PS2GS
+extern VideoBootStrap PS2GS_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_PS3
+extern VideoBootStrap PS3_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_GGI
+extern VideoBootStrap GGI_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_VGL
+extern VideoBootStrap VGL_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_SVGALIB
+extern VideoBootStrap SVGALIB_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_GAPI
+extern VideoBootStrap GAPI_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_WINDIB
+extern VideoBootStrap WINDIB_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_DDRAW
+extern VideoBootStrap DIRECTX_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_BWINDOW
+extern VideoBootStrap BWINDOW_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_TOOLBOX
+extern VideoBootStrap TOOLBOX_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_DRAWSPROCKET
+extern VideoBootStrap DSp_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_PHOTON
+extern VideoBootStrap ph_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_EPOC
+extern VideoBootStrap EPOC_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_XBIOS
+extern VideoBootStrap XBIOS_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_GEM
+extern VideoBootStrap GEM_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_PICOGUI
 extern VideoBootStrap PG_bootstrap;
 #endif
-#ifdef ENABLE_DC
+#if SDL_VIDEO_DRIVER_DC
 extern VideoBootStrap DC_bootstrap;
 #endif
-#ifdef ENABLE_RISCOS
+#if SDL_VIDEO_DRIVER_NDS
+extern VideoBootStrap NDS_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_RISCOS
 extern VideoBootStrap RISCOS_bootstrap;
 #endif
+#if SDL_VIDEO_DRIVER_OS2FS
+extern VideoBootStrap OS2FSLib_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_AALIB
+extern VideoBootStrap AALIB_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_CACA
+extern VideoBootStrap CACA_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_DUMMY
+extern VideoBootStrap DUMMY_bootstrap;
+#endif
+
 /* This is the current video device */
 extern SDL_VideoDevice *current_video;
 

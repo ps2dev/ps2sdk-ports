@@ -121,7 +121,7 @@ get_more_data( VidStream* vid_stream )
   request = (vid_stream->max_buf_length-length)*4;
   
   data_pos = vid_stream->_smpeg->mpeg->pos;  
-  num_read = vid_stream->_smpeg->mpeg->copy_data(mark, request);
+  num_read = vid_stream->_smpeg->mpeg->copy_data((Uint8 *)mark, request);
 
   vid_stream->timestamp = vid_stream->_smpeg->mpeg->timestamp;
   timestamp_offset = vid_stream->_smpeg->mpeg->timestamp_pos - data_pos;

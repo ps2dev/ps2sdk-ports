@@ -21,13 +21,27 @@
 
 /* A class based on the MPEG stream class, used to parse and play audio */
 
+//using namespace std;
+
 #include "MPEGaudio.h"
 #include "MPEGstream.h"
 
-MPEGaudio:: MPEGaudio(MPEGstream *stream, bool initSDL) : sdl_audio(initSDL)
+MPEGaudio:: MPEGaudio(MPEGstream *stream, bool initSDL)
+    : sdl_audio(initSDL)
+    , mpeg(stream)
+    , valid_stream(0)
+    , stereo(false)
+    , rate_in_s(0.0)
+    , frags_playing(0)
+    , frag_time(0)
+#ifdef THREADED_AUDIO
+    , decoding(false)
+    , decode_thread(NULL)
+#endif
 {
+    memset(&sideinfo, '\0', sizeof (sideinfo));
+
     /* Initialize MPEG audio */
-    mpeg = stream;
     initialize();
 
     /* Just be paranoid.  If all goes well, this will be set to true */
@@ -131,13 +145,13 @@ MPEGaudio:: ActualSpec(const SDL_AudioSpec *actual)
 	;
 #endif
     }
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-    if ( actual->format != AUDIO_S16LSB)
-#else
-    if ( actual->format != AUDIO_S16MSB)
-#endif
+    if ( actual->format != AUDIO_S16SYS )
     {
-        fprintf(stderr, "Warning: incorrect audio format\n");
+        if ( (actual->format^0x1000) == AUDIO_S16SYS ) {
+            swapendianflag = true;
+        } else {
+            fprintf(stderr, "Warning: incorrect audio format\n");
+        }
     }
     rate_in_s=((double)((actual->format&0xFF)/8)*actual->channels*actual->freq);
     stereo=((actual->channels-1) > 0);
@@ -161,6 +175,7 @@ MPEGaudio:: StopDecoding(void)
 {
     decoding = false;
     if ( decode_thread ) {
+        force_exit = true;
         if( ring ) ring->ReleaseThreads();
         SDL_WaitThread(decode_thread, NULL);
         decode_thread = NULL;
@@ -200,9 +215,13 @@ void
 MPEGaudio:: Stop(void)
 {
     if ( valid_stream ) {
-        SDL_LockAudio();
+        if ( sdl_audio )
+            SDL_LockAudio();
+
         playing = false;
-        SDL_UnlockAudio();
+
+        if ( sdl_audio )
+            SDL_UnlockAudio();
     }
     ResetPause();
 }
@@ -234,14 +253,23 @@ MPEGaudio:: ResetSynchro(double time)
 void
 MPEGaudio:: Skip(float seconds)
 {
-   /* Called only when there is no timestamp info in the MPEG */
-   printf("Audio: Skipping %f seconds...\n", seconds);
-   while(seconds > 0)
-   {
-     seconds -= (float) samplesperframe / ((float) frequencies[version][frequency]*(1+inputstereo));
-     if(!loadheader()) break;
-   }
- }
+#ifdef THREADED_AUDIO
+    /* Stop the decode thread */
+    StopDecoding();
+#endif
+
+    /* Called only when there is no timestamp info in the MPEG */
+    //printf("Audio: Skipping %f seconds...\n", seconds);
+    while(seconds > 0)
+    {
+        seconds -= (float) samplesperframe / ((float) frequencies[version][frequency]*(1+inputstereo));
+        if(!loadheader()) break;
+    }
+
+#ifdef THREADED_AUDIO
+    StartDecoding();
+#endif
+}
 void
 MPEGaudio:: Volume(int vol)
 {

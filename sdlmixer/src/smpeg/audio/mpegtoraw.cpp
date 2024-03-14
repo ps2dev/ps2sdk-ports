@@ -84,9 +84,11 @@ void MPEGaudio::initialize()
   register REAL *s1,*s2;
   REAL *s3,*s4;
 
+  last_speed = 0;
   stereo = true;
   forcetomonoflag = false;
   forcetostereoflag = false;
+  swapendianflag = false;
   downfrequency = 0;
 
   scalefactor=SCALE;
@@ -271,6 +273,20 @@ bool MPEGaudio::loadheader()
     getbyte();                      // CRC, Not check!!
     getbyte();
   }
+
+  // Sam 7/17 - skip sequences of quickly varying frequencies
+  int speed = frequencies[version][frequency];
+  if ( speed != last_speed ) {
+    last_speed = speed;
+    if ( rawdatawriteoffset ) {
+        ++decodedframe;
+#ifndef THREADED_AUDIO
+        ++currentframe;
+#endif
+    }
+    return loadheader();
+  }
+
   return true;
 }
 
@@ -286,17 +302,29 @@ bool MPEGaudio::run( int frames, double *timestamp)
 	  return false;	  
         }
 
-        if (frames == totFrames  && timestamp != NULL)
+        if (frames == totFrames  && timestamp != NULL){
             if (last_timestamp != mpeg->timestamp){
 		if (mpeg->timestamp_pos <= _buffer_pos)
 		    last_timestamp = *timestamp = mpeg->timestamp;
 	    }
             else
                 *timestamp = -1;
+        }
 
         if     ( layer == 3 ) extractlayer3();
         else if( layer == 2 ) extractlayer2();
         else if( layer == 1 ) extractlayer1();
+
+        /* Handle swapping data endianness */
+        if ( swapendianflag ) {
+            Sint16 *p;
+
+            p = rawdata+rawdatawriteoffset;
+            while ( p > rawdata ) {
+                --p;
+                *p = SDL_Swap16(*p);
+            }
+        }
 
         /* Handle expanding to stereo output */
         if ( forcetostereoflag ) {
@@ -334,7 +362,8 @@ int Decode_MPEGaudio(void *udata)
     SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
 #endif
 
-    while ( audio->decoding && ! audio->mpeg->eof() ) {
+    audio->force_exit = false;
+    while ( audio->decoding && ! audio->mpeg->eof() && !audio->force_exit ) {
         audio->rawdata = (Sint16 *)audio->ring->NextWriteBuffer();
 
         if ( audio->rawdata ) {
@@ -350,7 +379,6 @@ int Decode_MPEGaudio(void *udata)
     }
 
     audio->decoding = false;
-    audio->decode_thread = NULL;
     return(0);
 }
 #endif /* THREADED_AUDIO */
@@ -361,6 +389,11 @@ int Play_MPEGaudio(MPEGaudio *audio, Uint8 *stream, int len)
     int volume;
     long copylen;
     int mixed = 0;
+
+#if SDL_VERSION_ATLEAST(1, 3, 0)
+    /* Need to initialize the stream in SDL 1.3+ */
+    memset(stream, 0, len);
+#endif
 
 		/* Michel Darricau from eProcess <mdarricau@eprocess.fr>  conflict name in popcorn */
     /* Bail if audio isn't playing */
@@ -432,7 +465,9 @@ int Play_MPEGaudio(MPEGaudio *audio, Uint8 *stream, int len)
 #endif
 	    audio->timestamp[0] = -1;
 	}
-    } while ( copylen && (len > 0) && ((audio->currentframe < audio->decodedframe) || audio->decoding));
+    } while ( copylen && (len > 0) && ((audio->currentframe < audio->decodedframe) || audio->decoding)  
+              && !audio->force_exit );
+              
 #else
     /* The length is interpreted as being in samples */
     len /= 2;
