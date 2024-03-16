@@ -30,11 +30,22 @@
 
 #include <tamtypes.h>
 #include <loadfile.h>
+#ifndef NEWLIB_PORT_AWARE
+#define NEWLIB_PORT_AWARE
+#endif
+#include <fileXio.h>
 
 //USB state
 #define USB_AVAILABLE 1
 #define USB_NOT_AVAILABLE 0
 static int usbState = USB_NOT_AVAILABLE;
+
+
+extern unsigned char iomanX_irx[];
+extern unsigned int size_iomanX_irx;
+
+extern unsigned char fileXio_irx[];
+extern unsigned int size_fileXio_irx;
 
 extern unsigned char ps2usbd_irx[];
 extern unsigned int size_ps2usbd_irx;
@@ -44,6 +55,21 @@ int PS2_InitUSB(_THIS)
 	int ret;
     
 	printf("[PS2] Init USB driver\n");
+
+   	SifExecModuleBuffer(iomanX_irx, size_iomanX_irx, 0, NULL, &ret);
+	if (ret < 0) 
+	{
+		SDL_SetError("[PS2] Failed to load module: iomanX_irx\n");
+		return -1;
+	}   
+
+   	SifExecModuleBuffer(fileXio_irx, size_fileXio_irx, 0, NULL, &ret);
+	if (ret < 0) 
+	{
+		SDL_SetError("[PS2] Failed to load module: fileXio_irx\n");
+		return -1;
+	}   
+	fileXioInit();
 
 	SifExecModuleBuffer(ps2usbd_irx, size_ps2usbd_irx, 0, NULL, &ret);
 	if (ret < 0) 

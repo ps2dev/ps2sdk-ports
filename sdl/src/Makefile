@@ -97,11 +97,13 @@ ifeq ($(HAVE_INPUT_DEVICES), 1)
 SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
 SDL_OBJS += video/ps2sdk/SDL_ps2mouseevents.o
 SDL_OBJS += video/ps2sdk/SDL_ps2USBevents.o
-
 SDL_OBJS += video/ps2sdk/ps2kbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2usbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2mouse_irx.o 
 endif
+
+SDL_OBJS += video/ps2sdk/iomanX_irx.o 
+SDL_OBJS += video/ps2sdk/fileXio_irx.o
 
 SDLMAIN_OBJS = main/ps2sdk/sdl_main.o
 
@@ -126,6 +128,12 @@ endif
 audio/ps2sdk/audsrv_irx.c: $(PS2SDK)/iop/irx/audsrv.irx
 	$(PS2SDK)/bin/bin2c $< $@ audsrv_irx
 
+video/ps2sdk/iomanX_irx.c: $(PS2SDK)/iop/irx/iomanX.irx
+	$(PS2SDK)/bin/bin2c $< $@ iomanX_irx
+
+video/ps2sdk/fileXio_irx.c: $(PS2SDK)/iop/irx/fileXio.irx
+	$(PS2SDK)/bin/bin2c $< $@ fileXio_irx
+
 video/ps2sdk/ps2kbd_irx.c: $(PS2SDK)/iop/irx/ps2kbd.irx
 	$(PS2SDK)/bin/bin2c $< $@ ps2kbd_irx
 
@@ -134,7 +142,6 @@ video/ps2sdk/ps2mouse_irx.c: $(PS2SDK)/iop/irx/ps2mouse.irx
 
 video/ps2sdk/ps2usbd_irx.c: $(PS2SDK)/iop/irx/usbd.irx
 	$(PS2SDK)/bin/bin2c $< $@ ps2usbd_irx
-
 
 ifeq ($(ENABLE_MTAP), 1)
 EMBEDDED = \
