@@ -94,8 +94,6 @@ static float force_ratio = 0.0f;
 static int use_filter = 1;
 static int force_signal = -1;
 
-
-#ifdef PS2SDL_USE_INPUT_DEVICES
 /** Initialize USB devices
 
     Updates SDL error status upon exit
@@ -105,34 +103,23 @@ static void initialize_devices(SDL_VideoDevice *device)
 	/* initialize keyboard and mouse */
 	if (PS2_InitUSB(device) >= 0) 
 	{
-    		if (PS2_InitKeyboard(device) < 0) 
+    	if (PS2_InitKeyboard(device) < 0) 
 		{
 	   		SDL_SetError("Unable to open keyboard");
-	    	}
-
+	    }
+#ifdef PS2SDL_USE_MOUSE
 		if (PS2_InitMouse(device) < 0) 
 		{
     			SDL_SetError("Unable to open mouse");
 		}
-    	}       
+#endif
+    }       
 	else
 	{
 		/* no mouse, or keyboard */
-    		SDL_SetError("Unable to open USB Driver");	
+    	SDL_SetError("Unable to open USB Driver");	
 	}
 }
-
-#else
-
-/* input devices are disabled, provide stubs */
-void PS2_UpdateMouse(_THIS)
-{
-}
-
-void PS2_InitOSKeymap(SDL_VideoDevice *device)
-{
-}
-#endif
 
 static void clear_screens()
 {
@@ -201,10 +188,9 @@ static int PS2_VideoInit(SDL_VideoDevice *device, SDL_PixelFormat *vformat)
 
 	clear_screens();
 	
-#ifdef PS2SDL_USE_INPUT_DEVICES
 	/* initialize keyboard and mouse */
 	initialize_devices(device);
-#endif
+
 	return 0;
 }
 
@@ -484,8 +470,9 @@ static void PS2_FreeHWSurface(SDL_VideoDevice *device, SDL_Surface *surface)
 
 static void PS2_PumpEvents(SDL_VideoDevice *device)
 {
-#ifdef PS2SDL_USE_INPUT_DEVICES
 	PS2_PumpKeyboardEvents(device);
+
+#ifdef PS2SDL_USE_MOUSE
 	PS2_PumpMouseEvents(device);       
 #endif
 }

@@ -17,7 +17,7 @@ OBJS = \
 	checkkeys.o
 
 EE_INCS = -I../include
-EE_LIBS = -L. -L$(GSKIT)/lib -L../lib -lsdl -lcdvd
+EE_LIBS = -L. -L$(GSKIT)/lib -L../lib -lsdl -lcdvd -lgskit -ldma -ldmakit
 
 ifneq ("$(wildcard $(GSKIT)/include/gsKit.h)","")
 all: $(BINS)

@@ -364,7 +364,7 @@ int PS2_InitKeyboard(_THIS){
     } 
     else {
     
-        if(PS2KbdInit() < 0) {
+        if((PS2KbdInit()) == 0) {
             SDL_SetError("[PS2] PS2KbdInit failed\n");
             kbdState = KBD_NOT_AVAILABLE;
             return -1;

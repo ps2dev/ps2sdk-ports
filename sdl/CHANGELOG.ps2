@@ -1,5 +1,8 @@
 PS2SDL CHANGELOG
 -------------
+17 Mar 2024 Wolf3s
+	* Now PS2SDL supports by standard keyboard(mouse is not working yet)
+
 14 Mar 2024 Wolf3s
 	* Update to SDL 1.2.15
 

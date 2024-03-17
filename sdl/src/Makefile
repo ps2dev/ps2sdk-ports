@@ -7,7 +7,7 @@ LIB_SDLMAIN=$(LIBPATH)libsdlmain.a
 SDL_USE_HW_SURFACE=1
 
 # Enable USB keyboard and mouse (100 KB)
-HAVE_INPUT_DEVICES=0
+HAVE_MOUSE=0
 
 # Enable Multitap Support (Uses X* IOP modules)
 ENABLE_MTAP=0
@@ -27,8 +27,8 @@ ifeq ($(ENABLE_MTAP), 1)
 EE_CFLAGS += -DPS2SDL_ENABLE_MTAP
 endif
 
-ifeq ($(HAVE_INPUT_DEVICES), 1)
-EE_CFLAGS += -DPS2SDL_USE_INPUT_DEVICES
+ifeq ($(HAVE_MOUSE), 1)
+EE_CFLAGS += -DPS2SDL_USE_MOUSE
 endif
 
 ifeq ($(USE_FREESD), 1)
@@ -93,17 +93,14 @@ ifeq ($(USE_FREESIO2), 1)
 SDL_OBJS += joystick/ps2sdk/sio2man_irx.o joystick/ps2sdk/padman_irx.o joystick/ps2sdk/mtapman_irx.o
 endif
 
-ifeq ($(HAVE_INPUT_DEVICES), 1)
 SDL_OBJS += video/ps2sdk/SDL_ps2kbdevents.o
 SDL_OBJS += video/ps2sdk/SDL_ps2mouseevents.o
 SDL_OBJS += video/ps2sdk/SDL_ps2USBevents.o
 SDL_OBJS += video/ps2sdk/ps2kbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2usbd_irx.o 
 SDL_OBJS += video/ps2sdk/ps2mouse_irx.o 
-endif
 
 SDL_OBJS += video/ps2sdk/iomanX_irx.o 
-SDL_OBJS += video/ps2sdk/fileXio_irx.o
 
 SDLMAIN_OBJS = main/ps2sdk/sdl_main.o
 
@@ -130,9 +127,6 @@ audio/ps2sdk/audsrv_irx.c: $(PS2SDK)/iop/irx/audsrv.irx
 
 video/ps2sdk/iomanX_irx.c: $(PS2SDK)/iop/irx/iomanX.irx
 	$(PS2SDK)/bin/bin2c $< $@ iomanX_irx
-
-video/ps2sdk/fileXio_irx.c: $(PS2SDK)/iop/irx/fileXio.irx
-	$(PS2SDK)/bin/bin2c $< $@ fileXio_irx
 
 video/ps2sdk/ps2kbd_irx.c: $(PS2SDK)/iop/irx/ps2kbd.irx
 	$(PS2SDK)/bin/bin2c $< $@ ps2kbd_irx
