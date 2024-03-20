@@ -150,8 +150,8 @@
 /* Enable various shared object loading systems */
 /* #undef SDL_LOADSO_BEOS */
 /* #undef SDL_LOADSO_DLCOMPAT */
-#define SDL_LOADSO_DLOPEN 1
-/* #undef SDL_LOADSO_DUMMY */
+/* #undef SDL_LOADSO_DLOPEN */
+#define SDL_LOADSO_DUMMY 1
 /* #undef SDL_LOADSO_LDG */
 /* #undef SDL_LOADSO_MACOS */
 /* #undef SDL_LOADSO_OS2 */

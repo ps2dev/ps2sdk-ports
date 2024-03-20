@@ -18,6 +18,7 @@ USE_FREESD=1
 # Enable FREESIO2 instead of XSIO2MAN
 USE_FREESIO2=1
 
+#Enable for support cdfs0:
 PS2_ROMFS=0
 
 EE_CFLAGS = -DDEBUG_ERROR
@@ -67,6 +68,7 @@ SDL_OBJS += cpuinfo/SDL_cpuinfo.o
 SDL_OBJS += events/SDL_active.o events/SDL_events.o events/SDL_expose.o events/SDL_keyboard.o events/SDL_mouse.o events/SDL_quit.o events/SDL_resize.o
 SDL_OBJS += file/SDL_rwops.o
 SDL_OBJS += joystick/SDL_joystick.o joystick/ps2sdk/ps2joystick.o
+SDL_OBJS += loadso/dummy/SDL_sysloadso.o
 SDL_OBJS += main/ps2sdk/sdl_main.o
 SDL_OBJS += stdlib/SDL_getenv.o stdlib/SDL_iconv.o stdlib/SDL_malloc.o stdlib/SDL_qsort.o stdlib/SDL_stdlib.o stdlib/SDL_string.o
 SDL_OBJS += thread/SDL_thread.o thread/generic/SDL_sysmutex.o thread/generic/SDL_syscond.o
