@@ -124,7 +124,7 @@
 #define HAVE_MPROTECT 1
 #define HAVE_SEM_TIMEDWAIT 1
 #define HAVE_STDDEF_H 1
-
+#define HAVE_LIBC 1
 
 /* Allow disabling of core subsystems */
 /* #undef SDL_AUDIO_DISABLED */
@@ -148,14 +148,8 @@
 #define SDL_INPUT_PS2 1
 
 /* Enable various shared object loading systems */
-/* #undef SDL_LOADSO_BEOS */
-/* #undef SDL_LOADSO_DLCOMPAT */
 /* #undef SDL_LOADSO_DLOPEN */
 #define SDL_LOADSO_DUMMY 1
-/* #undef SDL_LOADSO_LDG */
-/* #undef SDL_LOADSO_MACOS */
-/* #undef SDL_LOADSO_OS2 */
-/* #undef SDL_LOADSO_WIN32 */
 
 /* Enable various threading systems */
 #define SDL_THREAD_PS2 1
@@ -181,4 +175,4 @@
 /* #undef SDL_HERMES_BLITTERS */
 /* #undef SDL_ALTIVEC_BLITTERS */
 
-#endif /* _SDL_config_h */
+#endif /* _SDL_config_ps2_h */
