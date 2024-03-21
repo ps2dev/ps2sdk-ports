@@ -33,3 +33,5 @@
 build/
 libtap/
 lua/
+ps2_drivers/
+SIOCookie/
