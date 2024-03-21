@@ -1,7 +1,7 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie ps2stuff ps2gl unzip
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode ps2stuff ps2gl romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie ps2stuff ps2gl unzip
+libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode ps2stuff ps2gl romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 aalib:
 	$(MAKE) -C $@
@@ -80,7 +80,7 @@ ps2stuff:
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-ps2gl:
+ps2gl: ps2stuff
 	git clone --depth 1 https://github.com/ps2dev/ps2gl
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
