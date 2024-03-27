@@ -77,7 +77,7 @@ git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; }
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
 
 # SDL requires to have gsKit
-git clone --depth 1 -b v1.3.6 https://github.com/ps2dev/gsKit || { exit 1; } 
+git clone --depth 1 -b v1.3.7 https://github.com/ps2dev/gsKit || { exit 1; } 
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
