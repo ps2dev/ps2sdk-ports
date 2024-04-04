@@ -84,6 +84,9 @@ ps2gl: ps2stuff
 	git clone --depth 1 https://github.com/ps2dev/ps2gl
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
+	$(MAKE) -C $@/glut install 
+	$(MAKE) -C $@/glut clean
+ 
 
 romfs:
 	$(MAKE) -C $@
