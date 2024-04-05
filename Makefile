@@ -76,11 +76,13 @@ ps2_drivers:
 	$(MAKE) -C $@ clean
 
 ps2stuff:
+	rm -rf $@
 	git clone --depth 1 https://github.com/ps2dev/ps2stuff
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
 ps2gl: ps2stuff
+	rm -rf $@
 	git clone --depth 1 https://github.com/ps2dev/ps2gl
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
