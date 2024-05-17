@@ -48,7 +48,7 @@ git clone --depth 1 -b v1.9.2 https://github.com/nih-at/libzip.git || { exit 1; 
 git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
 git clone --depth 1 -b VER-2-10-4 https://github.com/freetype/freetype || { exit 1; }
 git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
-git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
+git clone --depth 1 -b 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
 git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
 git clone --depth 1 -b v5.7.0-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
