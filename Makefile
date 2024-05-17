@@ -132,7 +132,7 @@ unzip: cmakelibs
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
-sample:
+sample: aalib sdl sdlgfx sdlmixer lua ode romfs
 	$(MAKE) -C aalib sample
 	$(MAKE) -C sdl sample
 	$(MAKE) -C sdlgfx sample
