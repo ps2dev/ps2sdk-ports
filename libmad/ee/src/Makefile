@@ -18,7 +18,7 @@ $(EE_LIB_DIR):
 	mkdir -p $(EE_LIB_DIR)
 
 $(EE_OBJS_DIR)%.o : %.c
-	$(EE_C_COMPILE) -c $< -o $@
+	$(EE_C_COMPILE) -fpermissive -c $< -o $@
 
 install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/include
