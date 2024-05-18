@@ -37,6 +37,7 @@
 #include "SDL_ps2USBevents.h"
 #include "SDL_ps2mouseevents.h"
 
+#include <malloc.h>
 #include <string.h>
 #include <gsKit.h>
 #include <dmaKit.h>

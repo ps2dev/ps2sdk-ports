@@ -34,6 +34,7 @@ static char rcsid =
 #include "SDL_ps2audio.h"
 #include <string.h>
 
+#include <malloc.h>
 #include <kernel.h>
 #include <sifrpc.h>
 #include <iopheap.h>
