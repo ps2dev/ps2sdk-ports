@@ -32,6 +32,7 @@ static char rcsid =
 #include "SDL_audio_c.h"
 #include "SDL_timer.h"
 #include "SDL_ps2audio.h"
+#include <stdlib.h>
 #include <string.h>
 
 #include <kernel.h>
