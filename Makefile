@@ -50,7 +50,7 @@ libtiff:
 
 libsmb2:
 	rm -rf $@
-	git clone https://github.com/sahlberg/libsmb2 
+	git clone --depth 1 https://github.com/sahlberg/libsmb2 
 	$(MAKE) -C $@/lib -f Makefile.PS2_EE install clean 
 	$(MAKE) -C $@/lib -f Makefile.PS2_EE_IPS install clean
 	$(MAKE) -C $@/lib -f Makefile.PS2_IOP install clean
