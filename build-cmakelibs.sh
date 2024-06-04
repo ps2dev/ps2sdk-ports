@@ -88,6 +88,8 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
+git clone --depth 1 -b ee-sans_glib https://github.com/ps2dev/fluidsynth || { exit 1; }
+
 ##
 ## Build cmake projects
 ##
@@ -118,6 +120,8 @@ build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
 build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
+
+build fluidsynth-sans-glib
 
 # Finish
 cd ..
