@@ -1,4 +1,4 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ps2stuff ps2gl ps2_drivers ode romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
+.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode ps2stuff ps2gl ps2_drivers romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 all: libraries
 libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ps2stuff ps2gl ps2_drivers romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
