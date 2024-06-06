@@ -28,6 +28,31 @@ function build {
     cd "${START_DIR}"
 }
 
+SMB2_IPS_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=cmake/PS2/ps2dev_ee_ips.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
+SMB2_IOP_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=cmake/PS2/ps2dev_iop.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
+
+function build_smb2ips {
+    START_DIR="${PWD}"
+    cd "$1"
+    shift
+    mkdir -p build_smb2ips
+    cd build_smb2ips
+    CFLAGS="$CFLAGS" cmake "${SMB2_IPS_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
+    "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
+    cd "${START_DIR}"
+}
+
+function build_smb2iop {
+    START_DIR="${PWD}"
+    cd "$1"
+    shift
+    mkdir -p build_smb2iop
+    cd build_smb2iop
+    CFLAGS="$CFLAGS" cmake "${SMB2_IOP_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
+    "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
+    cd "${START_DIR}"
+}
+
 ## Create a synbolic link for retro-compatibility ps2dev.cmake
 ln -sf "$PS2DEV/share/ps2dev.cmake" "$PS2SDK/ps2dev.cmake" || { exit 1; }
 
@@ -35,6 +60,9 @@ ln -sf "$PS2DEV/share/ps2dev.cmake" "$PS2SDK/ps2dev.cmake" || { exit 1; }
 ## Remove build folder
 ##
 rm -rf build
+rm -rf build_smb2ips
+rm -rf build_smb2iop
+
 mkdir build
 cd build
 
@@ -87,6 +115,9 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
+
+git clone --depth 1 -b cmake https://github.com/Wolf3s/libsmb2.git || { exit 1; } 
+
 ##
 ## Build cmake projects
 ##
@@ -116,6 +147,10 @@ build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
 build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
+
+build libsmb2 
+build_smb2ips libsmb2
+build_smb2iop libsmb2
 
 # Finish
 cd ..
