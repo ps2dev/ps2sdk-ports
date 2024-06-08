@@ -6,7 +6,7 @@ ENV GSKIT $PS2DEV/gsKit
 
 COPY . /src
 
-RUN apk add build-base git bash cmake pkgconfig texinfo
+RUN apk add build-base git bash cmake pkgconfig texinfo autoconf automake libtool gettext-dev flex
 RUN cd /src && make -j $(getconf _NPROCESSORS_ONLN)
 
 FROM alpine:latest  
