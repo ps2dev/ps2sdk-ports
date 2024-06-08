@@ -15,7 +15,7 @@ jobs:
     
     - name: Install dependencies
       run: |
-        apk add build-base git bash cmake pkgconfig texinfo
+        apk add build-base git bash cmake pkgconfig texinfo autoconf automake libtool gettext-dev flex
 
     - name: Compile project
       run: |
