@@ -90,6 +90,10 @@ git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git 
 
 git clone --depth 1 -b v1.3.18 https://github.com/lsalzman/enet.git || { exit 1; }
 
+# Use wget to download argtable2
+wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz || { exit 1; }
+tar -xzf argtable2-13.tar.gz || { exit 1; }
+
 ##
 ## Build cmake projects
 ##
@@ -122,5 +126,10 @@ build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
 build enet
+
+CFLAGS="-Wno-implicit-function-declaration" build argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON
+# Copy manually the argtable2.h header
+cp -r argtable2-13/src/argtable2.h $PS2SDK/ports/include/
+
 # Finish
 cd ..
