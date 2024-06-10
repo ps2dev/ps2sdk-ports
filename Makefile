@@ -1,7 +1,7 @@
-.PHONY: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode ps2stuff ps2gl ps2_drivers romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
+.PHONY: aalib cmakelibs expat libconfig libconfuse libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ode ps2stuff ps2gl ps2_drivers romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 all: libraries
-libraries: aalib cmakelibs expat libconfig libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ps2stuff ps2gl ps2_drivers romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
+libraries: aalib cmakelibs expat libconfig libconfuse libid3tag libjpeg_ps2_addons libmad libtap libtiff lua madplay ps2stuff ps2gl ps2_drivers romfs sdl sdlgfx sdlimage sdlmixer sdlttf SIOCookie unzip
 
 aalib:
 	$(MAKE) -C $@
@@ -18,6 +18,15 @@ expat:
 
 libconfig:
 	$(MAKE) -C $@
+	$(MAKE) -C $@ install
+	$(MAKE) -C $@ clean
+
+libconfuse:
+	rm -rf $@
+	git clone --depth 1 -b v3.3 https://github.com/libconfuse/libconfuse
+	cd $@ && ./autogen.sh
+	cd $@ && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" ./configure --host=mips64r5900el-ps2-elf --prefix=$(PS2DEV)/portlibs/ps2 --disable-shared --disable-examples
+	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
 
