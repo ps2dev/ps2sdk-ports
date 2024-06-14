@@ -129,7 +129,7 @@ build enet
 
 CFLAGS="-Wno-implicit-function-declaration" build argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON
 # Copy manually the argtable2.h header
-cp -r argtable2-13/src/argtable2.h $PS2SDK/ports/include/
+install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 
 # Finish
 cd ..
