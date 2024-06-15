@@ -89,11 +89,7 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
 git clone --depth 1 -b v1.3.18 https://github.com/lsalzman/enet.git || { exit 1; }
-
-# Use wget to download argtable2
-wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz || { exit 1; }
-tar -xzf argtable2-13.tar.gz || { exit 1; }
-
+git clone --depth 1 -b v3.2.2.f25c624 https://github.com/argtable/argtable3.git || { exit 1; }
 ##
 ## Build cmake projects
 ##
@@ -126,10 +122,8 @@ build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
 build enet
+build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
-CFLAGS="-Wno-implicit-function-declaration" build argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON
-# Copy manually the argtable2.h header
-install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 
 # Finish
 cd ..
