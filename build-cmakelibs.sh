@@ -28,8 +28,8 @@ function build {
     cd "${START_DIR}"
 }
 
-## Create a synbolic link for retro-compatibility ps2dev.cmake
-ln -sf "$PS2DEV/share/ps2dev.cmake" "$PS2SDK/ps2dev.cmake" || { exit 1; }
+## Create a synbolic link with relative folder for retro-compatibility ps2dev.cmake
+(cd "${PS2SDK}" && ln -sf "../share/ps2dev.cmake" "ps2dev.cmake" && cd -) || { exit 1; }
 
 ##
 ## Remove build folder
