@@ -25,7 +25,7 @@ libconfuse:
 	rm -rf $@
 	git clone --depth 1 -b v3.3 https://github.com/libconfuse/libconfuse
 	cd $@ && ./autogen.sh
-	cd $@ && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" ./configure --host=mips64r5900el-ps2-elf --prefix=$(PS2DEV)/portlibs/ps2 --disable-shared --disable-examples
+	cd $@ && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" ./configure --host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --disable-examples
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
