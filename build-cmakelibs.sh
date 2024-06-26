@@ -88,7 +88,11 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
-git clone --depth 1 -b v1.3.18 https://github.com/lsalzman/enet.git || { exit 1; }
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+
+git clone https://github.com/lsalzman/enet.git || { exit 1; }
+(cd enet && git checkout 7083138fd401faa391c4f829a86b50fdb9c5c727 && cd -) || { exit 1; }
 
 # Use wget to download argtable2
 wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz || { exit 1; }
