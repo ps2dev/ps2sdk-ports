@@ -54,7 +54,7 @@ function build_smb2iop {
 }
 
 ## Create a synbolic link for retro-compatibility ps2dev.cmake
-ln -sf "$PS2DEV/share/ps2dev.cmake" "$PS2SDK/ps2dev.cmake" || { exit 1; }
+(cd "${PS2SDK}" && ln -sf "../share/ps2dev.cmake" "ps2dev.cmake" && cd -) || { exit 1; }
 
 ##
 ## Remove build folder
@@ -116,12 +116,14 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
-git clone --depth 1 -b cmake https://github.com/Wolf3s/libsmb2.git || { exit 1; } 
-git clone --depth 1 -b v1.3.18 https://github.com/lsalzman/enet.git || { exit 1; }
+git clone --depth 1 -b cmake https://github.com/sahlberg/libsmb2.git || { exit 1; } 
+git clone https://github.com/lsalzman/enet.git || { exit 1; }
+(cd enet && git checkout 7083138fd401faa391c4f829a86b50fdb9c5c727 && cd -) || { exit 1; }
 
 # Use wget to download argtable2
 wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz || { exit 1; }
 tar -xzf argtable2-13.tar.gz || { exit 1; }
+git clone --depth 1 -b v3.2.2.f25c624 https://github.com/argtable/argtable3.git || { exit 1; }
 
 ##
 ## Build cmake projects
@@ -159,9 +161,12 @@ build_smb2ips libsmb2
 build_smb2iop libsmb2
 build enet
 
+# Build argtable2
 CFLAGS="-Wno-implicit-function-declaration" build argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON
 # Copy manually the argtable2.h header
-cp -r argtable2-13/src/argtable2.h $PS2SDK/ports/include/
+install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
+
+build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
 # Finish
 cd ..

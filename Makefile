@@ -79,7 +79,7 @@ ode:
 
 ps2_drivers:
 	rm -rf $@
-	git clone --depth 1 -b 1.6.1 https://github.com/fjtrujy/ps2_drivers
+	git clone --depth 1 -b 1.6.2 https://github.com/fjtrujy/ps2_drivers
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 	$(MAKE) -C $@ clean
