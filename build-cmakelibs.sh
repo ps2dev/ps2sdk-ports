@@ -14,8 +14,8 @@ else
   XTRA_OPTS=(. -G"Unix Makefiles")
 fi
 
-CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
-#CMAKE_OPTIONS=("${CMAKE_OPTIONS[@]}" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON)
+EE_CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
+IOP_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev_iop.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports_iop" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports_iop")
 
 function build {
     START_DIR="${PWD}"
@@ -23,45 +23,31 @@ function build {
     shift
     mkdir -p build
     cd build
-    CFLAGS="$CFLAGS" cmake "${CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
+    CFLAGS="$CFLAGS" cmake "${EE_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
     "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
     cd "${START_DIR}"
 }
 
-SMB2_IPS_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=cmake/PS2/ps2dev_ee_ips.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
-SMB2_IOP_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=cmake/PS2/ps2dev_iop.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
-
-function build_smb2ips {
+function build_iop {
     START_DIR="${PWD}"
     cd "$1"
     shift
-    mkdir -p build_smb2ips
-    cd build_smb2ips
-    CFLAGS="$CFLAGS" cmake "${SMB2_IPS_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
+    mkdir -p build_iop
+    cd build_iop
+    CFLAGS="$CFLAGS" cmake "${IOP_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
     "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
     cd "${START_DIR}"
 }
 
-function build_smb2iop {
-    START_DIR="${PWD}"
-    cd "$1"
-    shift
-    mkdir -p build_smb2iop
-    cd build_smb2iop
-    CFLAGS="$CFLAGS" cmake "${SMB2_IOP_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
-    "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
-    cd "${START_DIR}"
-}
-
-## Create a synbolic link for retro-compatibility ps2dev.cmake
+## Create a synbolic link for retro-compatibility ps2dev.cmake and ps2dev_iop.cmake
 (cd "${PS2SDK}" && ln -sf "../share/ps2dev.cmake" "ps2dev.cmake" && cd -) || { exit 1; }
+(cd "${PS2SDK}" && ln -sf "../share/ps2dev_iop.cmake" "ps2dev_iop.cmake" && cd -) || { exit 1; }
 
 ##
 ## Remove build folder
 ##
 rm -rf build
-rm -rf build_smb2ips
-rm -rf build_smb2iop
+rm -rf build_iop
 
 mkdir build
 cd build
@@ -116,7 +102,7 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
-git clone --depth 1 -b cmake https://github.com/sahlberg/libsmb2.git || { exit 1; } 
+git clone --depth 1 https://github.com/sahlberg/libsmb2.git || { exit 1; } 
 git clone https://github.com/lsalzman/enet.git || { exit 1; }
 (cd enet && git checkout 7083138fd401faa391c4f829a86b50fdb9c5c727 && cd -) || { exit 1; }
 
@@ -157,8 +143,8 @@ build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
 build libsmb2 
-build_smb2ips libsmb2
-build_smb2iop libsmb2
+CFLAGS="-DPS2IPS" build libsmb2
+build_iop libsmb2
 build enet
 
 # Build argtable2
