@@ -146,7 +146,11 @@ build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
 build libsmb2 
+cp -fr $PS2SDK/ports/lib/libsmb2_ip.a $PS2SDK/ports/lib/libsmb2.a
 CFLAGS="-DPS2IPS" build libsmb2
+cp -fr $PS2SDK/ports/lib/libsmb2_ip.a $PS2SDK/ports/lib/libsmb2_ips.a
+cp -fr $PS2SDK/ports/lib/libsmb2.a $PS2SDK/ports/lib/libsmb2_ip.a
+rm -fr $PS2SDK/ports/lib/libsmb2.a
 build_iop libsmb2
 build enet
 
