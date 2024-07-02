@@ -103,7 +103,7 @@ git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
 git clone https://github.com/sahlberg/libsmb2.git || { exit 1; } 
-(cd libsmb2 && git checkout 67eea946886c63d5496fe11fb83839978b5ca1f9 && cd-) || { exit 1; }
+(cd libsmb2 && git checkout 67eea946886c63d5496fe11fb83839978b5ca1f9 && cd -) || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
 git clone https://github.com/lsalzman/enet.git || { exit 1; }
