@@ -59,7 +59,7 @@ cd build
 ##
 ## Clone repos
 ##
-$FETCH v1.2.12 https://github.com/madler/zlib
+$FETCH v1.3.1 https://github.com/madler/zlib
 $FETCH v5.4.0 https://github.com/xz-mirror/xz.git
 $FETCH v1.9.4 https://github.com/lz4/lz4.git
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git
