@@ -1,7 +1,10 @@
 #!/bin/bash
+set -e
 
 ## Determine the maximum number of processes that Make can work with.
 ## Also make preparations for different toolchains
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+FETCH="$SCRIPT_DIR/fetch.sh"
 PROC_NR=$(getconf _NPROCESSORS_ONLN)
 CFLAGS=""
 XTRA_OPTS=""
@@ -19,102 +22,98 @@ IOP_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev_iop.cmake" "-DCM
 
 function build {
     START_DIR="${PWD}"
-    cd "$1"
+    DIR="$1"
     shift
+    cd "$DIR"
     mkdir -p build
     cd build
-    CFLAGS="$CFLAGS" cmake "${EE_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
-    "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
+    echo "Building '$DIR' for EE..."
+    CFLAGS="$CFLAGS" cmake "${EE_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" ..
+    "${MAKECMD}" -j "$PROC_NR" all install
     cd "${START_DIR}"
 }
 
 function build_iop {
     START_DIR="${PWD}"
-    cd "$1"
+    DIR="$1"
     shift
+    cd "$DIR"
     mkdir -p build_iop
     cd build_iop
-    CFLAGS="$CFLAGS" cmake "${IOP_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" .. || { exit 1; }
-    "${MAKECMD}" --quiet -j "$PROC_NR" clean all install || { exit 1; }
+    echo "Building '$DIR' for IOP..."
+    CFLAGS="$CFLAGS" cmake "${IOP_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" ..
+    "${MAKECMD}" -j "$PROC_NR" all install
     cd "${START_DIR}"
 }
 
-## Create a synbolic link for retro-compatibility ps2dev.cmake and ps2dev_iop.cmake
-(cd "${PS2SDK}" && ln -sf "../share/ps2dev.cmake" "ps2dev.cmake" && cd -) || { exit 1; }
-(cd "${PS2SDK}" && ln -sf "../share/ps2dev_iop.cmake" "ps2dev_iop.cmake" && cd -) || { exit 1; }
+## Create a symbolic link for retro-compatibility ps2dev.cmake and ps2dev_iop.cmake
+(cd "${PS2SDK}" && ln -sf "../share/ps2dev.cmake" "ps2dev.cmake" && cd -)
+(cd "${PS2SDK}" && ln -sf "../share/ps2dev_iop.cmake" "ps2dev_iop.cmake" && cd -)
 
 ##
-## Remove build folder
+## Create build folder
 ##
-rm -rf build
-rm -rf build_iop
-
-mkdir build
+mkdir -p build
 cd build
 
 ##
 ## Clone repos
 ##
-git clone --depth 1 -b v1.2.12 https://github.com/madler/zlib || { exit 1; }
-git clone --depth 1 -b v5.4.0 https://github.com/xz-mirror/xz.git || { exit 1; }
-git clone --depth 1 -b v1.9.4 https://github.com/lz4/lz4.git || { exit 1; }
-git clone --depth 1 -b v1.9.2 https://github.com/nih-at/libzip.git || { exit 1; }
-git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
-git clone --depth 1 -b VER-2-10-4 https://github.com/freetype/freetype || { exit 1; }
-git clone --depth 1 -b v1.14.0 https://github.com/google/googletest || { exit 1; }
-git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
-git clone --depth 1 -b 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
-git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
-git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
-git clone --depth 1 -b v5.7.0-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
-git clone --depth 1 -b curl-8_7_1 https://github.com/curl/curl.git || { exit 1; }
-git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
+$FETCH v1.2.12 https://github.com/madler/zlib
+$FETCH v5.4.0 https://github.com/xz-mirror/xz.git
+$FETCH v1.9.4 https://github.com/lz4/lz4.git
+$FETCH v1.9.2 https://github.com/nih-at/libzip.git
+$FETCH v1.6.37 https://github.com/glennrp/libpng
+$FETCH VER-2-10-4 https://github.com/freetype/freetype
+$FETCH v1.14.0 https://github.com/google/googletest
+$FETCH 0.2.5 https://github.com/yaml/libyaml
+$FETCH 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo
+$FETCH v1.3.5 https://github.com/xiph/ogg.git
+$FETCH v1.3.7 https://github.com/xiph/vorbis.git
+$FETCH v5.7.0-stable https://github.com/wolfSSL/wolfssl.git
+$FETCH curl-8_7_1 https://github.com/curl/curl.git
+$FETCH 1.9.5 https://github.com/open-source-parsers/jsoncpp.git
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
 pushd jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
-git clone --depth 1 -b libxmp-4.6.0 https://github.com/libxmp/libxmp.git || { exit 1; } 
-git clone --depth 1 -b v1.4 https://github.com/xiph/opus.git || { exit 1; } 
-# We need to clone the whole repo and point to the specific hash for now, 
+$FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git
+$FETCH v1.4 https://github.com/xiph/opus.git
+# We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
-git clone https://github.com/xiph/opusfile.git || { exit 1; } 
-(cd opusfile && git checkout cf218fb54929a1f54e30e2cb208a22d08b08c889 && cd -) || { exit 1; }
-# We need to clone the whole repo and point to the specific hash for now, 
+# we need to clone whole repo because it uses `git describe --tags` for version info
+$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true
+# We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
-git clone https://github.com/Konstanty/libmodplug.git || { exit 1; } 
-(cd libmodplug && git checkout d1b97ed0020bc620a059d3675d1854b40bd2608d && cd -) || { exit 1; }
-# We need to clone the whole repo and point to the specific hash for now, 
+$FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git
+# We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
-git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; } 
-(cd mikmod-mikmod && git checkout 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 && cd -) || { exit 1; }
+$FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod.git
 # We need to clone a fork, this is a PR opened for ading cmake support
 # https://github.com/xiph/theora/pull/14
-git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
+$FETCH feature/cmake https://github.com/mcmtroffaes/theora.git
 
 # SDL requires to have gsKit
-git clone --depth 1 -b v1.3.7 https://github.com/ps2dev/gsKit || { exit 1; } 
+$FETCH v1.3.7 https://github.com/ps2dev/gsKit
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-git clone https://github.com/libsdl-org/SDL.git || { exit 1; }
-(cd SDL && git checkout 10c14e78b650e626293aa18155efec54cdee7098 && cd -) || { exit 1; }
-git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
-git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
-git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
+$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git
+$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
+$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git
+$FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-git clone https://github.com/sahlberg/libsmb2.git || { exit 1; } 
-(cd libsmb2 && git checkout dccf1dbccd66a8c433e336de4951a249096e1c22 && cd -) || { exit 1; }
+$FETCH dccf1dbccd66a8c433e336de4951a249096e1c22 https://github.com/sahlberg/libsmb2.git
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-git clone https://github.com/lsalzman/enet.git || { exit 1; }
-(cd enet && git checkout 7083138fd401faa391c4f829a86b50fdb9c5c727 && cd -) || { exit 1; }
+$FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git
 
 # Use wget to download argtable2
-wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz || { exit 1; }
-tar -xzf argtable2-13.tar.gz || { exit 1; }
-git clone --depth 1 -b v3.2.2.f25c624 https://github.com/argtable/argtable3.git || { exit 1; }
+wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz
+tar -xzf argtable2-13.tar.gz
+$FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git
 
 ##
 ## Build cmake projects
@@ -136,7 +135,7 @@ build libxmp -DBUILD_SHARED=OFF
 build opus
 build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
 build libmodplug
-build mikmod-mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
+build mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 build theora
 
@@ -156,7 +155,7 @@ install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 
 build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
-build libsmb2 
+build libsmb2
 build_iop libsmb2
 
 # Finish
