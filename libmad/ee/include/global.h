@@ -23,13 +23,11 @@
 # define LIBMAD_GLOBAL_H
 
 /* conditional debugging */
+#include <stdio.h>
+#include <stdlib.h>
 
 # if defined(DEBUG) && defined(NDEBUG)
 #  error "cannot define both DEBUG and NDEBUG"
-# endif
-
-# if defined(DEBUG)
-#  include <stdio.h>
 # endif
 
 /* conditional features */

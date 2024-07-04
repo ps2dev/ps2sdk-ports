@@ -61,25 +61,20 @@ git clone --depth 1 -b v1.9.4 https://github.com/lz4/lz4.git || { exit 1; }
 git clone --depth 1 -b v1.9.2 https://github.com/nih-at/libzip.git || { exit 1; }
 git clone --depth 1 -b v1.6.37 https://github.com/glennrp/libpng || { exit 1; }
 git clone --depth 1 -b VER-2-10-4 https://github.com/freetype/freetype || { exit 1; }
+git clone --depth 1 -b v1.14.0 https://github.com/google/googletest || { exit 1; }
 git clone --depth 1 -b 0.2.5 https://github.com/yaml/libyaml || { exit 1; }
-git clone --depth 1 -b 2.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
+git clone --depth 1 -b 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo || { exit 1; }
 git clone --depth 1 -b v1.3.5 https://github.com/xiph/ogg.git || { exit 1; }
 git clone --depth 1 -b v1.3.7 https://github.com/xiph/vorbis.git || { exit 1; }
-git clone --depth 1 -b v5.5.4-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
-git clone --depth 1 -b curl-7_87_0 https://github.com/curl/curl.git || { exit 1; }
+git clone --depth 1 -b v5.7.0-stable https://github.com/wolfSSL/wolfssl.git || { exit 1; }
+git clone --depth 1 -b curl-8_7_1 https://github.com/curl/curl.git || { exit 1; }
 git clone --depth 1 -b 1.9.5 https://github.com/open-source-parsers/jsoncpp.git || { exit 1; }
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
 pushd jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
-# We need to clone the whole repo and point to the specific hash for now, 
-# till they release a new version with cmake compatibility
-git clone https://github.com/libxmp/libxmp.git || { exit 1; } 
-(cd libxmp && git checkout b0769774109d338554d534d9c122439d61d2bdd1 && cd -) || { exit 1; }
-# We need to clone the whole repo and point to the specific hash for now, 
-# till they release a new version with cmake compatibility
-git clone https://github.com/xiph/opus.git || { exit 1; } 
-(cd opus && git checkout ab04fbb1b7d0b727636d28fc2cadb5df9febe515 && cd -) || { exit 1; }
+git clone --depth 1 -b libxmp-4.6.0 https://github.com/libxmp/libxmp.git || { exit 1; } 
+git clone --depth 1 -b v1.4 https://github.com/xiph/opus.git || { exit 1; } 
 # We need to clone the whole repo and point to the specific hash for now, 
 # till they release a new version with cmake compatibility
 git clone https://github.com/xiph/opusfile.git || { exit 1; } 
@@ -97,13 +92,18 @@ git clone https://github.com/sezero/mikmod.git mikmod-mikmod || { exit 1; }
 git clone --depth 1 -b feature/cmake https://github.com/mcmtroffaes/theora.git || { exit 1; }
 
 # SDL requires to have gsKit
-git clone --depth 1 -b v1.3.5 https://github.com/ps2dev/gsKit || { exit 1; } 
+git clone --depth 1 -b v1.3.7 https://github.com/ps2dev/gsKit || { exit 1; } 
 
-git clone --depth 1 -b release-2.26.3 https://github.com/libsdl-org/SDL.git || { exit 1; }
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+git clone https://github.com/libsdl-org/SDL.git || { exit 1; }
+(cd SDL && git checkout 10c14e78b650e626293aa18155efec54cdee7098 && cd -) || { exit 1; }
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git || { exit 1; }
 git clone --depth 1 -b release-2.6.3 https://github.com/libsdl-org/SDL_image.git || { exit 1; }
 git clone --depth 1 -b release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git || { exit 1; }
 
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
 git clone https://github.com/sahlberg/libsmb2.git || { exit 1; } 
 (cd libsmb2 && git checkout dccf1dbccd66a8c433e336de4951a249096e1c22 && cd -) || { exit 1; }
 # We need to clone the whole repo and point to the specific hash for now,
@@ -111,7 +111,10 @@ git clone https://github.com/sahlberg/libsmb2.git || { exit 1; }
 git clone https://github.com/lsalzman/enet.git || { exit 1; }
 (cd enet && git checkout 7083138fd401faa391c4f829a86b50fdb9c5c727 && cd -) || { exit 1; }
 
-git clone --depth 1 -b cmake https://github.com/Wolf3s/libsmb2.git || { exit 1; } 
+# Use wget to download argtable2
+wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz || { exit 1; }
+tar -xzf argtable2-13.tar.gz || { exit 1; }
+git clone --depth 1 -b v3.2.2.f25c624 https://github.com/argtable/argtable3.git || { exit 1; }
 
 ##
 ## Build cmake projects
@@ -122,12 +125,13 @@ build lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DL
 build libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
 build libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build freetype
+build googletest -DCMAKE_CXX_FLAGS='-DGTEST_HAS_POSIX_RE=0'
 build libyaml
 build libjpeg-turbo -DENABLE_SHARED=FALSE -DWITH_SIMD=0
 build ogg
 build vorbis
-CFLAGS="-DWOLFSSL_GETRANDOM -DNO_WRITEV" build wolfssl -DBUILD_SHARED_LIBS=OFF -DWOLFSSL_CRYPT_TESTS=OFF -DWOLFSSL_EXAMPLES=OFF -DWOLFSSL_OPENSSLEXTRA=ON -DWARNING_C_FLAGS=-w
-CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build curl -DBUILD_SHARED_LIBS=OFF -DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_WOLFSSL=ON -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO -DHAVE_ATOMIC=NO -DENABLE_WEBSOCKETS=ON
+CFLAGS="-DWOLFSSL_GETRANDOM -DNO_WRITEV" build wolfssl -DWOLFSSL_CRYPT_TESTS=OFF -DWOLFSSL_EXAMPLES=OFF -DWOLFSSL_CURL=ON -DWARNING_C_FLAGS=-w
+CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build curl -DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_WOLFSSL=ON -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO -DHAVE_ATOMIC=NO -DENABLE_WEBSOCKETS=ON -DENABLE_IPV6=OFF -DCURL_USE_LIBPSL=OFF -DCURL_USE_LIBSSH2=OFF
 build libxmp -DBUILD_SHARED=OFF
 build opus
 build opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
@@ -140,8 +144,17 @@ build theora
 build gsKit
 build SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
-build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DBUILD_SHARED_LIBS=OFF
-build SDL_ttf -DBUILD_SHARED_LIBS=OFF -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
+build SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
+build SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
+
+build enet
+
+# Build argtable2
+CFLAGS="-Wno-implicit-function-declaration" build argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON
+# Copy manually the argtable2.h header
+install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
+
+build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
 build libsmb2 
 cp -fr $PS2SDK/ports/lib/libsmb2_ip.a $PS2SDK/ports/lib/libsmb2.a
