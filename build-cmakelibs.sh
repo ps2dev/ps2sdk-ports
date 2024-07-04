@@ -157,13 +157,7 @@ install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
 build libsmb2 
-cp -fr $PS2SDK/ports/lib/libsmb2_ip.a $PS2SDK/ports/lib/libsmb2.a
-CFLAGS="-DPS2IPS" build libsmb2
-cp -fr $PS2SDK/ports/lib/libsmb2_ip.a $PS2SDK/ports/lib/libsmb2_ips.a
-cp -fr $PS2SDK/ports/lib/libsmb2.a $PS2SDK/ports/lib/libsmb2_ip.a
-rm -fr $PS2SDK/ports/lib/libsmb2.a
 build_iop libsmb2
-build enet
 
 # Finish
 cd ..
