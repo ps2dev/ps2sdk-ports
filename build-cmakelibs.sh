@@ -63,7 +63,7 @@ $FETCH v1.3.1 https://github.com/madler/zlib
 $FETCH v5.4.0 https://github.com/xz-mirror/xz.git
 $FETCH v1.9.4 https://github.com/lz4/lz4.git
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git
-$FETCH v1.6.37 https://github.com/glennrp/libpng
+$FETCH v1.6.43 https://github.com/glennrp/libpng
 $FETCH VER-2-10-4 https://github.com/freetype/freetype
 $FETCH v1.14.0 https://github.com/google/googletest
 $FETCH 0.2.5 https://github.com/yaml/libyaml
