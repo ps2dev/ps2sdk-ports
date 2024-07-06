@@ -118,7 +118,7 @@ $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git
 ##
 ## Build cmake projects
 ##
-PROC_NR=1 build zlib -DUNIX:BOOL=ON # Forcing to compile with -j1 because there is a race condition in zlib
+PROC_NR=1 build zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF # Forcing to compile with -j1 because there is a race condition in zlib
 build xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF
 build lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF
 build libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
