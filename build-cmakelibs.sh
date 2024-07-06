@@ -59,61 +59,68 @@ cd build
 ##
 ## Clone repos
 ##
-$FETCH v1.3.1 https://github.com/madler/zlib
-$FETCH v5.4.0 https://github.com/xz-mirror/xz.git
-$FETCH v1.9.4 https://github.com/lz4/lz4.git
-$FETCH v1.9.2 https://github.com/nih-at/libzip.git
-$FETCH v1.6.43 https://github.com/glennrp/libpng
-$FETCH VER-2-10-4 https://github.com/freetype/freetype
-$FETCH v1.14.0 https://github.com/google/googletest
-$FETCH 0.2.5 https://github.com/yaml/libyaml
-$FETCH 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo
-$FETCH v1.3.5 https://github.com/xiph/ogg.git
-$FETCH v1.3.7 https://github.com/xiph/vorbis.git
-$FETCH v5.7.0-stable https://github.com/wolfSSL/wolfssl.git
-$FETCH curl-8_7_1 https://github.com/curl/curl.git
-$FETCH 1.9.5 https://github.com/open-source-parsers/jsoncpp.git
+$FETCH v1.3.1 https://github.com/madler/zlib &
+$FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
+$FETCH v1.9.4 https://github.com/lz4/lz4.git &
+$FETCH v1.9.2 https://github.com/nih-at/libzip.git &
+$FETCH v1.6.43 https://github.com/glennrp/libpng &
+$FETCH VER-2-10-4 https://github.com/freetype/freetype &
+$FETCH v1.14.0 https://github.com/google/googletest &
+$FETCH 0.2.5 https://github.com/yaml/libyaml &
+$FETCH 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo &
+$FETCH v1.3.5 https://github.com/xiph/ogg.git &
+$FETCH v1.3.7 https://github.com/xiph/vorbis.git &
+$FETCH v5.7.0-stable https://github.com/wolfSSL/wolfssl.git &
+$FETCH curl-8_7_1 https://github.com/curl/curl.git &
+$FETCH 1.9.5 https://github.com/open-source-parsers/jsoncpp.git &
+$FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git &
+$FETCH v1.4 https://github.com/xiph/opus.git &
+# We need to clone the whole repo and point to the specific hash for now,
+# till they release a new version with cmake compatibility
+# we need to clone whole repo because it uses `git describe --tags` for version info
+$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
+# We need to clone the whole repo and point to the specific hash for now,
+# till they release a new version with cmake compatibility
+$FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
+# We need to clone the whole repo and point to the specific hash for now,
+# till they release a new version with cmake compatibility
+$FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod.git &
+# We need to clone a fork, this is a PR opened for ading cmake support
+# https://github.com/xiph/theora/pull/14
+$FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
+
+# SDL requires to have gsKit
+$FETCH v1.3.7 https://github.com/ps2dev/gsKit &
+
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git &
+$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git &
+$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git &
+$FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
+
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+$FETCH dccf1dbccd66a8c433e336de4951a249096e1c22 https://github.com/sahlberg/libsmb2.git &
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+$FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git &
+
+# Use wget to download argtable2
+wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz &
+$FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
+
+# wait for fetch jobs to finish
+wait
+
+# extract argtable2
+tar -xzf argtable2-13.tar.gz
+
+# NOTE: jsoncpp
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
 pushd jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
-$FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git
-$FETCH v1.4 https://github.com/xiph/opus.git
-# We need to clone the whole repo and point to the specific hash for now,
-# till they release a new version with cmake compatibility
-# we need to clone whole repo because it uses `git describe --tags` for version info
-$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true
-# We need to clone the whole repo and point to the specific hash for now,
-# till they release a new version with cmake compatibility
-$FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git
-# We need to clone the whole repo and point to the specific hash for now,
-# till they release a new version with cmake compatibility
-$FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod.git
-# We need to clone a fork, this is a PR opened for ading cmake support
-# https://github.com/xiph/theora/pull/14
-$FETCH feature/cmake https://github.com/mcmtroffaes/theora.git
-
-# SDL requires to have gsKit
-$FETCH v1.3.7 https://github.com/ps2dev/gsKit
-
-# We need to clone the whole repo and point to the specific hash for now,
-# till a new version is released after this commit
-$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git
-$FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git
-
-# We need to clone the whole repo and point to the specific hash for now,
-# till a new version is released after this commit
-$FETCH dccf1dbccd66a8c433e336de4951a249096e1c22 https://github.com/sahlberg/libsmb2.git
-# We need to clone the whole repo and point to the specific hash for now,
-# till a new version is released after this commit
-$FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git
-
-# Use wget to download argtable2
-wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz
-tar -xzf argtable2-13.tar.gz
-$FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git
 
 ##
 ## Build cmake projects
