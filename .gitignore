@@ -31,6 +31,7 @@
 #
 *_irx.c
 build/
+libconfuse/
 libtap/
 lua/
 ps2_drivers/
