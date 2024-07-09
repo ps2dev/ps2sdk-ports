@@ -19,6 +19,7 @@ fi
 
 EE_CMAKE_OPTIONS=(-Wno-dev "-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports")
 IOP_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev_iop.cmake" "-DCMAKE_INSTALL_PREFIX=$PS2SDK/ports_iop" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports_iop")
+IRX_CMAKE_OPTIONS=("-DCMAKE_TOOLCHAIN_FILE=$PS2DEV/share/ps2dev_iop.cmake" "-DCMAKE_PREFIX_PATH=$PS2SDK/ports_iop/irx" -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_PREFIX_PATH=$PS2SDK/ports_iop/irx")
 
 function build {
     START_DIR="${PWD}"
@@ -42,6 +43,19 @@ function build_iop {
     cd build_iop
     echo "Building '$DIR' for IOP..."
     CFLAGS="$CFLAGS" cmake "${IOP_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" ..
+    "${MAKECMD}" -j "$PROC_NR" all install
+    cd "${START_DIR}"
+}
+
+function build_irx {
+    START_DIR="${PWD}"
+    DIR="$1"
+    shift
+    cd "$DIR"
+    mkdir -p build_irx
+    cd build_irx
+    echo "Building '$DIR' for IRX..."
+    CFLAGS="$CFLAGS" cmake "${IRX_CMAKE_OPTIONS[@]}" "$@" "${XTRA_OPTS[@]}" ..
     "${MAKECMD}" -j "$PROC_NR" all install
     cd "${START_DIR}"
 }
@@ -101,7 +115,8 @@ $FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-$FETCH dccf1dbccd66a8c433e336de4951a249096e1c22 https://github.com/sahlberg/libsmb2.git &
+$FETCH e4772ec52446f4a190b91973a8099c356e792ad3 https://github.com/sahlberg/libsmb2.git &
+
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
 $FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git &
@@ -163,7 +178,9 @@ install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
 build libsmb2
+build libsmb2 -DPS2IPS=1
 build_iop libsmb2
+build_irx libsmb2 -DBUILD_IRX=1
 
 # Finish
 cd ..
