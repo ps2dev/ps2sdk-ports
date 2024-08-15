@@ -115,7 +115,7 @@ $FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-$FETCH e4772ec52446f4a190b91973a8099c356e792ad3 https://github.com/sahlberg/libsmb2.git &
+$FETCH 0fba3b28533cbfa64143ae230da8342f3bc45141 https://github.com/sahlberg/libsmb2.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
@@ -178,7 +178,7 @@ install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 build argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
 
 build libsmb2
-build libsmb2 -DPS2IPS=1
+build libsmb2 -DPS2RPC=1
 build_iop libsmb2
 build_irx libsmb2 -DBUILD_IRX=1
 
