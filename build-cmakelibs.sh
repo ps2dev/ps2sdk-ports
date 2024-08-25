@@ -121,6 +121,8 @@ $FETCH 0fba3b28533cbfa64143ae230da8342f3bc45141 https://github.com/sahlberg/libs
 # till a new version is released after this commit
 $FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git &
 
+$FETCH v1.90.8 https://github.com/Wolf3s/imgui.git &
+
 # Use wget to download argtable2
 wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz &
 $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
