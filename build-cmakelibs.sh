@@ -65,12 +65,6 @@ function build_irx {
 (cd "${PS2SDK}" && ln -sf "../share/ps2dev_iop.cmake" "ps2dev_iop.cmake" && cd -)
 
 ##
-## Create build folder
-##
-mkdir -p build
-cd build
-
-##
 ## Clone repos
 ##
 $FETCH v1.3.1 https://github.com/madler/zlib &
@@ -103,8 +97,13 @@ $FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod
 # https://github.com/xiph/theora/pull/14
 $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 
+# gsKit requires libtiff
+$FETCH v4.6.0 https://gitlab.com/libtiff/libtiff.git &
+
 # SDL requires to have gsKit
-$FETCH v1.3.7 https://github.com/ps2dev/gsKit &
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+$FETCH a08a0ca41a4ab54a7a34a2068fe04e7545cfd0ad https://github.com/Wolf3s/gsKit.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
@@ -122,20 +121,25 @@ $FETCH fb5597bf3852aeb9aef5ca7305e049bfb4c0bb7f https://github.com/sahlberg/libs
 $FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git &
 
 # Use wget to download argtable2
-wget -c http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz &
+wget -c --directory-prefix=build  http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz &
 $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
+
+$FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
+
+$FETCH R_2_6_2 https://github.com/libexpat/libexpat.git &
 
 # wait for fetch jobs to finish
 wait
 
 # extract argtable2
-tar -xzf argtable2-13.tar.gz
+tar -xzf build/argtable2-13.tar.gz -C build
 
 # NOTE: jsoncpp
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
-pushd jsoncpp
+pushd build/jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
+cd build
 
 ##
 ## Build cmake projects
@@ -161,6 +165,10 @@ build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
 build_ee theora
 
+# libtiff and libtiff_ps2_addons is mandatory for gsKit
+CFLAGS="-Dlfind=bsearch" build_ee libtiff -DBUILD_SHARED_LIBS=OFF -Dtiff-tools=OFF -Dtiff-tests=OFF
+make all install  -j -C ../libtiff_ps2_addons
+
 # gsKit is mandatory for SDL
 build_ee gsKit
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
@@ -181,6 +189,10 @@ build_ee libsmb2
 build_ee libsmb2 -DPS2RPC=1
 build_iop libsmb2
 build_irx libsmb2 -DBUILD_IRX=1
+
+CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DBUILD_SHARED_LIBS=OFF
+
+CFLAGS="-Darc4random_buf=random -DHAVE_GETRANDOM" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
 
 # Finish
 cd ..
