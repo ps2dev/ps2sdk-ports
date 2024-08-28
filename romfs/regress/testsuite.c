@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <romfs_io.h>
 #include "testsuite.h"
 
