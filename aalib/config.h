@@ -19,7 +19,7 @@
 /* #undef CURSES_DRIVER */
 /* #undef X11_DRIVER */
 /* #undef SLANG_DRIVER */
-#define LINUX_DRIVER 1
+/* #undef LINUX_DRIVER 1 */
 /* #undef CURSES_KBDDRIVER */
 /* #undef X11_KBDDRIVER */
 /* #undef SLANG_KBDDRIVER */

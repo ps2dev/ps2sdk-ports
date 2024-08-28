@@ -3,7 +3,7 @@
 #  ____|   |    ____|   |        | |____|
 # |     ___|   |____ ___|    ____| |    \    PS2DEV Open Source Project.
 #-----------------------------------------------------------------------
-# Copyright 2005, ps2dev - http://www.ps2dev.org
+# Copyright 2005-Present, ps2dev - http://www.ps2dev.org
 # Licenced under GNU Library General Public License version 2
 # Review ps2sdk README & LICENSE files for further details.
 #

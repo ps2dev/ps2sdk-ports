@@ -3,14 +3,12 @@
 #  ____|   |    ____|   |        | |____|
 # |     ___|   |____ ___|    ____| |    \    PS2DEV Open Source Project.
 #-----------------------------------------------------------------------
-# Copyright 2005, ps2dev - http://www.ps2dev.org
+# Copyright 2005-Present, ps2dev - http://www.ps2dev.org
 # Licenced under GNU Library General Public License version 2
 # Review ps2sdk README & LICENSE files for further details.
 #
 # ROMFS.
 */
-
-
 
 #include <stdio.h>
 #include <string.h>
@@ -19,20 +17,20 @@
 typedef struct 
 {
 	char	magic[8];		/* Should be "-rom1fs-" */
-	uint32	full_size;		/* Full size of the file system */
-	uint32	checksum;		/* Checksum */
+	u32	full_size;		/* Full size of the file system */
+	u32	checksum;		/* Checksum */
 	char	volume_name[16];	/* Volume name (zero-terminated) */
 } romdisk_hdr_t;
 
 typedef struct {
-	uint32	next_header;		/* Offset of next header */
-	uint32	spec_info;		/* Spec info */
-	uint32	size;			/* Data size */
-	uint32	checksum;		/* File checksum */
+	u32	next_header;		/* Offset of next header */
+	u32	spec_info;		/* Spec info */
+	u32	size;			/* Data size */
+	u32	checksum;		/* File checksum */
 	char	filename[16];		/* File name (zero-terminated) */
 } romdisk_file_t;
 
-static uint8 const *mounted_img = 0;
+static u8 const *mounted_img = 0;
 
 int romdisk_mount(const void *img)
 {
@@ -44,7 +42,7 @@ int romdisk_mount(const void *img)
 		return -1;
 	}
 
-	mounted_img = (const uint8 *)img;
+	mounted_img = (const u8 *)img;
 	return 0;
 }
 
@@ -61,7 +59,7 @@ int romdisk_find(const char *path, void **ptr, int *size)
 	const char *subdir;
 	int path_len;
 	int type;
-	uint32 offset;
+	u32 offset;
 
 	if (mounted_img == NULL || ptr == NULL) {
 		return -1;

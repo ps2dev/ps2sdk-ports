@@ -13,10 +13,6 @@ EE_OBJS    := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
 
-tools: tools/genromfs
-	$(MAKE) -C tools/genromfs all
-	cp -f tools/genromfs/genromfs $(DESTDIR)$(PS2SDK)/bin/
-
 $(EE_OBJS_DIR):
 	mkdir -p $(EE_OBJS_DIR)
 
@@ -36,7 +32,6 @@ install: all
 clean:
 	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)
 	$(MAKE) -C regress/ clean
-	$(MAKE) -C tools/genromfs clean
 
 sample: all
 	$(MAKE) -C regress/

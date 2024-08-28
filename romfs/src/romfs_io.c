@@ -3,14 +3,12 @@
 #  ____|   |    ____|   |        | |____|
 # |     ___|   |____ ___|    ____| |    \    PS2DEV Open Source Project.
 #-----------------------------------------------------------------------
-# Copyright 2005, ps2dev - http://www.ps2dev.org
+# Copyright 2005-Present, ps2dev - http://www.ps2dev.org
 # Licenced under GNU Library General Public License version 2
 # Review ps2sdk README & LICENSE files for further details.
 #
 # ROMFS.
 */
-
-
 
 #include <stdio.h>
 #include <fcntl.h>
@@ -27,7 +25,7 @@ int 		__sz[_NFILE];                 //size  of  file from romfs
 int 		__offset[_NFILE];             //offset  ... 
 unsigned char *(__dataptr[_NFILE]);  	      //datptr ... 
 
-
+unsigned char romdisk_start[];
 
 static int rio_initialized = 0;
 
@@ -48,7 +46,7 @@ void rioInit()
 			__dataptr[i] = 0;
 		}
 		// mount the rom image
-		romdisk_mount(romdisk_start);
+		romdisk_mount(&romdisk_start);
 		printf ("romdisk initialized & mounted!\n");
 		rio_initialized =1;
 	}	
