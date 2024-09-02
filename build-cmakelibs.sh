@@ -103,7 +103,7 @@ $FETCH v4.6.0 https://gitlab.com/libtiff/libtiff.git &
 # SDL requires to have gsKit
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-$FETCH a08a0ca41a4ab54a7a34a2068fe04e7545cfd0ad https://github.com/Wolf3s/gsKit.git &
+$FETCH a0e397cc9e162cb90273d2e5b61a10fa47e333c3 https://github.com/Wolf3s/gsKit.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
@@ -139,6 +139,10 @@ tar -xzf build/argtable2-13.tar.gz -C build
 pushd build/jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
+
+###
+### Change to the build folder
+###
 cd build
 
 ##
@@ -167,7 +171,6 @@ build_ee theora
 
 # libtiff and libtiff_ps2_addons is mandatory for gsKit
 CFLAGS="-Dlfind=bsearch" build_ee libtiff -DBUILD_SHARED_LIBS=OFF -Dtiff-tools=OFF -Dtiff-tests=OFF
-make all install  -j -C ../libtiff_ps2_addons
 
 # gsKit is mandatory for SDL
 build_ee gsKit
