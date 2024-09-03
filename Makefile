@@ -1,8 +1,6 @@
 LIBS := \
 	aalib\
 	cmakelibs\
-	expat\
-	libconfig\
 	libconfuse\
 	libid3tag\
 	libjpeg_ps2_addons\
@@ -60,20 +58,12 @@ cmakelibs: ps2_drivers libtiff
 clean-cmakelibs:
 	rm -rf ./build
 
-expat:
-	$(MAKE) -C $@
-	$(MAKE) -C $@ install
-
-libconfig:
-	$(MAKE) -C $@
-	$(MAKE) -C $@ install
-
 libconfuse:
 	./fetch.sh v3.3 https://github.com/libconfuse/libconfuse
-	cd $@ && ./autogen.sh
-	cd $@ && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" ./configure --host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --disable-examples
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
+	cd build/$@ && ./autogen.sh
+	cd build/$@ && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" ./configure --host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --disable-examples
+	$(MAKE) -C build/$@ all
+	$(MAKE) -C build/$@ install
 
 libid3tag: cmakelibs
 	$(MAKE) -C $@ all
@@ -89,20 +79,16 @@ libmad: cmakelibs
 
 libtap:
 	./fetch.sh master https://github.com/ps2dev/libtap
-	$(MAKE) -C $@ -f Makefile.PS2 all
-	$(MAKE) -C $@ -f Makefile.PS2 install
+	$(MAKE) -C build/$@ -f Makefile.PS2 all
+	$(MAKE) -C build/$@ -f Makefile.PS2 install
 
 clean-libtap:
 	$(MAKE) -C libtap -f Makefile.PS2 clean
 
-libtiff:
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
-
 lua:
 	./fetch.sh ee-v5.4.6 https://github.com/ps2dev/lua
-	$(MAKE) -C $@ all platform=PS2
-	$(MAKE) -C $@ install platform=PS2
+	$(MAKE) -C build/$@ all platform=PS2
+	$(MAKE) -C build/$@ install platform=PS2
 
 clean-lua:
 	$(MAKE) -C lua clean platform=PS2
@@ -123,21 +109,21 @@ ode:
 
 ps2_drivers:
 	./fetch.sh 1.6.2 https://github.com/fjtrujy/ps2_drivers
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
+	$(MAKE) -C build/$@ all
+	$(MAKE) -C build/$@ install
 
 ps2stuff:
 	./fetch.sh master https://github.com/ps2dev/ps2stuff
-	$(MAKE) -C $@ install
+	$(MAKE) -C build/$@ install
 
 ps2gl: ps2stuff
 	./fetch.sh master https://github.com/ps2dev/ps2gl
-	$(MAKE) -C $@ install
-	$(MAKE) -C $@/glut install
+	$(MAKE) -C build/$@ install
+	$(MAKE) -C build/$@/glut install
 
 clean-ps2gl:
-	$(MAKE) -C ps2gl clean
-	$(MAKE) -C ps2gl/glut clean
+	$(MAKE) -C build/ps2gl clean
+	$(MAKE) -C build/ps2gl/glut clean
 
 romfs:
 	$(MAKE) -C $@
@@ -165,8 +151,8 @@ sdlttf: sdl cmakelibs
 
 SIOCookie:
 	./fetch.sh v1.0.4 https://github.com/israpps/SIOCookie
-	$(MAKE) -C $@ all
-	$(MAKE) -C $@ install
+	$(MAKE) -C build/$@ all
+	$(MAKE) -C build/$@ install
 
 unzip: cmakelibs
 	$(MAKE) -C $@
