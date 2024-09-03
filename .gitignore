@@ -31,11 +31,3 @@
 #
 *_irx.c
 build/
-libconfuse/
-libtap/
-lua/
-ps2_drivers/
-SIOCookie/
-ps2stuff/
-ps2gl/
-libconfuse/
