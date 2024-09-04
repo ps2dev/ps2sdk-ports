@@ -108,7 +108,7 @@ ode:
 	$(MAKE) -C $@ install
 
 ps2_drivers:
-	./fetch.sh 1.6.2 https://github.com/fjtrujy/ps2_drivers
+	./fetch.sh 1.6.3 https://github.com/fjtrujy/ps2_drivers
 	$(MAKE) -C build/$@ all
 	$(MAKE) -C build/$@ install
 
