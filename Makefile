@@ -20,6 +20,7 @@ LIBS := \
 	sdlttf\
 	SIOCookie\
 	unzip\
+	imgui\
 
 LIBS_SAMPLES := \
 	aalib\
@@ -155,5 +156,10 @@ SIOCookie:
 	$(MAKE) -C build/$@ install
 
 unzip: cmakelibs
+	$(MAKE) -C $@
+	$(MAKE) -C $@ install
+
+imgui:
+	./fetch.sh ps2-v1.90.8 https://github.com/Wolf3s/imgui.git
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
