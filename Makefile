@@ -160,6 +160,6 @@ unzip: cmakelibs
 	$(MAKE) -C $@ install
 
 imgui:
-	./fetch.sh ps2-v1.90.8 https://github.com/Wolf3s/imgui.git
+	./fetch.sh v1.91.2 https://github.com/ocornut/imgui.git
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
