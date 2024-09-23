@@ -20,7 +20,8 @@
 #include <sifrpc.h>
 #include <sifcmd.h>
 #include "sys/stat.h"
-#include "sys/fcntl.h"
+#include <fcntl.h>
+#include <unistd.h>
 #include "kernel.h"
 #include "sifrpc.h"
 #include "stdarg.h"
