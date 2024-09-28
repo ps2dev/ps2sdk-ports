@@ -126,6 +126,7 @@ $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
 
 $FETCH R_2_6_2 https://github.com/libexpat/libexpat.git &
 
+$FETCH ee-sans_glib https://github.com/ps2dev/fluidsynth &
 # wait for fetch jobs to finish
 wait
 
@@ -196,5 +197,6 @@ CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig 
 
 CFLAGS="-Darc4random_buf=random -DHAVE_GETRANDOM" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
 
+build_ee LIBFLUID_CPPFLAGS="-DFLUIDSYNTH_NOT_A_DLL -DFLUID_MUTEX_INIT" fluidsynth -Denable=aufile=OFF -DBUILD_SHARED_LIBS=OFF -Denable-dbus=OFF -Denable-ipv6=OFF -Denable-jack=OFF -Denable-libinstpatch=OFF -Denable-libsndfile=OFF -Denable-midishare=OFF -Denable-network=OFF -Denable-oss=OFF -Denable-oss=OFF -Denable-dsound=OFF -Denable-wasapi=OFF -Denable-waveout=OFF -Denable-winmidi=OFF -Denable-pulseaudio=OFF -Denable-pipewire=OFF -Denable-readline=OFF -Denable-threads=OFF -Denable-openmp=OFF
 # Finish
 cd ..
