@@ -49,9 +49,6 @@ libjpeg_ps2_addons: external_libs
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
 
-sample-lua:
-	$(MAKE) -C build/lua sample platform=PS2
-
 # depends on SjPCM sound library
 madplay: external_libs
 	$(MAKE) -C $@ all

@@ -9,6 +9,7 @@ PROC_NR=$(getconf _NPROCESSORS_ONLN)
 CFLAGS=""
 XTRA_OPTS=""
 MAKECMD=make
+CONFIGCMD=./configure
 OSVER=$(uname)
 if [ ${OSVER:0:5} == MINGW ]; then
   XTRA_OPTS=(. -G"MinGW Makefiles")
@@ -92,41 +93,15 @@ function make_irx {
     cd "${START_DIR}"
 }
 
-CONFIGURE_OPTIONS=
+CONFIGURE_OPTIONS=(--host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --disable-examples)
 
-function configure_ee {
+function configure_ps2 {
     START_DIR="${PWD}"
     DIR="$1"
     shift
     cd "$DIR"
     echo "Configuring '$DIR' for EE..."
-    CFLAGS="$CFLAGS" ./configure --host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --disable-examples  "${CONFIGURE_OPTIONS}" "$@" "${XTRA_OPTS}" ..
-    "${MAKECMD}" -j "$PROC_NR" all install
-    cd "${START_DIR}"
-}
-
-function configure_iop {
-    START_DIR="${PWD}"
-    DIR="$1"
-    shift
-    cd "$DIR"
-    mkdir -p build_iop
-    cd build_iop
-    echo "Building '$DIR' for IOP..."
-    CFLAGS="$CFLAGS" cmake "${CONFIGURE_OPTIONS}" "$@" "${XTRA_OPTS[@]}" ..
-    "${MAKECMD}" -j "$PROC_NR" all install
-    cd "${START_DIR}"
-}
-
-function configure_irx {
-    START_DIR="${PWD}"
-    DIR="$1"
-    shift
-    cd "$DIR"
-    mkdir -p build_irx
-    cd build_irx
-    echo "Building '$DIR' for IRX..."
-    CFLAGS="$CFLAGS" cmake "${CONFIGURE_OPTIONS}" "$@" "${XTRA_OPTS[@]}" ..
+    "${CONFIGCMD}" "${CONFIGURE_OPTIONS}"
     "${MAKECMD}" -j "$PROC_NR" all install
     cd "${START_DIR}"
 }
@@ -139,44 +114,44 @@ function configure_irx {
 ## Clone repos
 ##
 $FETCH v1.3.1 https://github.com/madler/zlib &
-$FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
+$FETCH v5.4.4 https://github.com/xz-mirror/xz.git &
 $FETCH v1.9.4 https://github.com/lz4/lz4.git &
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git &
-$FETCH v1.6.43 https://github.com/glennrp/libpng &
-$FETCH VER-2-10-4 https://github.com/freetype/freetype &
-$FETCH v1.14.0 https://github.com/google/googletest &
+$FETCH v1.6.44 https://github.com/glennrp/libpng &
+$FETCH VER-2-13-3 https://github.com/freetype/freetype &
+$FETCH v1.15.2 https://github.com/google/googletest &
 $FETCH 0.2.5 https://github.com/yaml/libyaml &
 $FETCH 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo &
 $FETCH v1.3.5 https://github.com/xiph/ogg.git &
 $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
 $FETCH v5.7.0-stable https://github.com/wolfSSL/wolfssl.git &
-$FETCH curl-8_7_1 https://github.com/curl/curl.git &
-$FETCH 1.9.5 https://github.com/open-source-parsers/jsoncpp.git &
+$FETCH curl-8_10_1 https://github.com/curl/curl.git &
+$FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
 $FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git &
-$FETCH v1.4 https://github.com/xiph/opus.git &
+$FETCH v1.5.2 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 # we need to clone whole repo because it uses `git describe --tags` for version info
-$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
+$FETCH 9d718345ce03b2fad5d7d28e0bcd1cc69ab2b166 https://github.com/xiph/opusfile.git true &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 $FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
-$FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod.git &
+$FETCH 0e5b7443388095d919714cc5d9449d6afccd878e https://github.com/sezero/mikmod.git &
 # We need to clone a fork, this is a PR opened for ading cmake support
 # https://github.com/xiph/theora/pull/14
 $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 
 # gsKit requires libtiff
-$FETCH v4.6.0 https://gitlab.com/libtiff/libtiff.git &
+$FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
 
 # SDL requires to have gsKit
 $FETCH v1.3.8 https://github.com/ps2dev/gsKit &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-$FETCH release-2.30.7 https://github.com/libsdl-org/SDL.git &
+$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git &
 $FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git &
 $FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git &
 $FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
@@ -195,7 +170,7 @@ $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
 
 $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
 
-$FETCH R_2_6_2 https://github.com/libexpat/libexpat.git &
+$FETCH R_2_6_3 https://github.com/libexpat/libexpat.git &
 
 $FETCH 0.16.4 https://codeberg.org/tenacityteam/libmad.git &
 
@@ -305,8 +280,8 @@ build_ee libid3tag -DBUILD_SHARED_LIBS=OFF
 ##
 
 autoreconf -vfi zlib/contrib/minizip
-CFLAGS="-DIOAPI_NO_64 -I${PS2SDK}/ports/include" configure_ee zlib/contrib/minizip
-cd libconufse && ./autogen.sh && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" configure_ee
+CFLAGS="-DIOAPI_NO_64 -I${PS2SDK}/ports/include" configure_ps2 zlib/contrib/minizip
+cd libconufse && ./autogen.sh && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" configure_ps2
 cd ..
 
 ##
