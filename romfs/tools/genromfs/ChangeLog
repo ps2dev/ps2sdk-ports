@@ -1,3 +1,8 @@
+2009-02-15 11:43  Janos Farkas  <chexum@shadow.banki.hu>
+
+	* Many changes, the main feature is to support
+	unixy file metadata on request.  Test release 0.5.7.
+
 2007-06-26 19:04  Janos Farkas  <chexum+dev () gmail.com>
 	* NEWS, genromfs.8, genromfs.lsm: releasing 0.5.2.
 

@@ -4,7 +4,7 @@
 all: genromfs
 
 PACKAGE = genromfs
-VERSION = 0.5.2
+VERSION = 0.5.7-unreleased
 CC = gcc
 CFLAGS = -O2 -Wall -DVERSION=\"$(VERSION)\"#-g#
 LDFLAGS = -s#-g
@@ -14,7 +14,8 @@ DISTDIR = $(PACKAGE)-$(VERSION)
 FILES = COPYING NEWS ChangeLog Makefile \
  genromfs.8 genromfs.c genromfs.lsm \
  readme-kernel-patch genrommkdev romfs.txt \
- checkdist
+ checkdist \
+ .gitignore selftest
 
 prefix = /usr
 bindir = $(prefix)/bin
@@ -37,10 +38,13 @@ dist:
 	rm -rf $(DISTDIR).tar.gz $(DISTDIR)
 	mkdir $(DISTDIR);
 	for i in $(FILES); do \
-		cp $$i $(DISTDIR)/; \
+		cp -r $$i $(DISTDIR)/; \
 	done; \
 	tar --owner=root --group=root -zcf $(DISTDIR).tar.gz $(DISTDIR);
 	rm -rf $(DISTDIR)
+
+check:	all selftest
+	$(MAKE) -C selftest dotest
 
 install: all install-bin install-man
 

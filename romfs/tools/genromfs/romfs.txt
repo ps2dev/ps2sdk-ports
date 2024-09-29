@@ -28,10 +28,10 @@ However, the main purpose of romfs is to have a very small kernel,
 which has only this filesystem linked in, and then can load any module
 later, with the current module utilities.  It can also be used to run
 some program to decide if you need SCSI devices, and even IDE or
-floppy drives can be loaded later if you use the "initrd"--initial
-RAM disk--feature of the kernel.  This would not be really news
-flash, but with romfs, you can even spare off your ext2 or minix or
-maybe even affs filesystem until you really know that you need it.
+floppy drives can be loaded later if you use the "initrd"--initial RAM
+disk--feature of the kernel.  This would not be really news flash, but
+with romfs, you can even spare off your ext2 or minix or maybe even
+affs filesystem until you really know that you need it.
 
 For example, a distribution boot disk can contain only the cd disk
 drivers (and possibly the SCSI drivers), and the ISO 9660 filesystem
@@ -44,13 +44,13 @@ from a nearby server, so you don't want to carry two disks for this
 purpose, just because it won't fit into ext2.
 
 romfs operates on block devices as you can expect, and the underlying
-structure is very simple.  Every accessible structure begins on 16
-byte boundaries for fast access.  The minimum space a file will take
-is 32 bytes (this is an empty file, with a less than 16 character
-name).  The maximum overhead for any non-empty file is the header, and
-the 16 byte padding for the name and the contents, also 16+14+15 = 45
-bytes.  This is quite rare however, since most file names are longer
-than 3 bytes, and shorter than 15 bytes.
+structure is very simple.  Every accessible structure begins on a 16
+byte boundary for fast access.  The minimum space a file will take is
+32 bytes (this is an empty file, with a name shorter than 16
+characters).  The maximum overhead for any non-empty file is the
+header, and the 16 byte padding for the name and the contents, thus
+16+14+15 = 45 bytes.  This is quite rare however, since most file
+names are longer than 3 bytes, and shorter than 15 bytes.
 
 The layout of the filesystem is the following:
 
@@ -127,13 +127,14 @@ the following:
 
 Note that hard links are specifically marked in this filesystem, but
 they will behave as you can expect (i.e. share the inode number).
-Note also that it is your responsibility to not create hard link
-loops, and creating all the . and .. links for directories.  This is
-normally done correctly by the genromfs program.  Please refrain from
-using the executable bits for special purposes on the socket and fifo
-special files, they may have other uses in the future.  Additionally,
-please remember that only regular files, and symlinks are supposed to
-have a nonzero size field; they contain the number of bytes available
+Note also that as the filesystem is readonly, the program creating it
+must not create hard link loops, and must create all the . and ..
+links for directories the way UNIX programs expect.  This is normally
+done correctly by the genromfs program.  Please refrain from using the
+executable bits for special purposes on the socket and fifo special
+files, they may have other uses in the future.  Additionally, please
+remember that only regular files, and symlinks are supposed to have a
+nonzero size field; they contain the number of bytes available
 directly after the (padded) file name.
 
 Another thing to note is that romfs works on file headers and data
@@ -143,18 +144,10 @@ To overcome this limitation, the whole size of the file system must be
 padded to an 1024 byte boundary.
 
 If you have any problems or suggestions concerning this file system,
-please contact me.  However, think twice before wanting me to add
-features and code, because the primary and most important advantage of
-this file system is the small code.  On the other hand, don't be
-alarmed, I'm not getting that much romfs related mail.  Now I can
-understand why Avery wrote poems in the ARCnet docs to get some more
-feedback. :)
-
-romfs has also a mailing list, and to date, it hasn't received any
-traffic, so you are welcome to join it to discuss your ideas. :)
-
-It's run by ezmlm, so you can subscribe to it by sending a message
-to romfs-subscribe@shadow.banki.hu, the content is irrelevant.
+please contact me.  I'd appreciate if you could bear in mind the
+primary goals of the filesystem, that is being as small as possible
+while having only the most essential features to have a running Linux
+system on it.
 
 There is a web page about romfs at:
 
@@ -174,17 +167,9 @@ similarly small writable filesystem for RAM disks.
 
 - Since the files are only required to have alignment on a 16 byte
 boundary, it is currently possibly suboptimal to read or execute files
-from the filesystem.  It might be resolved by reordering file data to
-have most of it (i.e. except the start and the end) laying at "natural"
-boundaries, thus it would be possible to directly map a big portion of
-the file contents to the mm subsystem.
+from the filesystem.  It is possible to reorder the file data to have
+it at "natural" sector alignment, but to efficiently use it, there
+might be need for other supporting code.
 
 - Compression might be an useful feature, but memory is quite a
 limiting factor in my eyes.
-
-- Where it is used?
-
-- Does it work on other architectures than intel and motorola?
-
-Have fun,
-Janos Farkas <chexum@shadow.banki.hu>

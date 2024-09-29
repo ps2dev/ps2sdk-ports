@@ -1,7 +1,7 @@
 Begin3
 Title:		genromfs
-Version:	0.5.2
-Entered-date:	26 Jan 2007
+Version:	0.5.7
+Entered-date:	15 Feb 2009
 Description:	This is the mkfs equivalent for romfs filesystem.  You
 		need it to build such a filesystem.  romfs is a small,
 		read-only filesystem intended for installation/rescue
@@ -11,7 +11,7 @@ Keywords:	small read-only filesystem rom eprom embedded romable
 Author: 	chexum+dev () gmail.com (Janos Farkas)
 Maintained-by:	chexum+dev () gmail.com (Janos Farkas)
 Primary-site:	sunsite.unc.edu /pub/Linux/system/recovery/
-		24kB genromfs-0.5.2.tar.gz
+		28kB genromfs-0.5.7.tar.gz
 Platforms:	Linux 2.0 or later, gcc
 Copying-policy:	GPL
 End

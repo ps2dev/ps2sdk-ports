@@ -1,3 +1,22 @@
+Changes since 0.5.7:
+
+* Make extension options really able to copy the current data.
+* Detect unparseable numbers in the extended options.
+* Tags were stored in an incorrect order, making any value of uids, gids and
+  timestamps larger than 4095 ending up with a wrong value.
+
+Changes in the not released 0.5.7:
+
+* A test suite is now included (but may not work correctly in all
+  circumstances).
+* Implemented including files by pattern, and combining this with excludes
+* It is now possible to override alignment with a smaller value:
+  genromfs -A2048,*.boot -A1024,m68k.boot -A512,m68k.boot
+* Unix permissions, including mode bits, user and group id, and even
+  mtime may be saved for individual files.  This needs a format change,
+  which is backward compatible, but older kernels will not recognise
+  any of these features.
+
 Changes in release 0.5.2:
 
 * faked device names may contain the special characters "-" "_" and "+"
@@ -29,4 +48,15 @@ Changes in release 0.5:
 
 Changes in release 0.3:
 
-* in progress
+* Support file data to be aligned on larger than 16 byte boundary
+  by Jakub Jelinek.
+
+Changes in release 0.2:
+
+* Added manual page by Christoph Lameter.
+* Added help option.
+* Added install target.
+
+Changes in release 0.1:
+
+* Initial release.
