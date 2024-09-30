@@ -69,7 +69,7 @@ function make_ee {
     shift
     cd "$DIR"
     echo "Building '$DIR' for EE..."
-    "${MAKECMD}" -j "$PROC_NR" "${MAKE_OPTIONS}" "$@" "${XTRA_OPTS}" all install
+    "${MAKECMD}" -j "$PROC_NR" all install
     cd "${START_DIR}"
 }
 
@@ -93,15 +93,16 @@ function make_irx {
     cd "${START_DIR}"
 }
 
-CONFIGURE_OPTIONS=(--host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --disable-examples)
+CONFIGURE_OPTIONS=(--host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --enable-static --disable-examples)
+XTRAS_CONF_OPTIONS=""
 
-function configure_ps2 {
+function configure_ee {
     START_DIR="${PWD}"
     DIR="$1"
     shift
     cd "$DIR"
     echo "Configuring '$DIR' for EE..."
-    "${CONFIGCMD}" "${CONFIGURE_OPTIONS}"
+    "${CONFIGCMD}" "${CONFIGURE_OPTIONS[@]}" "$@" "${XTRAS_CONF_OPTIONS[@]}"
     "${MAKECMD}" -j "$PROC_NR" all install
     cd "${START_DIR}"
 }
@@ -132,7 +133,7 @@ $FETCH v1.5.2 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 # we need to clone whole repo because it uses `git describe --tags` for version info
-$FETCH 9d718345ce03b2fad5d7d28e0bcd1cc69ab2b166 https://github.com/xiph/opusfile.git true &
+$FETCH 81abcb7d7a4f48169556f9dc74c71a78ecad0c70 https://github.com/xiph/opusfile.git true &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 $FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
@@ -151,10 +152,13 @@ $FETCH v1.3.8 https://github.com/ps2dev/gsKit &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git &
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git &
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git &
-$FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
+$FETCH 1edaad17218d67b567c149badce9ef0fc67f65fa https://github.com/libsdl-org/SDL.git &
+# SDL_mixer Requires to have fluidsynth and libtimidity
+$FETCH ps2-ee-sans-glib https://github.com/Wolf3s/fluidsynth.git &
+$FETCH libtimidity-0.2.7 https://github.com/sezero/libtimidity.git
+$FETCH release-2.8.0 https://github.com/libsdl-org/SDL_mixer.git &
+$FETCH release-2.8.2 https://github.com/libsdl-org/SDL_image.git &
+$FETCH release-2.22.0 https://github.com/libsdl-org/SDL_ttf.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
@@ -250,7 +254,10 @@ build_ee gsKit
 # ps2_drivers is mandatory aswell for SDL
 make_ee ps2_drivers
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
-build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
+build_ee fluidsynth -Denable=aufile=OFF -Denable-dbus=OFF -Denable-ladspa=OFF -Denable-ipv6=OFF -Denable-jack=OFF -Denable-libinstpatch=OFF -Denable-libsndfile=OFF -Denable-midishare=OFF -Denable-network=ON -Denable-oss=OFF -Denable-dsound=OFF -Denable-wasapi=OFF -Denable-waveout=OFF -Denable-winmidi=OFF -Denable-sdl2=ON -Denable-pulseaudio=OFF -Denable-pipewire=OFF -Denable-readline=OFF -Denable-threads=ON -Denable-openmp=OFF
+autoreconf -vfi ./libtimidity
+configure_ee ./libtimidity --disable-aotest --disable-ao
+build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_MIDI=ON -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_OPUS=ON -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_MIDI_TIMIDITY=ON -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF -DSDL2MIXER_VORBIS=VORBISFILE
 build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
@@ -272,23 +279,21 @@ CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig 
 
 CFLAGS="-Darc4random_buf=random -DHAVE_GETRANDOM" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
 
-build_ee libmad -DBUILD_SHARED_LIBS=OFF 
-build_ee libid3tag -DBUILD_SHARED_LIBS=OFF 
+build_ee libmad
+build_ee libid3tag
 
 ##
 ## Build configure projects
 ##
 
-autoreconf -vfi zlib/contrib/minizip
-CFLAGS="-DIOAPI_NO_64 -I${PS2SDK}/ports/include" configure_ps2 zlib/contrib/minizip
-cd libconufse && ./autogen.sh && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" configure_ps2
-cd ..
+autoreconf -vfi ./zlib/contrib/minizip
+CFLAGS="-DIOAPI_NO_64 -I${PS2SDK}/ports/include" configure_ee ./zlib/contrib/minizip
+#Fix this other day: cd libconfuse && ./autogen.sh . && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" configure_ee ./libconfuse
 
 ##
 ## Build makefile projects
 ##
-make_ee aalib
-cd build
+make_ee ../aalib
 make_ee libtap platform=PS2
 make_ee lua platform=PS2
 make_ee ps2stuff
