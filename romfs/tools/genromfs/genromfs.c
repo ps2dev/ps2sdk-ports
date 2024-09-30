@@ -1,8 +1,8 @@
 
 /* Generate a ROMFS file system
  *
- * Copyright (C) 1997,1998	Janos Farkas <chexum@shadow.banki.hu>
- * Copyright (C) 1998		Jakub Jelinek <jj@ultra.linux.cz>
+ * Copyright (C) 1997,1998  Janos Farkas <chexum@shadow.banki.hu>
+ * Copyright (C) 1998       Jakub Jelinek <jj@ultra.linux.cz>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -10,10 +10,16 @@
  * 2 of the License, or (at your option) any later version.
  *
  * Changes:
- *	2 Jan 1997				Initial release
- *      6 Aug 1997				Second release
- *     11 Sep 1998				Alignment support
- *     11 Jan 2001		special files of name @name,[cpub],major,minor
+ *  2 Jan 1997              Initial release
+ *      6 Aug 1997              Second release
+ *     11 Sep 1998              Alignment support
+ *     11 Jan 2001      special files of name @name,[cpub],major,minor
+ *     21 Feb 2001              Cygwin build fixes
+ *                      (Florian Schulze, Brian Peek)
+ *     13 Aug 2020              Mingw build fixes
+ *                      (Hayden Kowalchuk)
+ *     28 Sep 2024              borrowing code from KallistiOS
+ *                      (7dog123)
  */
 
 /*
@@ -46,7 +52,7 @@
  * # genromfs -d rescue -f testimg.rom -V "Install disk"
  *
  * Other options:
- * -a N	 force all regular file data to be aligned on N bytes boundary
+ * -a N  force all regular file data to be aligned on N bytes boundary
  * -A N,/name force named file(s) (shell globbing applied against the filenames)
  *       to be aligned on N bytes boundary
  * In both cases, N must be a power of two.
@@ -57,23 +63,43 @@
  * Sorry about that.  Feel free to contact me if you have problems.
  */
 
+#ifdef __CYGWIN__
+#define _WIN32
+#endif
+
 #include <stdio.h>  /* Userland pieces of the ANSI C standard I/O package  */
 #include <stdlib.h> /* Userland prototypes of the ANSI C std lib functions */
+#include <stdint.h>
 #include <string.h> /* Userland prototypes of the string handling funcs    */
 #include <unistd.h> /* Userland prototypes of the Unix std system calls    */
 #include <fcntl.h>  /* Flag value for file handling functions              */
 #include <time.h>
-#include <fnmatch.h>
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#   include <getopt.h>
+#   include <winsock2.h>
+#   include <shlwapi.h>
+#   define lstat stat
+#else
+#   include <netinet/in.h> /* Consts & structs defined by the internet system */
+#   include <fnmatch.h>
+#endif /* _WIN32 */
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+#include <inttypes.h>
 
-#include <netinet/in.h>	/* Consts & structs defined by the internet system */
+#if defined(_WIN32) && !defined(__CYGWIN__)
+#include <windows.h>
+typedef unsigned int uid_t;
+typedef unsigned int gid_t;
 
-/* good old times without autoconf... */
-#if defined(__linux__) || defined(__sun__) || defined(__CYGWIN__)
-#include <sys/sysmacros.h>
+#define S_ISLNK(m) (0)  // Symbolic links not supported in the same way
+#define readlink(path, buf, bufsize) (-1)  // Placeholder for readlink
+#endif
+
+#if defined(linux) || defined(sun)
+#    include <sys/sysmacros.h>
 #endif
 
 #ifdef O_BINARY
@@ -85,7 +111,8 @@
 /* physical on-disk layout */
 
 /* 16 byte romfs header */
-struct romfh {
+struct romfh
+{
 	int32_t nextfh;
 	int32_t spec;
 	int32_t size;
@@ -115,7 +142,7 @@ struct romfh {
  * xyzN: 16 bits of ID, N being the (binary) number of 16 byte "rows"
  * CHKS: checksum spanning the whole
  */
-
+ 
 #define ROMET_TYPE	0xf000	/* type of the tag */
 #define ROMET_VAL	0x0fff	/* value of the tag */
 
@@ -138,7 +165,8 @@ struct romfh {
 
 struct filenode;
 
-struct filehdr {
+struct filehdr
+{
 	/* leave h, t, tp at front, this is a linked list header */
 	struct filenode *head;
 	struct filenode *tail;
@@ -147,7 +175,8 @@ struct filehdr {
 	struct filenode *owner;
 };
 
-struct filenode {
+struct filenode
+{
 	/* leave n, p at front, this is a linked list item */
 	struct filenode *next;
 	struct filenode *prev;
@@ -186,7 +215,8 @@ struct filenode {
 #define EXTTYPE_EXTUID 4
 #define EXTTYPE_EXTGID 5
 #define EXTTYPE_EXTTIME 6
-struct extmatches {
+struct extmatches
+{
 	struct extmatches *next;
 	unsigned int exttype;
 	unsigned int num;
@@ -210,8 +240,10 @@ void append(struct filehdr *fh, struct filenode *n)
 {
 	struct filenode *tail = (struct filenode *)&fh->tail;
 
-	n->next = tail; n->prev = tail->prev;
-	tail->prev = n; n->prev->next =n;
+	n->next = tail;
+	n->prev = tail->prev;
+	tail->prev = n;
+	n->prev->next = n;
 	n->parent = fh->owner;
 }
 
@@ -219,17 +251,20 @@ void shownode(int level, struct filenode *node, FILE *f)
 {
 	struct filenode *p;
 	fprintf(f, "%-4d %-20s [0x%-8x, 0x%-8x] %07o, sz %5u, at 0x%-6x",
-		level, node->name,
-		(int)node->ondev, (int)node->onino, node->modes, node->realsize,
-		node->offset);
+	        level, node->name,
+	        (int)node->ondev, (int)node->onino, node->modes, node->realsize,
+	        node->offset);
 
-	if (node->orig_link)
+	if(node->orig_link)
 		fprintf(f, " [link to 0x%-6x]", node->orig_link->offset);
+
 	fprintf(f, "\n");
 
 	p = node->dirlist.head;
-	while (p->next) {
-		shownode(level+1, p, f);
+
+	while(p->next)
+	{
+		shownode(level + 1, p, f);
 		p = p->next;
 	}
 }
@@ -252,42 +287,58 @@ int nodematch(char *pattern, struct filenode *node)
 	char *start = node->name;
 
 	/* empty means all */
-	if (pattern[0] == 0) return 0;
+	if(pattern[0] == 0) return 0;
 
 	/* XXX: ugly realbase is global */
-	if (pattern[0] == '/') start = node->realname + realbase;
-	return fnmatch(pattern,start,FNM_PATHNAME|FNM_PERIOD);
+	if(pattern[0] == '/') start = node->realname + realbase;
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+	return !PathMatchSpec(start, pattern);
+#else
+	return fnmatch(pattern, start, FNM_PATHNAME | FNM_PERIOD);
+#endif
 }
 
-void addpattern(int type,int num,char *s)
+void addpattern(int type, int num, char *s)
 {
 	struct extmatches *pa, *pa2;
 	pa = (struct extmatches *)malloc(sizeof(*pa) + strlen(s) + 1);
 	pa->exttype = type;
 	pa->num = num;
 	pa->next = NULL;
-	strcpy (pa->pattern,s);
+	strcpy(pa->pattern, s);
 
-	if (!patterns) { patterns = pa; }
-	else {
-		for (pa2 = patterns; pa2->next; pa2 = pa2->next) {
+	if(!patterns)
+	{
+		patterns = pa;
+	}
+	else
+	{
+		for(pa2 = patterns; pa2->next; pa2 = pa2->next)
+		{
 			;
 		}
+
 		pa2->next = pa;
 	}
 }
+
 int romfs_checksum(void *data, int size)
 {
-        int32_t sum, word, *ptr;
+	int32_t sum, word, *ptr;
 
-        sum = 0; ptr = data;
-        size>>=2;
-        while (size>0) {
-                word = *ptr++;
-                sum += ntohl(word);
-                size--;
-        }
-        return sum;
+	sum = 0;
+	ptr = data;
+	size >>= 2;
+
+	while(size > 0)
+	{
+		word = *ptr++;
+		sum += ntohl(word);
+		size--;
+	}
+
+	return sum;
 }
 
 void fixsum(struct romfh *ri, int size)
@@ -301,28 +352,33 @@ void dumpdata(void *addr, int len, FILE *f)
 	int tocopy;
 	struct romfh *ri;
 
-	if (!len)
+	if(!len)
 		return;
-	if (atoffs >= 512) {
+
+	if(atoffs >= 512)
+	{
 		fwrite(addr, len, 1, f);
-		atoffs+=len;
+		atoffs += len;
 		return;
 	}
 
-	tocopy = len < 512-atoffs ? len : 512-atoffs;
-	memcpy(fixbuf+atoffs, addr, tocopy);
-	atoffs+=tocopy;
-	addr=(char*)addr+tocopy;
-	len-=tocopy;
+	tocopy = len < 512 - atoffs ? len : 512 - atoffs;
+	memcpy(fixbuf + atoffs, addr, tocopy);
+	atoffs += tocopy;
+	addr = (char*)addr + tocopy;
+	len -= tocopy;
 
-	if (atoffs==512) {
+	if(atoffs == 512)
+	{
 		ri = (struct romfh *)&fixbuf;
-		fixsum(ri, atoffs<ntohl(ri->size)?atoffs:ntohl(ri->size));
+		fixsum(ri, atoffs < ntohl(ri->size) ? atoffs : ntohl(ri->size));
 		fwrite(fixbuf, atoffs, 1, f);
 	}
-	if (len) {
+
+	if(len)
+	{
 		fwrite(addr, len, 1, f);
-		atoffs+=len;
+		atoffs += len;
 	}
 }
 
@@ -335,42 +391,50 @@ void dumpzero(int len, FILE *f)
 void dumpdataa(void *addr, int len, FILE *f)
 {
 	dumpdata(addr, len, f);
-	if ((len & 15) != 0)
-		dumpzero(16-(len&15), f);
+
+	if((len & 15) != 0)
+		dumpzero(16 - (len & 15), f);
 }
 
 void dumpstring(char *str, FILE *f)
 {
-	dumpdataa(str, strlen(str)+1, f);
+	dumpdataa(str, strlen(str) + 1, f);
 }
 
 void dumpri(struct romfh *ri, struct filenode *n, FILE *f)
 {
 	int len;
 
-	len = strlen(n->name)+1;
+	len = strlen(n->name) + 1;
 	memcpy(bigbuf, ri, sizeof(*ri));
-	memcpy(bigbuf+16, n->name, len);
-	if (len&15) {
-		memset(bigbuf+16+len, 0, 16-(len&15));
-		len += 16-(len&15);
+	memcpy(bigbuf + 16, n->name, len);
+
+	if(len & 15)
+	{
+		memset(bigbuf + 16 + len, 0, 16 - (len & 15));
+		len += 16 - (len & 15);
 	}
+
 	/* special marker for present extensions */
-	if (n->isrootdot == 1 && extlevel) {
-		memcpy(bigbuf+16+8, ROMEXT_MAGIC3, 3);
+	if(n->isrootdot == 1 && extlevel)
+	{
+		memcpy(bigbuf + 16 + 8, ROMEXT_MAGIC3, 3);
 		fixsum((struct romfh *)(bigbuf + 16), 16);
 	}
-	len+=16;
-	ri=(struct romfh *)bigbuf;
-	if (n->offset)
+
+	len += 16;
+	ri = (struct romfh *)bigbuf;
+
+	if(n->offset)
 		fixsum(ri, len);
+
 	dumpdata(bigbuf, len, f);
 #if 0
 	fprintf(stderr, "RI: [at %06x] %08lx, %08lx, %08lx, %08lx [%s]\n",
-		n->offset,
-		ntohl(ri->nextfh), ntohl(ri->spec),
-		ntohl(ri->size), ntohl(ri->checksum),
-		n->name);
+	        n->offset,
+	        ntohl(ri->nextfh), ntohl(ri->spec),
+	        ntohl(ri->size), ntohl(ri->checksum),
+	        n->name);
 #endif
 }
 
@@ -379,10 +443,12 @@ void dumpnode(struct filenode *node, FILE *f)
 	struct romfh ri;
 	struct filenode *p;
 
-	if (node->prepad)
+	if(node->prepad)
 		dumpzero(node->prepad, f);
-	if (node->extlen) {
-		dumpdataa(node->extdata+sizeof(node->extdata)-node->extlen, node->extlen, f);
+
+	if(node->extlen)
+	{
+		dumpdataa(node->extdata + sizeof(node->extdata) - node->extlen, node->extlen, f);
 	}
 
 	ri.nextfh = 0;
@@ -390,99 +456,149 @@ void dumpnode(struct filenode *node, FILE *f)
 	ri.size = htonl(node->realsize);
 	ri.checksum = htonl(0x55555555);
 
-	if (node->next && node->next->next)
+	if(node->next && node->next->next)
 		ri.nextfh = htonl(node->next->offset);
-	if ((node->modes & 0111) &&
-	    (S_ISDIR(node->modes) || S_ISREG(node->modes)))
+
+	if((node->modes & 0111) &&
+	        (S_ISDIR(node->modes) || S_ISREG(node->modes)))
 		ri.nextfh |= htonl(ROMFH_EXEC);
 
-	if (node->orig_link) {
+	if(node->orig_link)
+	{
 		ri.nextfh |= htonl(ROMFH_HRD);
 		/* Don't allow hardlinks to convey attributes */
 		ri.nextfh &= ~htonl(ROMFH_EXEC);
 		ri.spec = htonl(node->orig_link->offset);
 		dumpri(&ri, node, f);
-	} else if (S_ISDIR(node->modes)) {
+	}
+	else if(S_ISDIR(node->modes))
+	{
 		ri.nextfh |= htonl(ROMFH_DIR);
-		if (listisempty(&node->dirlist)) {
+
+		if(listisempty(&node->dirlist))
+		{
 			ri.spec = htonl(node->offset);
-		} else {
+		}
+		else
+		{
 			ri.spec = htonl(node->dirlist.head->offset);
 		}
+
 		dumpri(&ri, node, f);
-	} else if (S_ISLNK(node->modes)) {
+	}
+
+#if !defined (_WIN32) || defined(__CYGWIN__)
+	else if(S_ISLNK(node->modes))
+	{
 		ri.nextfh |= htonl(ROMFH_LNK);
 		dumpri(&ri, node, f);
 		memset(bigbuf, 0, sizeof(bigbuf));
 		readlink(node->realname, bigbuf, node->realsize);
 		dumpdataa(bigbuf, node->realsize, f);
-	} else if (S_ISREG(node->modes)) {
+	}
+#endif
+	else if(S_ISREG(node->modes))
+	{
 		int offset, len, fd, max, avail;
 		ri.nextfh |= htonl(ROMFH_REG);
 		dumpri(&ri, node, f);
 		offset = 0;
 		max = node->realsize;
 		fd = open(node->realname, O_RDBIN);
-		if (fd) {
+
+		if(fd)
+		{
 			/* we cannot handle 64 bit file sizes */
-			unsigned int realsize=0;
+			unsigned int realsize = 0;
 			struct stat s;
-			while(offset < max) {
-				avail = max-offset < sizeof(bigbuf) ? max-offset : sizeof(bigbuf);
+
+			while(offset < max)
+			{
+				avail = max - offset < sizeof(bigbuf) ? max - offset : sizeof(bigbuf);
 				len = read(fd, bigbuf, avail);
-				if (len <= 0)
+
+				if(len <= 0)
 					break;
+
 				dumpdata(bigbuf, len, f);
-				offset+=len;
+				offset += len;
 			}
-			if (offset != max) {
-				fprintf(stderr,"file %s changed size while reading?\n",node->realname);
+
+			if(offset != max)
+			{
+				fprintf(stderr, "file %s changed size while reading?\n", node->realname);
 				exit(1);
 			}
-			if (!fstat(fd,&s)) {
+
+			if(!fstat(fd, &s))
+			{
 				realsize = s.st_size;
 			}
-			if (realsize != max) {
-				fprintf(stderr,"file %s changed size while reading?\n",node->realname);
+
+			if(realsize != max)
+			{
+				fprintf(stderr, "file %s changed size while reading?\n", node->realname);
 				exit(1);
 			}
-			realsize = lseek(fd,0,SEEK_CUR);
-			if (realsize != max) {
-				fprintf(stderr,"file %s changed size while reading?\n",node->realname);
+
+			realsize = lseek(fd, 0, SEEK_CUR);
+
+			if(realsize != max)
+			{
+				fprintf(stderr, "file %s changed size while reading?\n", node->realname);
 				exit(1);
 			}
+
 			close(fd);
-		} else {
-			fprintf(stderr,"file %s cannot be opened?\n",node->realname);
+		}
+		else
+		{
+			fprintf(stderr, "file %s cannot be opened?\n", node->realname);
 			exit(1);
 		}
-		max = (max+15)&~15;
-		while (offset < max) {
-			avail = max-offset < sizeof(bigbuf) ? max-offset : sizeof(bigbuf);
+
+		max = (max + 15) & ~15;
+
+		while(offset < max)
+		{
+			avail = max - offset < sizeof(bigbuf) ? max - offset : sizeof(bigbuf);
 			memset(bigbuf, 0, avail);
 			dumpdata(bigbuf, avail, f);
-			offset+=avail;
+			offset += avail;
 		}
-	} else if (S_ISCHR(node->modes)) {
+	}
+
+#if !defined (_WIN32) || defined (__CYGWIN__)
+	else if(S_ISCHR(node->modes))
+	{
 		ri.nextfh |= htonl(ROMFH_CHR);
-		ri.spec = htonl(major(node->devnode)<<16|minor(node->devnode));
+		ri.spec = htonl(major(node->devnode) << 16 | minor(node->devnode));
 		dumpri(&ri, node, f);
-	} else if (S_ISBLK(node->modes)) {
+	}
+	else if(S_ISBLK(node->modes))
+	{
 		ri.nextfh |= htonl(ROMFH_BLK);
-		ri.spec = htonl(major(node->devnode)<<16|minor(node->devnode));
+		ri.spec = htonl(major(node->devnode) << 16 | minor(node->devnode));
 		dumpri(&ri, node, f);
-	} else if (S_ISFIFO(node->modes)) {
+	}
+	else if(S_ISFIFO(node->modes))
+	{
 		ri.nextfh |= htonl(ROMFH_FIF);
 		dumpri(&ri, node, f);
-	} else if (S_ISSOCK(node->modes)) {
+	}
+	else if(S_ISSOCK(node->modes))
+	{
 		ri.nextfh |= htonl(ROMFH_SCK);
 		dumpri(&ri, node, f);
 	}
-	if (node->postpad)
+#endif
+	if(node->postpad)
 		dumpzero(node->postpad, f);
 
 	p = node->dirlist.head;
-	while (p->next) {
+
+	while(p->next)
+	{
 		dumpnode(p, f);
 		p = p->next;
 	}
@@ -499,13 +615,16 @@ void dumpall(struct filenode *node, int lastoff, FILE *f)
 	ri.checksum = htonl(0x55555555);
 	dumpri(&ri, node, f);
 	p = node->dirlist.head;
-	while (p->next) {
+
+	while(p->next)
+	{
 		dumpnode(p, f);
 		p = p->next;
 	}
+
 	/* Align the whole bunch to ROMBSIZE boundary */
-	if (lastoff&1023)
-		dumpzero(1024-(lastoff&1023), f);
+	if(lastoff & 1023)
+		dumpzero(1024 - (lastoff & 1023), f);
 }
 
 /* Node manipulating functions */
@@ -524,8 +643,10 @@ void setnode(struct filenode *n, struct stat *sb)
 	n->ngid = sb->st_gid;
 	n->ntime = sb->st_mtime;
 	n->realsize = 0;
+
 	/* only regular files and symlinks contain "data" in romfs */
-	if (S_ISREG(n->modes) || S_ISLNK(n->modes)) {
+	if(S_ISREG(n->modes) || S_ISLNK(n->modes))
+	{
 		n->realsize = sb->st_size;
 	}
 }
@@ -536,36 +657,51 @@ struct filenode *newnode(const char *base, const char *name, int curroffset)
 	int len;
 	char *str;
 
-	node = malloc(sizeof (*node));
-	if (!node) {
-		fprintf(stderr,"out of memory\n");
+	node = malloc(sizeof(*node));
+
+	if(!node)
+	{
+		fprintf(stderr, "out of memory\n");
 		exit(1);
 	}
-	memset(node,0,sizeof(*node));
+
+	memset(node, 0, sizeof(*node));
 
 	len = strlen(name);
-	str = malloc(len+1);
-	if (!str) {
-		fprintf(stderr,"out of memory\n");
+	str = malloc(len + 1);
+
+	if(!str)
+	{
+		fprintf(stderr, "out of memory\n");
 		exit(1);
 	}
+
 	strcpy(str, name);
 	node->name = str;
 
-	if (!curroffset) {
+	if(!curroffset)
+	{
 		len = 1;
 		name = ".";
 	}
-	if (strlen(base))
+
+	if(strlen(base))
 		len++;
-	str = malloc(strlen(base)+len+1);
-	if (!str) {
-		fprintf(stderr,"out of memory\n");
+
+	str = malloc(strlen(base) + len + 1);
+
+	if(!str)
+	{
+		fprintf(stderr, "out of memory\n");
 		exit(1);
 	}
-	if (strlen(base)) {
+
+	if(strlen(base))
+	{
 		sprintf(str, "%s/%s", base, name);
-	} else {
+	}
+	else
+	{
 		strcpy(str, name);
 	}
 
@@ -594,15 +730,25 @@ struct filenode *findnode(struct filenode *node, dev_t dev, ino_t ino)
 	struct filenode *found, *p;
 
 	/* scan the whole tree */
-	if (node->ondev == dev && node->onino == ino)
+	if(node->ondev == dev && node->onino == ino)
 		return node;
+
 	p = node->dirlist.head;
-	while (p->next) {
+
+	while(p->next)
+	{
 		found = findnode(p, dev, ino);
-		if (found)
+
+		if(found)
+#if defined(_WIN32) && !defined(__CYGWIN__)
+			return NULL;
+#else
 			return found;
+#endif
+
 		p = p->next;
 	}
+
 	return NULL;
 }
 
@@ -610,7 +756,7 @@ struct filenode *findnode(struct filenode *node, dev_t dev, ino_t ino)
 
 int spaceneeded(struct filenode *node, unsigned int sz)
 {
-	return 16 + ALIGNUP16(strlen(node->name)+1) + ALIGNUP16(sz);
+	return 16 + ALIGNUP16(strlen(node->name) + 1) + ALIGNUP16(sz);
 }
 
 int alignnode(struct filenode *node, int curroffset, int extraspace)
@@ -620,28 +766,38 @@ int alignnode(struct filenode *node, int curroffset, int extraspace)
 	unsigned int checkpos;
 	int fd;
 
-	if (S_ISREG(node->modes)) align = node->align;
+	if(S_ISREG(node->modes)) align = node->align;
 
 	/* Just a safeguard to make sure file contents won't be mistaken for extension tags */
-	if ((checkpos = node->realsize) &&
-	    (((checkpos+8) & 15) <= 8)) {
-		if ((((checkpos+8)&15) == 8)) checkpos -= 16;
+	if((checkpos = node->realsize) &&
+	        (((checkpos + 8) & 15) <= 8))
+	{
+		if((((checkpos + 8) & 15) == 8)) checkpos -= 16;
+
 		checkpos &= ~15;
 
-		if (S_ISREG(node->modes)) {
-			if ((fd = open(node->realname, O_RDBIN)) >= 0) {
+		if(S_ISREG(node->modes))
+		{
+			if((fd = open(node->realname, O_RDBIN)) >= 0)
+			{
 				memset(bigbuf, 0, 16);
 				read(fd, bigbuf, 16);
 				checkpos = 0;
 			}
-		} else if (S_ISLNK(node->modes)) {
+		}
+		else if(S_ISLNK(node->modes))
+		{
 			memset(bigbuf, 0, sizeof(bigbuf));
-			readlink(node->realname, bigbuf, sizeof(bigbuf)-1);
-		} else {
-			fprintf(stderr,"internal error, %s has size?\n", node->realname);
+			readlink(node->realname, bigbuf, sizeof(bigbuf) - 1);
+		}
+		else
+		{
+			fprintf(stderr, "internal error, %s has size?\n", node->realname);
 			exit(1);
 		}
-		if(!memcmp(bigbuf+checkpos+8, ROMEXT_MAGIC3, 3)) {
+
+		if(!memcmp(bigbuf + checkpos + 8, ROMEXT_MAGIC3, 3))
+		{
 			node->postpad += 16;
 		}
 	}
@@ -650,14 +806,16 @@ int alignnode(struct filenode *node, int curroffset, int extraspace)
 	node->offset += node->extlen;
 
 	d = ((curroffset + extraspace) & (align - 1));
-	if (d) {
+
+	if(d)
+	{
 		align -= d;
 		curroffset += align;
 		node->offset += align;
 		node->prepad = align;
 	}
 
-	return curroffset+node->postpad;
+	return curroffset + node->postpad;
 }
 
 /* Build romfs extension header */
@@ -667,135 +825,175 @@ int alignnode(struct filenode *node, int curroffset, int extraspace)
 int buildromext(struct filenode *node)
 {
 	unsigned int tag;
-	unsigned int extidx,extend;
-	char *romext=node->extdata;
-	unsigned int myuid,mygid;
+	unsigned int extidx, extend;
+	char *romext = node->extdata;
+	unsigned int myuid, mygid;
 	unsigned int mytime;
 
 	/* root dir cannot be extended */
-	if (node->isrootdot == 1) return 0;
+	if(node->isrootdot == 1) return 0;
 
 	extend = extidx = sizeof(node->extdata);
 	memset(romext, 0, extidx);
 
-	extidx-=8;
-	memcpy(romext+extidx,ROMEXT_MAGIC3,3);
+	extidx -= 8;
+	memcpy(romext + extidx, ROMEXT_MAGIC3, 3);
 
 	/* override permissions if any given */
-	if (node->extperm != (unsigned int)-1 && node->extperm != (unsigned int)-2) {
-		node->modes = (node->modes&~07777)|node->extperm;
+	if(node->extperm != (unsigned int) -1 && node->extperm != (unsigned int) -2)
+	{
+		node->modes = (node->modes & ~07777) | node->extperm;
 	}
-	if (node->extuid == (unsigned int)-2) {
+
+	if(node->extuid == (unsigned int) -2)
+	{
 		node->nuid = 0;
-	} else if (node->extuid != (unsigned int)-1) {
+	}
+	else if(node->extuid != (unsigned int) -1)
+	{
 		node->nuid = node->extuid;
 	}
-	if (node->extgid == (unsigned int)-2) {
+
+	if(node->extgid == (unsigned int) -2)
+	{
 		node->ngid = 0;
-	} else if (node->extgid != (unsigned int)-1) {
+	}
+	else if(node->extgid != (unsigned int) -1)
+	{
 		node->ngid = node->extgid;
 	}
-	if (node->exttime == (unsigned int)-2) {
+
+	if(node->exttime == (unsigned int) -2)
+	{
 		node->ntime = 0;
-	} else if (node->exttime != (unsigned int)-1) {
+	}
+	else if(node->exttime != (unsigned int) -1)
+	{
 		node->ntime = node->exttime;
 	}
 
 	/* build romext */
-	if (node->extperm != (unsigned int)-2) {
-		tag=ROMET_PERM|(node->modes&07777);
-		romext[--extidx]=tag;
-		romext[--extidx]=tag>>8;
+	if(node->extperm != (unsigned int) -2)
+	{
+		tag = ROMET_PERM | (node->modes & 07777);
+		romext[--extidx] = tag;
+		romext[--extidx] = tag >> 8;
 	}
 
 	myuid = node->nuid;
 	mygid = node->ngid;
-	if (node->extuid == (unsigned int)-2) { myuid = 0; }
-	if (node->extgid == (unsigned int)-2) { mygid = 0; }
+
+	if(node->extuid == (unsigned int) -2)
+	{
+		myuid = 0;
+	}
+
+	if(node->extgid == (unsigned int) -2)
+	{
+		mygid = 0;
+	}
 
 	/* try our chance to pack both in a single tag */
-	if ((myuid && mygid) &&
-	     ( (myuid <= 077 && mygid <= 077)) ) {
-		tag=ROMET_UGID|((myuid&077)<<6|(mygid&077));
-		romext[--extidx]=tag;
-		romext[--extidx]=tag>>8;
-		myuid = 0; mygid = 0;
+	if((myuid && mygid) &&
+	        ((myuid <= 077 && mygid <= 077)))
+	{
+		tag = ROMET_UGID | ((myuid & 077) << 6 | (mygid & 077));
+		romext[--extidx] = tag;
+		romext[--extidx] = tag >> 8;
+		myuid = 0;
+		mygid = 0;
 	}
 
 	/* no luck, pack uid first */
-	if (myuid) {
-		if (myuid & ~0xfff) {
-			if (myuid & ~0xffffff) {
-				tag=ROMET_UID|((myuid>>24)&0xfff);
-				romext[--extidx]=tag;
-				romext[--extidx]=tag>>8;
+	if(myuid)
+	{
+		if(myuid & ~0xfff)
+		{
+			if(myuid & ~0xffffff)
+			{
+				tag = ROMET_UID | ((myuid >> 24) & 0xfff);
+				romext[--extidx] = tag;
+				romext[--extidx] = tag >> 8;
 			}
-			tag=ROMET_UID|((myuid>>12)&0xfff);
-			romext[--extidx]=tag;
-			romext[--extidx]=tag>>8;
+
+			tag = ROMET_UID | ((myuid >> 12) & 0xfff);
+			romext[--extidx] = tag;
+			romext[--extidx] = tag >> 8;
 		}
-		tag=ROMET_UID|((myuid)&0xfff);
-		romext[--extidx]=tag;
-		romext[--extidx]=tag>>8;
+
+		tag = ROMET_UID | ((myuid) & 0xfff);
+		romext[--extidx] = tag;
+		romext[--extidx] = tag >> 8;
 	}
 
 	/* pack gid later */
-	if (mygid) {
-		if (mygid & ~0xfff) {
-			if (mygid & ~0xffffff) {
-				tag=ROMET_GID|((mygid>>24)&0xfff);
-				romext[--extidx]=tag;
-				romext[--extidx]=tag>>8;
+	if(mygid)
+	{
+		if(mygid & ~0xfff)
+		{
+			if(mygid & ~0xffffff)
+			{
+				tag = ROMET_GID | ((mygid >> 24) & 0xfff);
+				romext[--extidx] = tag;
+				romext[--extidx] = tag >> 8;
 			}
-			tag=ROMET_GID|((mygid>>12)&0xfff);
-			romext[--extidx]=tag;
-			romext[--extidx]=tag>>8;
+
+			tag = ROMET_GID | ((mygid >> 12) & 0xfff);
+			romext[--extidx] = tag;
+			romext[--extidx] = tag >> 8;
 		}
-		tag=ROMET_GID|((mygid)&0xfff);
-		romext[--extidx]=tag;
-		romext[--extidx]=tag>>8;
+
+		tag = ROMET_GID | ((mygid) & 0xfff);
+		romext[--extidx] = tag;
+		romext[--extidx] = tag >> 8;
 	}
 
 	/* time -- might work with 36 bits of time */
-	if ((mytime = node->ntime)) {
-		if (mytime & ~0xfff) {
-			if (mytime & ~0xffffff) {
-				tag=ROMET_TIME|((mytime>>24)&0xfff);
-				romext[--extidx]=tag;
-				romext[--extidx]=tag>>8;
+	if((mytime = node->ntime))
+	{
+		if(mytime & ~0xfff)
+		{
+			if(mytime & ~0xffffff)
+			{
+				tag = ROMET_TIME | ((mytime >> 24) & 0xfff);
+				romext[--extidx] = tag;
+				romext[--extidx] = tag >> 8;
 			}
-			tag=ROMET_TIME|((mytime>>12)&0xfff);
-			romext[--extidx]=tag;
-			romext[--extidx]=tag>>8;
+
+			tag = ROMET_TIME | ((mytime >> 12) & 0xfff);
+			romext[--extidx] = tag;
+			romext[--extidx] = tag >> 8;
 		}
-		tag=ROMET_TIME|((mytime)&0xfff);
-		romext[--extidx]=tag;
-		romext[--extidx]=tag>>8;
+
+		tag = ROMET_TIME | ((mytime) & 0xfff);
+		romext[--extidx] = tag;
+		romext[--extidx] = tag >> 8;
 	}
 
-	if (extidx == (extend-8)) {
+	if(extidx == (extend - 8))
+	{
 		return 0;
 	}
 
 	/* compute the aligned start */
 	extidx &= ~15;
-	node->extlen = extend-extidx;
-	tag = htonl(-romfs_checksum(node->extdata+extidx, node->extlen));
+	node->extlen = extend - extidx;
+	tag = htonl(-romfs_checksum(node->extdata + extidx, node->extlen));
 	/* the number of 16 byte lines in the extension header */
-	node->extdata[extend-5] = node->extlen>>4;
+	node->extdata[extend - 5] = node->extlen >> 4;
 
 	/* store checksum */
 	romext = node->extdata + extend;
-	*--romext=tag;
-	*--romext=tag>>8;
-	*--romext=tag>>16;
-	*--romext=tag>>24;
+	*--romext = tag;
+	*--romext = tag >> 8;
+	*--romext = tag >> 16;
+	*--romext = tag >> 24;
 
 	return node->extlen;
 }
 
 int processdir(int level, const char *base, const char *dirname, struct stat *sb,
-	struct filenode *dir, struct filenode *root, int curroffset)
+               struct filenode *dir, struct filenode *root, int curroffset)
 {
 	DIR *dirfd;
 	struct dirent *dp;
@@ -806,10 +1004,13 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 	 * root directory, we add them first.  Note also that we
 	 * alloc them first to get to know the real name
 	 */
-	if (level <= 1) {
+	if(level <= 1)
+	{
 		link = newnode(base, ".", curroffset);
 		link->isrootdot = 1;
-		if (!lstat(link->realname, sb)) {
+
+		if(!lstat(link->realname, sb))
+		{
 			setnode(link, sb);
 			append(&dir->dirlist, link);
 
@@ -819,64 +1020,113 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 			 */
 			dir->dirlist.owner = link;
 
-			curroffset = alignnode(link, curroffset, 0) + spaceneeded(link,0);
+			curroffset = alignnode(link, curroffset, 0) + spaceneeded(link, 0);
 			n = newnode(base, "..", curroffset);
 			n->isrootdot = 2;
 
-			if (!lstat(n->realname, sb)) {
+			if(!lstat(n->realname, sb))
+			{
 				setnode(n, sb);
 				append(&dir->dirlist, n);
 				n->orig_link = link;
-				curroffset = alignnode(n, curroffset, 0) + spaceneeded(n,0);
+				curroffset = alignnode(n, curroffset, 0) + spaceneeded(n, 0);
 			}
 		}
 	}
 
 	dirfd = opendir(dir->realname);
-	if (dirfd == NULL) {
+
+	if(dirfd == NULL)
+	{
 		perror(dir->realname);
 	}
-	while(dirfd && (dp = readdir(dirfd))) {
+
+	while(dirfd && (dp = readdir(dirfd)))
+	{
 		/* don't process main . and .. twice */
-		if (level <= 1 &&
-		    (strcmp(dp->d_name, ".") == 0
-		     || strcmp(dp->d_name, "..") == 0))
+		if(level <= 1 &&
+		        (strcmp(dp->d_name, ".") == 0
+		         || strcmp(dp->d_name, "..") == 0))
 			continue;
+
 		n = newnode(base, dp->d_name, curroffset);
 
 		/* Process exclude/align list. */
-		for (pa = patterns; pa; pa = pa->next) {
-			if (!nodematch(pa->pattern, n)) {
-				if (pa->exttype == EXTTYPE_EXCLUDE) { n->exclude = pa->num; }
-				if (pa->exttype == EXTTYPE_ALIGNMENT) { n->align = pa->num; }
-				if (pa->exttype == EXTTYPE_EXTPERM) { extlevel |= 1; n->extperm = pa->num; }
-				if (pa->exttype == EXTTYPE_EXTUID) { extlevel |= 1; n->extuid = pa->num; }
-				if (pa->exttype == EXTTYPE_EXTGID) { extlevel |= 1; n->extgid = pa->num; }
-				if (pa->exttype == EXTTYPE_EXTTIME) { extlevel |= 1; n->exttime = pa->num; }
+		for(pa = patterns; pa; pa = pa->next)
+		{
+			if(!nodematch(pa->pattern, n))
+			{
+				if(pa->exttype == EXTTYPE_EXCLUDE)
+				{
+					n->exclude = pa->num;
+				}
+
+				if(pa->exttype == EXTTYPE_ALIGNMENT)
+				{
+					n->align = pa->num;
+				}
+
+				if(pa->exttype == EXTTYPE_EXTPERM)
+				{
+					extlevel |= 1;
+					n->extperm = pa->num;
+				}
+
+				if(pa->exttype == EXTTYPE_EXTUID)
+				{
+					extlevel |= 1;
+					n->extuid = pa->num;
+				}
+
+				if(pa->exttype == EXTTYPE_EXTGID)
+				{
+					extlevel |= 1;
+					n->extgid = pa->num;
+				}
+
+				if(pa->exttype == EXTTYPE_EXTTIME)
+				{
+					extlevel |= 1;
+					n->exttime = pa->num;
+				}
 			}
 		}
-		if (n->exclude) { freenode(n); continue; }
 
-		if (lstat(n->realname, sb)) {
-			fprintf(stderr, "ignoring '%s' (lstat failed)\n", n->realname);
-			freenode(n); continue;
+		if(n->exclude)
+		{
+			freenode(n);
+			continue;
 		}
 
+		if(lstat(n->realname, sb))
+		{
+			fprintf(stderr, "ignoring '%s' (lstat failed)\n", n->realname);
+			freenode(n);
+			continue;
+		}
+
+#if !defined(_WIN32) || defined(__CYGWIN__)
 		/* Handle special names */
-		if ( n->name[0] == '@' ) {
-			if (S_ISLNK(sb->st_mode)) {
+		if(n->name[0] == '@')
+		{
+			if(S_ISLNK(sb->st_mode))
+			{
 				/* this is a link to follow at build time */
 				n->name = n->name + 1; /* strip off the leading @ */
 				memset(bigbuf, 0, sizeof(bigbuf));
 				readlink(n->realname, bigbuf, sizeof(bigbuf));
 				n->realname = strdup(bigbuf);
 
-				if (lstat(n->realname, sb)) {
+				if(lstat(n->realname, sb))
+				{
 					fprintf(stderr, "ignoring '%s' (lstat failed)\n",
-						n->realname);
-					freenode(n); continue;
+					        n->realname);
+					freenode(n);
+					continue;
 				}
-			} else if (S_ISREG(sb->st_mode) && sb->st_size == 0) {
+			}
+			else if(S_ISREG(sb->st_mode) && sb->st_size == 0)
+			{
 				/*
 				 *        special file @name,[bcp..],major,minor
 				 */
@@ -885,25 +1135,31 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 				int       major;
 				int       minor;
 
-				if (sscanf(n->name, "@%[a-zA-Z0-9_+-],%c,%d,%d",
-					   devname, &type, &major, &minor) == 4 ) {
+				if(sscanf(n->name, "@%[a-zA-Z0-9_+-],%c,%d,%d",
+				          devname, &type, &major, &minor) == 4)
+				{
 					strcpy(n->name, devname);
 					sb->st_rdev = makedev(major, minor);
 					sb->st_mode &= ~S_IFMT;
-					switch (type) {
+
+					switch(type)
+					{
 					case 'c':
 					case 'u':
 						sb->st_mode |= S_IFCHR;
 						break;
+
 					case 'b':
 						sb->st_mode |= S_IFBLK;
 						break;
+
 					case 'p':
 						sb->st_mode |= S_IFIFO;
 						break;
+
 					default:
 						fprintf(stderr, "Invalid special device type '%c' "
-							"for file %s\n", type, n->realname);
+						        "for file %s\n", type, n->realname);
 						freenode(n);
 						continue;
 					}
@@ -911,64 +1167,88 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 			}
 		}
 
+#endif
+
 		setnode(n, sb);
+
+#if !defined(_WIN32) || defined(__CYGWIN__)
+
 		/* Skip unreadable files/dirs */
-		if (!S_ISLNK(n->modes) && access(n->realname, R_OK)) {
+		if(!S_ISLNK(n->modes) && access(n->realname, R_OK))
+		{
 			fprintf(stderr, "ignoring '%s' (access failed)\n", n->realname);
-			freenode(n); continue;
+			freenode(n);
+			continue;
 		}
+#endif
 
 		/* Look up old links */
-		if ( strcmp(n->name, ".") == 0 ) {
+		if(strcmp(n->name, ".") == 0)
+		{
 			append(&dir->dirlist, n);
 			link = n->parent;
-		} else if (strcmp(n->name, "..") == 0) {
+		}
+		else if(strcmp(n->name, "..") == 0)
+		{
 			append(&dir->dirlist, n);
 			link = n->parent->parent;
-		} else {
+		}
+		else
+		{
 			link = findnode(root, n->ondev, n->onino);
 			append(&dir->dirlist, n);
 		}
 
-		if (link) {
+		if(link)
+		{
 			n->realsize = 0;
 			n->orig_link = link;
-			curroffset = alignnode(n, curroffset, 0) + spaceneeded(n,0);
+			curroffset = alignnode(n, curroffset, 0) + spaceneeded(n, 0);
 			continue;
 		}
 
-		if (S_ISCHR(sb->st_mode) || S_ISBLK(sb->st_mode)) {
+		if(S_ISCHR(sb->st_mode) || S_ISBLK(sb->st_mode))
+		{
 			n->devnode = sb->st_rdev;
 		}
 
 		buildromext(n);
 
-		if (S_ISREG(sb->st_mode)) {
-			curroffset = alignnode(n, curroffset, spaceneeded(n,0));
-		} else {
+		if(S_ISREG(sb->st_mode))
+		{
+			curroffset = alignnode(n, curroffset, spaceneeded(n, 0));
+		}
+		else
+		{
 			curroffset = alignnode(n, curroffset, 0);
 		}
 
-		curroffset += spaceneeded(n,n->realsize);
+		curroffset += spaceneeded(n, n->realsize);
 
-		if (S_ISDIR(sb->st_mode)) {
-			if (!strcmp(n->name, "..")) {
-				curroffset = processdir(level+1, dir->realname, dp->d_name,
-							sb, dir, root, curroffset);
-			} else {
-				curroffset = processdir(level+1, n->realname, dp->d_name,
-							sb, n, root, curroffset);
+		if(S_ISDIR(sb->st_mode))
+		{
+			if(!strcmp(n->name, ".."))
+			{
+				curroffset = processdir(level + 1, dir->realname, dp->d_name,
+				                        sb, dir, root, curroffset);
+			}
+			else
+			{
+				curroffset = processdir(level + 1, n->realname, dp->d_name,
+				                        sb, n, root, curroffset);
 			}
 		}
 	}
-	if (dirfd) closedir(dirfd);
+
+	if(dirfd) closedir(dirfd);
+
 	return curroffset;
 }
 
 void showhelp(const char *argv0)
 {
-	printf("genromfs %s\n",VERSION);
-	printf("Usage: %s [OPTIONS] -f IMAGE\n",argv0);
+	printf("genromfs %s\n", VERSION);
+	printf("Usage: %s [OPTIONS] -f IMAGE\n", argv0);
 	printf("Create a romfs filesystem image from a directory\n");
 	printf("\n");
 	printf("  -f IMAGE               Output the image into this file\n");
@@ -990,7 +1270,7 @@ int main(int argc, char *argv[])
 	char *dir = ".";
 	char *outf = NULL;
 	char *volname = NULL;
-	int verbose=0;
+	int verbose = 0;
 	char buf[256];
 	struct filenode *root;
 	struct stat sb;
@@ -999,122 +1279,181 @@ int main(int argc, char *argv[])
 	char *p,*optn,*optpat;
 	FILE *f;
 
-	while ((c = getopt(argc, argv, "V:vd:f:ha:A:x:i:e:")) != EOF) {
-		switch(c) {
+	while((c = getopt(argc, argv, "V:vd:f:ha:A:x:i:e:")) != EOF)
+	{
+		switch(c)
+		{
 		case 'd':
 			dir = optarg;
 			break;
+
 		case 'f':
 			outf = optarg;
 			break;
+
 		case 'V':
 			volname = optarg;
 			break;
+
 		case 'v':
 			verbose = 1;
 			break;
+
 		case 'h':
 			showhelp(argv[0]);
 			exit(0);
+
 		case 'a':
 		case 'A':
 			i = strtoul(optarg, &p, 0);
-			if (i < 16 || (i & (i - 1))) {
+
+			if(i < 16 || (i & (i - 1)))
+			{
 				fprintf(stderr, "Alignment has to be at least 16 bytes and a power of two\n");
 				exit(1);
 			}
-			if (c == 'a') {
-				if (p[0] != 0) {
+
+			if(c == 'a')
+			{
+				if(p[0] != 0)
+				{
 					fprintf(stderr, "-a must only be given a number\n");
 					exit(1);
 				}
-				p=",";
+
+				p = ",";
 			}
-			if (*p != ',') {
+
+			if(*p != ',')
+			{
 				fprintf(stderr, "-A takes N,PATTERN format of argument, where N is a number\n");
 				exit(1);
 			}
-			addpattern(EXTTYPE_ALIGNMENT,i,p+1);
+
+			addpattern(EXTTYPE_ALIGNMENT, i, p + 1);
 			break;
+
 		case 'i':
 		case 'x':
-			addpattern(EXTTYPE_EXCLUDE,c=='x',optarg);
+			addpattern(EXTTYPE_EXCLUDE, c == 'x', optarg);
 			break;
+
 		/* -e EXT[:VAL][,PATTERN] */
 		case 'e':
-			i = (unsigned int)-1;
-			optpat = strchr(optarg,',');
-			if (optpat) { *optpat++ = 0; }
-			else { optpat=""; }
-			optn = strchr(optarg,':');
-			if (optn) {
+			i = (unsigned int) -1;
+			optpat = strchr(optarg, ',');
+
+			if(optpat)
+			{
+				*optpat++ = 0;
+			}
+			else
+			{
+				optpat = "";
+			}
+
+			optn = strchr(optarg, ':');
+
+			if(optn)
+			{
 				*optn++ = 0;
 				errno = 0;
-				i = strtoul(optn,&p,0);
-				if (*p != 0 || errno) {
-					fprintf(stderr,"-e%s:N,PATTERN must be numeric\n",optarg);
+				i = strtoul(optn, &p, 0);
+
+				if(*p != 0 || errno)
+				{
+					fprintf(stderr, "-e%s:N,PATTERN must be numeric\n", optarg);
 					exit(1);
 				}
 			}
+
 			/* -ealign:N,PATTERN */
-			if (!strcmp(optarg,"align")) {
-				if (i == (unsigned int)-1) {
-					fprintf(stderr,"-e%s:N,PATTERN needs value\n",optarg);
+			if(!strcmp(optarg, "align"))
+			{
+				if(i == (unsigned int) -1)
+				{
+					fprintf(stderr, "-e%s:N,PATTERN needs value\n", optarg);
 					exit(1);
 				}
-				if (i < 16 || (i & (i - 1))) {
+
+				if(i < 16 || (i & (i - 1)))
+				{
 					fprintf(stderr, "Alignment has to be at least 16 bytes and a power of two\n");
 					exit(1);
 				}
-				addpattern(EXTTYPE_ALIGNMENT,i,optpat);
-			/* -eperm:N[,PATTERN] - set permissions for pattern */
-			/* -eperm[,PATTERN] - save permissions for pattern */
-			} else if (!strcmp(optarg,"perm")) {
+
+				addpattern(EXTTYPE_ALIGNMENT, i, optpat);
+				/* -eperm:N[,PATTERN] - set permissions for pattern */
+				/* -eperm[,PATTERN] - save permissions for pattern */
+			}
+			else if(!strcmp(optarg, "perm"))
+			{
 				/* reparse it in octal */
-				if (optn) {
-					i = strtoul(optn,&p,8);
-					if (*p != 0 || (i != (unsigned int)-1 && i&~07777)) {
-						fprintf(stderr,"-e%s:N must be octal and less than 07777\n",optarg);
+				if(optn)
+				{
+					i = strtoul(optn, &p, 8);
+
+					if(*p != 0 || (i != (unsigned int) -1 && i & ~07777))
+					{
+						fprintf(stderr, "-e%s:N must be octal and less than 07777\n", optarg);
 						exit(1);
 					}
 				}
-				addpattern(EXTTYPE_EXTPERM,i,optpat);
-			/* -euid:N[,PATTERN] - set uid for pattern */
-			/* -euid[,PATTERN] - save uid for pattern */
-			} else if (!strcmp(optarg,"uid")) {
-				addpattern(EXTTYPE_EXTUID,i,optpat);
-			/* -egid:N[,PATTERN] - set uid for pattern */
-			/* -egid[,PATTERN] - save uid for pattern */
-			} else if (!strcmp(optarg,"gid")) {
-				addpattern(EXTTYPE_EXTGID,i,optpat);
-			/* -etime:N[,PATTERN] - set timestamp for pattern */
-			/* -etime[,PATTERN] - save timestamp for pattern */
-			} else if (!strcmp(optarg,"time")) {
-				addpattern(EXTTYPE_EXTTIME,i,optpat);
-			} else {
-				fprintf(stderr,"-e%s not recognised\n",optarg);
+
+				addpattern(EXTTYPE_EXTPERM, i, optpat);
+				/* -euid:N[,PATTERN] - set uid for pattern */
+				/* -euid[,PATTERN] - save uid for pattern */
 			}
+			else if(!strcmp(optarg, "uid"))
+			{
+				addpattern(EXTTYPE_EXTUID, i, optpat);
+				/* -egid:N[,PATTERN] - set uid for pattern */
+				/* -egid[,PATTERN] - save uid for pattern */
+			}
+			else if(!strcmp(optarg, "gid"))
+			{
+				addpattern(EXTTYPE_EXTGID, i, optpat);
+				/* -etime:N[,PATTERN] - set timestamp for pattern */
+				/* -etime[,PATTERN] - save timestamp for pattern */
+			}
+			else if(!strcmp(optarg, "time"))
+			{
+				addpattern(EXTTYPE_EXTTIME, i, optpat);
+			}
+			else
+			{
+				fprintf(stderr, "-e%s not recognised\n", optarg);
+			}
+
 			break;
+
 		default:
 			exit(1);
 		}
 	}
 
-	if (!volname) {
+	if(!volname)
+	{
 		sprintf(buf, "rom %08lx", time(NULL));
 		volname = buf;
 	}
-	if (!outf) {
+
+	if(!outf)
+	{
 		fprintf(stderr, "%s: you must specify the destination file\n", argv[0]);
-		fprintf(stderr, "Try `%s -h' for more information\n",argv[0]);
+		fprintf(stderr, "Try `%s -h' for more information\n", argv[0]);
 		exit(1);
 	}
-	if (strcmp(outf, "-") == 0) {
-		f = fdopen(1,"wb");
-	} else
+
+	if(strcmp(outf, "-") == 0)
+	{
+		f = fdopen(1, "wb");
+	}
+	else
 		f = fopen(outf, "wb");
 
-	if (!f) {
+	if(!f)
+	{
 		perror(outf);
 		exit(1);
 	}
@@ -1122,9 +1461,11 @@ int main(int argc, char *argv[])
 	realbase = strlen(dir);
 	root = newnode(dir, volname, 0);
 	root->parent = root;
-	lastoff = processdir (1, dir, dir, &sb, root, root, spaceneeded(root,0));
-	if (verbose)
+	lastoff = processdir(1, dir, dir, &sb, root, root, spaceneeded(root, 0));
+
+	if(verbose)
 		shownode(0, root, stderr);
+
 	dumpall(root, lastoff, f);
 
 	exit(0);

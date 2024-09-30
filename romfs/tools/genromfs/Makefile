@@ -1,6 +1,11 @@
 
 # Makefile for the genromfs program.
 
+# Modified to build on MINGW
+ifeq ($(OS), Windows_NT)
+	LDLIBS = -lshlwapi -lws2_32
+endif
+
 all: genromfs
 
 PACKAGE = genromfs
@@ -22,10 +27,6 @@ bindir = $(prefix)/bin
 mandir = $(prefix)/man
 
 genromfs: genromfs.o
-	$(CC) $(LDFLAGS) genromfs.o -o genromfs
-
-.c.o:
-	$(CC) $(CFLAGS) $< -c -o $@
 
 clean:
 	rm -f genromfs *.o
