@@ -22,6 +22,7 @@
  *                      (7dog123)
  *     20 Sep 2024              Added options to remove padding.[andreimusat]
  *                              by using https://github.com/andreimusat/genromfs/tree/amusat/modify_genromfs_for_embedded_os
+ *                              Ignore compiling `else if(S_ISLNK(node->modes)` under MINGW32 but compile under Cygwin till a actual workaround could be made.
  *                      (7dog123)
  */
 
@@ -98,7 +99,7 @@ typedef unsigned int uid_t;
 typedef unsigned int gid_t;
 
 #define S_ISLNK(m) (0)  // Symbolic links not supported in the same way
-#define readlink(path, buf, bufsize) (-1)  // Placeholder for readlink
+//#define readlink(path, buf, bufsize) (-1)  // Placeholder for readlink
 #endif
 
 #if defined(linux) || defined(sun)
@@ -810,6 +811,7 @@ int alignnode(struct filenode *node, int curroffset, int extraspace)
 				checkpos = 0;
 			}
 		}
+#if !defined(_WIN32) && defined(__CYGWIN__)
 		else if(S_ISLNK(node->modes))
 		{
 			memset(bigbuf, 0, sizeof(bigbuf));
@@ -819,6 +821,7 @@ int alignnode(struct filenode *node, int curroffset, int extraspace)
 				exit(1);
 			}
 		}
+#endif
 		else
 		{
 			fprintf(stderr, "internal error, %s has size?\n", node->realname);
