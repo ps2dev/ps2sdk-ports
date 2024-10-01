@@ -9,6 +9,7 @@ PROC_NR=$(getconf _NPROCESSORS_ONLN)
 CFLAGS=""
 XTRA_OPTS=""
 MAKECMD=make
+CONFIGCMD=./configure
 OSVER=$(uname)
 if [ ${OSVER:0:5} == MINGW ]; then
   XTRA_OPTS=(. -G"MinGW Makefiles")
@@ -60,6 +61,52 @@ function build_irx {
     cd "${START_DIR}"
 }
 
+MAKE_OPTIONS=-Wno-dev
+
+function make_ee {
+    START_DIR="${PWD}"
+    DIR="$1"
+    shift
+    cd "$DIR"
+    echo "Building '$DIR' for EE..."
+    "${MAKECMD}" -j "$PROC_NR" all install
+    cd "${START_DIR}"
+}
+
+function make_iop {
+    START_DIR="${PWD}"
+    DIR="$1"
+    shift
+    cd "$DIR"
+    echo "Building '$DIR' for IOP..."
+    "${MAKECMD}" -j "$PROC_NR" "${MAKE_OPTIONS}" "$@" "${XTRA_OPTS}" all install
+    cd "${START_DIR}"
+}
+
+function make_irx {
+    START_DIR="${PWD}"
+    DIR="$1"
+    shift
+    cd "$DIR"
+    echo "Building '$DIR' for IRX..."
+    "${MAKECMD}" -j "$PROC_NR" "${MAKE_OPTIONS}" "$@" "${XTRA_OPTS}" all install
+    cd "${START_DIR}"
+}
+
+CONFIGURE_OPTIONS=(--host=mips64r5900el-ps2-elf --prefix=${PS2SDK}/ports --disable-shared --enable-static --disable-examples)
+XTRAS_CONF_OPTIONS=""
+
+function configure_ee {
+    START_DIR="${PWD}"
+    DIR="$1"
+    shift
+    cd "$DIR"
+    echo "Configuring '$DIR' for EE..."
+    "${CONFIGCMD}" "${CONFIGURE_OPTIONS[@]}" "$@" "${XTRAS_CONF_OPTIONS[@]}"
+    "${MAKECMD}" -j "$PROC_NR" all install
+    cd "${START_DIR}"
+}
+
 ## Create a symbolic link for retro-compatibility ps2dev.cmake and ps2dev_iop.cmake
 (cd "${PS2SDK}" && ln -sf "../share/ps2dev.cmake" "ps2dev.cmake" && cd -)
 (cd "${PS2SDK}" && ln -sf "../share/ps2dev_iop.cmake" "ps2dev_iop.cmake" && cd -)
@@ -68,47 +115,50 @@ function build_irx {
 ## Clone repos
 ##
 $FETCH v1.3.1 https://github.com/madler/zlib &
-$FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
+$FETCH v5.4.4 https://github.com/xz-mirror/xz.git &
 $FETCH v1.9.4 https://github.com/lz4/lz4.git &
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git &
-$FETCH v1.6.43 https://github.com/glennrp/libpng &
-$FETCH VER-2-10-4 https://github.com/freetype/freetype &
-$FETCH v1.14.0 https://github.com/google/googletest &
+$FETCH v1.6.44 https://github.com/glennrp/libpng &
+$FETCH VER-2-13-3 https://github.com/freetype/freetype &
+$FETCH v1.15.2 https://github.com/google/googletest &
 $FETCH 0.2.5 https://github.com/yaml/libyaml &
 $FETCH 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo &
 $FETCH v1.3.5 https://github.com/xiph/ogg.git &
 $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
 $FETCH v5.7.0-stable https://github.com/wolfSSL/wolfssl.git &
-$FETCH curl-8_7_1 https://github.com/curl/curl.git &
-$FETCH 1.9.5 https://github.com/open-source-parsers/jsoncpp.git &
+$FETCH curl-8_10_1 https://github.com/curl/curl.git &
+$FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
 $FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git &
-$FETCH v1.4 https://github.com/xiph/opus.git &
+$FETCH v1.5.2 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 # we need to clone whole repo because it uses `git describe --tags` for version info
-$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
+$FETCH 81abcb7d7a4f48169556f9dc74c71a78ecad0c70 https://github.com/xiph/opusfile.git true &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 $FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
-$FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod.git &
+$FETCH 0e5b7443388095d919714cc5d9449d6afccd878e https://github.com/sezero/mikmod.git &
 # We need to clone a fork, this is a PR opened for ading cmake support
 # https://github.com/xiph/theora/pull/14
 $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 
 # gsKit requires libtiff
-$FETCH v4.6.0 https://gitlab.com/libtiff/libtiff.git &
+$FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
 
 # SDL requires to have gsKit
 $FETCH v1.3.8 https://github.com/ps2dev/gsKit &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
-$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git &
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git &
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git &
-$FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
+$FETCH 1edaad17218d67b567c149badce9ef0fc67f65fa https://github.com/libsdl-org/SDL.git &
+# SDL_mixer Requires to have fluidsynth and libtimidity
+$FETCH ps2-ee-sans-glib https://github.com/Wolf3s/fluidsynth.git &
+$FETCH libtimidity-0.2.7 https://github.com/sezero/libtimidity.git
+$FETCH release-2.8.0 https://github.com/libsdl-org/SDL_mixer.git &
+$FETCH release-2.8.2 https://github.com/libsdl-org/SDL_image.git &
+$FETCH release-2.22.0 https://github.com/libsdl-org/SDL_ttf.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
@@ -124,7 +174,22 @@ $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
 
 $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
 
-$FETCH R_2_6_2 https://github.com/libexpat/libexpat.git &
+$FETCH R_2_6_3 https://github.com/libexpat/libexpat.git &
+
+$FETCH 0.16.4 https://codeberg.org/tenacityteam/libmad.git &
+
+$FETCH 0.16.3 https://codeberg.org/tenacityteam/libid3tag.git &
+
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+$FETCH d6f771cb0e2515dea6a84ece6f9078750bbcc938 https://github.com/billagee/aalib-patched.git &
+$FETCH v3.3 https://github.com/libconfuse/libconfuse &
+$FETCH 1.6.4 https://github.com/fjtrujy/ps2_drivers &
+$FETCH master https://github.com/Wolf3s/libtap.git &
+$FETCH ee-v5.4.6 https://github.com/ps2dev/lua &
+$FETCH master https://github.com/ps2dev/ps2stuff &
+$FETCH master https://github.com/ps2dev/ps2gl &
+$FETCH v1.0.4 https://github.com/israpps/SIOCookie &
 
 # wait for fetch jobs to finish
 wait
@@ -136,6 +201,20 @@ tar -xzf build/argtable2-13.tar.gz -C build
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
 pushd build/jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
+popd
+
+# NOTE: aalib
+# Some standard headers could not be found, so patch that out here.
+pushd build/aalib-patched/aalib-1.4rc5
+sed -i '1i#include <stdlib.h>'                            \
+    src/aa{fire,info,lib,linuxkbd,savefont,test,regist}.c &&
+sed -i '1i#include <string.h>'                            \
+    src/aa{kbdreg,moureg,test,regist}.c                   &&
+sed -i '/X11_KBDDRIVER/a#include <X11/Xutil.h>'           \
+    src/aaxkbd.c                                          &&
+sed -i '/rawmode_init/,/^}/s/return;/return 0;/'          \
+    src/aalinuxkbd.c                                      &&
+autoconf
 popd
 
 ###
@@ -172,8 +251,13 @@ CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF
 
 # gsKit is mandatory for SDL
 build_ee gsKit
+# ps2_drivers is mandatory aswell for SDL
+make_ee ps2_drivers
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
-build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
+build_ee fluidsynth -Denable=aufile=OFF -Denable-dbus=OFF -Denable-ladspa=OFF -Denable-ipv6=OFF -Denable-jack=OFF -Denable-libinstpatch=OFF -Denable-libsndfile=OFF -Denable-midishare=OFF -Denable-network=ON -Denable-oss=OFF -Denable-dsound=OFF -Denable-wasapi=OFF -Denable-waveout=OFF -Denable-winmidi=OFF -Denable-sdl2=ON -Denable-pulseaudio=OFF -Denable-pipewire=OFF -Denable-readline=OFF -Denable-threads=ON -Denable-openmp=OFF
+autoreconf -vfi ./libtimidity
+configure_ee ./libtimidity --disable-aotest --disable-ao
+build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_MIDI=ON -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_OPUS=ON -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_MIDI_TIMIDITY=ON -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF -DSDL2MIXER_VORBIS=VORBISFILE
 build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
 build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
@@ -191,10 +275,31 @@ build_ee libsmb2 -DPS2RPC=1
 build_iop libsmb2
 # Disabling for now, as it has some issues with the IRX build in CPU with several cores
 # build_irx libsmb2 -DBUILD_IRX=1
-
 CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
 
 CFLAGS="-Darc4random_buf=random -DHAVE_GETRANDOM" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
+
+build_ee libmad
+build_ee libid3tag
+
+##
+## Build configure projects
+##
+
+autoreconf -vfi ./zlib/contrib/minizip
+CFLAGS="-DIOAPI_NO_64 -I${PS2SDK}/ports/include" configure_ee ./zlib/contrib/minizip
+#Fix this other day: cd libconfuse && ./autogen.sh . && CFLAGS_FOR_TARGET="-G0 -O2 -gdwarf-2 -gz" configure_ee ./libconfuse
+
+##
+## Build makefile projects
+##
+make_ee ../aalib
+make_ee libtap platform=PS2
+make_ee lua platform=PS2
+make_ee ps2stuff
+make_ee ps2gl
+make_ee ps2gl/glut
+make_ee SIOCookie
 
 # Finish
 cd ..

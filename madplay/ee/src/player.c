@@ -23,6 +23,8 @@
 #  include "config.h"
 # endif
 
+# include "global.h"
+
 # include <stdio.h>
 # include <stdarg.h>
 # include <stdlib.h>
@@ -85,12 +87,7 @@
 # include "tag.h"
 # include "rgain.h"
 
-# include "bstdfile.h"
-# include "file.h"
-
-# include "global.h"
-
-# define MPEG_BUFSZ	80000	/* 5.0 s at 128 kbps; 2 s at 320 kbps */
+# define MPEG_BUFSZ	40000	/* 2.5 s at 128 kbps; 1 s at 320 kbps */
 # define FREQ_TOLERANCE	2	/* percent sampling frequency tolerance */
 
 # define TTY_DEVICE	"/dev/tty"
@@ -111,8 +108,7 @@ enum {
   KEY_GAININFO = '='
 };
 
-static int on_same_line __attribute__((aligned (16)));
-bstdfile_t	*BstdFile __attribute__((aligned (16)));
+static int on_same_line __attribute__((aligned (16)));;
 
 # if defined(USE_TTY) && !defined(_WIN32)
 static int tty_fd = -1;
@@ -414,26 +410,26 @@ enum mad_flow decode_input_mmap(void *data, struct mad_stream *stream)
     return MAD_FLOW_STOP;
 
   if (stream->next_frame) {
-    struct stat s;
+    struct stat stat;
     unsigned long posn, left;
 
-    if (fstat(input->fd, &s) == -1)
+    if (fstat(input->fd, &stat) == -1)
       return MAD_FLOW_BREAK;
 
     posn = stream->next_frame - input->fdm;
 
     /* check for file size change and update map */
 
-    if (s.st_size > input->length) {
+    if (stat.st_size > input->length) {
       if (unmap_file(input->fdm, input->length) == -1) {
 	input->fdm  = 0;
 	input->data = 0;
 	return MAD_FLOW_BREAK;
       }
 
-      player->stats.total_bytes += s.st_size - input->length;
+      player->stats.total_bytes += stat.st_size - input->length;
 
-      input->length = s.st_size;
+      input->length = stat.st_size;
 
       input->fdm = map_file(input->fd, input->length);
       if (input->fdm == 0) {
@@ -481,7 +477,7 @@ enum mad_flow decode_input_read(void *data, struct mad_stream *stream)
 {
   struct player *player = data;
   struct input *input = &player->input;
-  int len = 0;
+  int len;
 
   if (input->eof)
     return MAD_FLOW_STOP;
@@ -492,9 +488,8 @@ enum mad_flow decode_input_read(void *data, struct mad_stream *stream)
   }
 
   do {
-//    len = read(input->fd, input->data + input->length,
-//	       MPEG_BUFSZ - input->length);
-      len = BstdRead(input->data + input->length,MPEG_BUFSZ - input->length,1,BstdFile);
+    len = read(input->fd, input->data + input->length,
+	       MPEG_BUFSZ - input->length);
   }
   while (len == -1 && errno == EINTR);
 
@@ -1225,7 +1220,7 @@ void process_id3(struct id3_tag const *tag, struct player *player)
 	 * in milliseconds, represented as a numeric string."
 	 */
 
-	ms = atol((const char *)latin1);
+	ms = atol(latin1);
 	if (ms > 0)
 	  mad_timer_set(&player->stats.total_time, 0, ms, 1000);
 
@@ -1623,7 +1618,6 @@ enum mad_flow decode_output(void *data, struct mad_header const *header,
   if (output->channels_in != output->channels_out)
     ch2 = (output->channels_out == 2) ? ch1 : 0;
 
-
   if (output->resampled) {
     control.play.nsamples = resample_block(&output->resample[0],
 					   pcm->length, ch1,
@@ -1794,25 +1788,25 @@ enum mad_flow decode_error(void *data, struct mad_stream *stream,
 static
 int decode(struct player *player)
 {
-//  struct stat s;
+  struct stat stat;
   struct mad_decoder decoder;
   int options, result;
 
-//  if (fstat(player->input.fd, &s) == -1) {
-//    error("decode", ":fstat");
-//    return -1;
-//  }
+  if (fstat(player->input.fd, &stat) == -1) {
+    error("decode", ":fstat");
+    return -1;
+  }
 
-//  if (S_ISREG(stat.st_mode))
-//    player->stats.total_bytes = stat.st_size;
+  if (S_ISREG(stat.st_mode))
+    player->stats.total_bytes = stat.st_size;
 
   tag_init(&player->input.tag);
 
   /* prepare input buffers */
 
 # if defined(HAVE_MMAP)
-  if (S_ISREG(s.st_mode) && s.st_size > 0) {
-    player->input.length = s.st_size;
+  if (S_ISREG(stat.st_mode) && stat.st_size > 0) {
+    player->input.length = stat.st_size;
 
     player->input.fdm = map_file(player->input.fd, player->input.length);
     if (player->input.fdm == 0 && player->verbosity >= 0)
@@ -1893,8 +1887,6 @@ int decode(struct player *player)
   return result;
 }
 
-extern int mediaMode;
-
 /*
  * NAME:	play_one()
  * DESCRIPTION:	open and play a single file
@@ -1904,10 +1896,6 @@ int play_one(struct player *player)
 {
   char const *file = player->playlist.entries[player->playlist.current];
   int result;
-
-#ifndef STDIN_FILENO
-#define STDIN_FILENO 0
-#endif
 
   if (strcmp(file, "-") == 0) {
     if (isatty(STDIN_FILENO)) {
@@ -1919,23 +1907,8 @@ int play_one(struct player *player)
     player->input.fd   = STDIN_FILENO;
   }
   else {
-
     player->input.path = file;
-//    player->input.fd   = open(file, O_RDONLY | O_BINARY);
-    player->input.fd   = OpenFile((char *)file, O_RDONLY, mediaMode);
-
-	if (mediaMode == 4) // host
-	{
-		BstdFile = NewBstdFile(player->input.fd, mediaMode);
-	}
-	else
-		BstdFile = NewBstdFile(player->input.fd, 0);
-	if(BstdFile==NULL)
-	{
-		printf("could not open file\n");		
-		return(1);
-	}
-
+    player->input.fd   = open(file, O_RDONLY | O_BINARY);
     if (player->input.fd == -1) {
       error(0, ":", file);
       return -1;
@@ -1963,12 +1936,10 @@ int play_one(struct player *player)
 
     player->options &= ~PLAYER_OPTION_STREAMID3;
 
-//    fd = dup(player->input.fd);
-    fd = player->input.fd;
+    fd = dup(player->input.fd);
     file = id3_file_fdopen(fd, ID3_FILE_MODE_READONLY);
     if (file == 0) {
-//      close(fd);
-      CloseFile(fd, mediaMode);
+      close(fd);
       player->options |= PLAYER_OPTION_STREAMID3;
     }
     else {
@@ -2042,8 +2013,7 @@ int play_all(struct player *player)
   count = playlist->length;
 
   if (player->options & PLAYER_OPTION_SHUFFLE) {
-//    srand(time(0));
-    srand(0);
+    srand(time(0));
 
     /* initial shuffle */
     for (i = 0; i < count; ++i) {

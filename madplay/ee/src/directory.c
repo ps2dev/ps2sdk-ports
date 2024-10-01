@@ -19,8 +19,8 @@
 #include <dirent.h>
 #include <sifrpc.h>
 #include <sifcmd.h>
-#include "sys/stat.h"
-#include "sys/fcntl.h"
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "kernel.h"
 #include "sifrpc.h"
 #include "stdarg.h"
@@ -32,13 +32,11 @@
 #include "debug.h"
 #include "sjpcm.h"
 #include "sbv_patches.h"
-#include "cdvd_rpc.h"
 #include "libcdvd.h"
-#include "bstdfile.h"
-#include "rmalloc.h"
 #include "libpad.h"
 #include "file.h"
 #include "directory.h"
+#include <unistd.h>
 
 /****************************************************************************
  * Universal folder structure for CD and DVD directories					*

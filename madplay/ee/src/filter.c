@@ -110,7 +110,7 @@ enum mad_flow filter_run(struct filter *filter, struct mad_frame *frame)
  */
 enum mad_flow gain_filter(void *data, struct mad_frame *frame)
 {
-  mad_fixed_t gain = *(mad_fixed_t *) data;
+  register mad_fixed_t gain = *(mad_fixed_t *) data;
 
   if (gain != MAD_F_ONE) {
     unsigned int nch, ch, ns, s, sb;

@@ -55,8 +55,6 @@ int resample_init(struct resample_state *state,
   return 0;
 }
 
-mad_fixed_t mad_f_div(mad_fixed_t, mad_fixed_t);
-
 /*
  * NAME:	resample_block()
  * DESCRIPTION:	algorithmically change the sampling rate of a PCM sample block

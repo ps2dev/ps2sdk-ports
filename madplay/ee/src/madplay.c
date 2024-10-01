@@ -23,6 +23,8 @@
 #  include "config.h"
 # endif
 
+# include "global.h"
+
 /* include this first to avoid conflicts with MinGW __argc et al. */
 # include "getopt.h"
 
@@ -52,8 +54,6 @@
 # include "version.h"
 # include "audio.h"
 # include "player.h"
-
-# include "global.h"
 
 # define FADE_DEFAULT	"0:05"
 

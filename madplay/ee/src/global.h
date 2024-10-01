@@ -42,10 +42,6 @@
 #  define USE_TTY
 # endif
 
-#   define isatty(x)	((x) == STDIN_FILENO)
-#  define STDIN_FILENO	0
-#  define STDOUT_FILENO	1
-
 # if !defined(HAVE_UNISTD_H)
 signed long read(int, void *, unsigned long count);
 signed long lseek(int, signed long, int);

@@ -18,10 +18,10 @@
 #include <stdio.h>
 #include <sifrpc.h>
 #include <sifcmd.h>
-#include "sys/stat.h"
-#include "sys/fcntl.h"
-#include "kernel.h"
-#include "sifrpc.h"
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <kernel.h>
+#include <sifrpc.h>
 #include "stdarg.h"
 #include "iopheap.h"
 #include "sys/ioctl.h"
@@ -30,18 +30,17 @@
 #include "libhdd.h"
 #include "debug.h"
 #include "sjpcm.h"
-#include "sbv_patches.h"
-#include "rmalloc.h"
+#include <sbv_patches.h>
 #include "file.h"
-#include "cdvd_rpc.h"
-#include "loadfile.h"
+#include <loadfile.h>
 #include "iopcontrol.h"
+#include <unistd.h>
+#include <stdlib.h>
 
 /*Store the current media being used, either Hard drive (MODE_HDD) or 
   CD drive (MODE_CD.)  Important in our directory functions.*/
 
 char elfPath[255];
-int mediaMode = MODE_HOST; 
 
 void
 setPathInfo(int argc, char **argv)
@@ -79,50 +78,6 @@ setPathInfo(int argc, char **argv)
 	ptr++;
 	*ptr = '\0';
 
-}
-
-
-/****************************************************************************
- * Universal file opening function.  Returns the handle to the file.		*
- ****************************************************************************/
-int OpenFile(char *filename, int mode, int media)
-{
-	return open(filename, mode, 0);
-}
-
-/****************************************************************************
- * Universal file closing function.											*
- ****************************************************************************/
-void CloseFile(int handle, int media)
-{
-	close(handle);
-}
-
-
-/****************************************************************************
- * Universal file reading function.  Returns the amount of bytes read.		*
- ****************************************************************************/
-int ReadFile(int handle, unsigned char *buffer, int size, int media)
-{
-	return read(handle, buffer, size);
-}
-
-/****************************************************************************
- * Universal file seek function.											*
- ****************************************************************************/
-int SeekFile(int handle, int pos, int rel, int media)
-{
-	return lseek(handle, pos, rel);;
-}
-	
-
-
-/****************************************************************************
- * Helper function.  Not used anymore.						                  				*
- ****************************************************************************/
-void closeShop(int handle)
-{
-	close(handle);
 }
 
 //from now elf loading functions
@@ -167,7 +122,6 @@ void Reset()
 {
 	SifIopReset("rom0:UDNL rom0:EELOADCNF",0);
 	while (SifIopSync()) ;
-	fioExit();
 	SifExitIopHeap();
 	SifLoadFileExit();
 	SifExitRpc();
@@ -226,16 +180,15 @@ int RunElf(char *name)
 			   continue;
 			   
 		pdata = (void *)(boot_elf + eph[i].offset);
-		memcpy2((unsigned char *)eph[i].vaddr, (unsigned char *)pdata, (int)eph[i].filesz);
+		memcpy((unsigned char *)eph[i].vaddr, (unsigned char *)pdata, (int)eph[i].filesz);
 
 		if (eph[i].memsz > eph[i].filesz)
-			memset2((unsigned char *)eph[i].vaddr + eph[i].filesz, (unsigned char)0, (int)eph[i].memsz - eph[i].filesz);
+			memset((unsigned char *)eph[i].vaddr + eph[i].filesz, (unsigned char)0, (int)eph[i].memsz - eph[i].filesz);
 	}
 
 	// Let's go.
 	argv[0] = name;
 
-	fioExit();
 	Reset();
 	FlushCache(0);
 	FlushCache(2);
@@ -243,20 +196,3 @@ int RunElf(char *name)
 	return 0;
 }
 
-void memcpy2(unsigned char *dest,unsigned char *org,int ndata)
-{
-	int n;
-	for(n=0;n<ndata;n++)
-	{
-		dest[n]=org[n];
-	}
-}
-
-void memset2(unsigned char *dest,unsigned char val,int ndata)
-{
-	int n;
-	for(n=0;n<ndata;n++)
-	{
-		dest[n]=val;
-	}
-}
