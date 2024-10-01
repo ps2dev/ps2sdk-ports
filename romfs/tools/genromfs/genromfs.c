@@ -508,7 +508,7 @@ void dumpnode(struct filenode *node, FILE *f)
 		ret = readlink(node->realname, bigbuf, node->realsize);
 		if (ret < 0) {
 			fprintf(stderr, "Failed to read link %s\n",node->realname);
-			exit(1)
+			exit(1);
 		}
 		dumpdataa(bigbuf, node->realsize, f);
 	}
