@@ -132,6 +132,12 @@ wait
 # extract argtable2
 tar -xzf build/argtable2-13.tar.gz -C build
 
+# NOTE: zlib
+# Make sure only one target will generate libz
+pushd build/zlib
+sed -i -e 's/set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)/set_target_properties(zlibstatic PROPERTIES OUTPUT_NAME z)/' CMakeLists.txt
+popd
+
 # NOTE: jsoncpp
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
 pushd build/jsoncpp
@@ -146,7 +152,7 @@ cd build
 ##
 ## Build cmake projects
 ##
-PROC_NR=1 build_ee zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF
+build_ee zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF
 build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF
 build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF
 build_ee libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
