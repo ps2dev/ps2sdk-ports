@@ -71,6 +71,7 @@ $FETCH v1.3.1 https://github.com/madler/zlib &
 $FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
 $FETCH v1.9.4 https://github.com/lz4/lz4.git &
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git &
+$FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
 $FETCH v1.6.43 https://github.com/glennrp/libpng &
 $FETCH VER-2-10-4 https://github.com/freetype/freetype &
 $FETCH v1.14.0 https://github.com/google/googletest &
@@ -168,6 +169,7 @@ build_ee zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF
 build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF
 build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF
 build_ee libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
+build_ee libimagequant -DLIB_INSTALL_DIR=lib -DBUILD_WITH_SSE=OFF
 build_ee libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build_ee freetype
 build_ee googletest -DCMAKE_CXX_FLAGS='-DGTEST_HAS_POSIX_RE=0'
