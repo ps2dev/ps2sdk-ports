@@ -126,6 +126,8 @@ $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
 
 $FETCH R_2_6_2 https://github.com/libexpat/libexpat.git &
 
+$FETCH v3.7.7 https://github.com/libarchive/libarchive.git &
+
 # wait for fetch jobs to finish
 wait
 
@@ -142,6 +144,16 @@ popd
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.
 pushd build/jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
+popd
+
+# NOTE: libarchive
+pushd build/libarchive
+# _timezone used for newlib
+sed -i -e 's/defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)/1 || \0/' libarchive/archive_write_set_format_iso9660.c
+# 32-bit integer "unsigned long int" prototype not compatible with "unsigned int"
+sed -i -e 's/defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L/0 \&\& \0/' libarchive/xxhash.c
+# "getline" fallback polyfill not defined (patch already upstream)
+sed -i -e 's/getline(path, &alen, stdin)/0/' unzip/bsdunzip.c
 popd
 
 ###
@@ -201,6 +213,7 @@ build_iop libsmb2
 CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
 
 CFLAGS="-Darc4random_buf=random -DHAVE_GETRANDOM" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
+build_ee libarchive -DBUILD_SHARED_LIBS=OFF -DENABLE_WERROR=OFF
 
 # Finish
 cd ..
