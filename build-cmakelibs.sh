@@ -72,7 +72,8 @@ $FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
 $FETCH v1.9.4 https://github.com/lz4/lz4.git &
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git &
 $FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
-$FETCH v1.6.43 https://github.com/glennrp/libpng &
+wget -c --directory-prefix=build https://downloads.sourceforge.net/libpng/libpng-1.6.43.tar.xz &
+wget -O build/libpng-1.6.43-apng.patch.gz https://downloads.sourceforge.net/sourceforge/libpng-apng/libpng-1.6.43-apng.patch.gz
 $FETCH VER-2-10-4 https://github.com/freetype/freetype &
 $FETCH v1.14.0 https://github.com/google/googletest &
 $FETCH 0.2.5 https://github.com/yaml/libyaml &
@@ -86,7 +87,7 @@ $FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git &
 $FETCH v1.4 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
-# we need to clone whole repo because it uses `git describe --tags` for version info
+# we need to clone whole repo because it uses git describe --tags for version info
 $FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
@@ -157,10 +158,13 @@ sed -i -e 's/defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L/0 \&\& \0
 sed -i -e 's/getline(path, &alen, stdin)/0/' unzip/bsdunzip.c
 popd
 
+tar -xvf build/libpng-*.tar.xz -C build && cd build/libpng-*/
+gzip -cd ../libpng-1.6.43-apng.patch.gz | patch -p1
+
 ###
 ### Change to the build folder
 ###
-cd build
+cd ../
 
 ##
 ## Build cmake projects
@@ -170,7 +174,7 @@ build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_L
 build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF
 build_ee libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
 build_ee libimagequant -DLIB_INSTALL_DIR=lib -DBUILD_WITH_SSE=OFF
-build_ee libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
+build_ee libpng-1.6.43 -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build_ee freetype
 build_ee googletest -DCMAKE_CXX_FLAGS='-DGTEST_HAS_POSIX_RE=0'
 build_ee libyaml
