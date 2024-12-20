@@ -102,7 +102,7 @@ $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 $FETCH v4.6.0 https://gitlab.com/libtiff/libtiff.git &
 
 # SDL requires to have gsKit
-$FETCH v1.3.8 https://github.com/ps2dev/gsKit &
+$FETCH v1.3.9 https://github.com/ps2dev/gsKit &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
