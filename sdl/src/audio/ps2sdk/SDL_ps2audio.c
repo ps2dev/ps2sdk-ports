@@ -52,27 +52,27 @@ extern unsigned char audsrv_irx;
 
 static int spu2_init()
 {
-	int error;
+	int id, ret;
 
 	SifInitRpc(0);
 #ifndef NO_IOP_HANDLING
 #ifdef USE_FREESD
 	// load freesd (libsd replacement)
-	SifExecModuleBuffer(&freesd_irx, size_freesd_irx, 0, NULL, &error);
-    	if (error < 0)
-    	{
+	id = SifExecModuleBuffer(&freesd_irx, size_freesd_irx, 0, NULL, &ret);
+    if (id < 0 || ((ret & 3) != 0))
+    {
 		SDL_SetError("Failed to load FREESD module");
-    	}
+    }
 #else
-	error = SifLoadModule("rom0:LIBSD", 0, NULL);
-	if (error < 0)
+	id = SifLoadStartModule("rom0:LIBSD", 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to open LIBSD module");
 		return -1;
 	}
 #endif
-	SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, &error);
-	if (error < 0)
+	id = SifExecModuleBuffer(&audsrv_irx, size_audsrv_irx, 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load audsrv module");
 		return -1;

@@ -145,7 +145,7 @@ static int wait_pad(int port, int slot, int tries)
  */
 int SDL_SYS_JoystickInit(void)
 {
-	int ret;
+	int ret, id;
 	int mtap_enabled;
 	int index;
 	int numports, numdevs;
@@ -155,58 +155,58 @@ int SDL_SYS_JoystickInit(void)
 #ifndef NO_IOP_HANDLING
 #ifdef PS2SDL_ENABLE_MTAP
 #ifdef USE_FREESIO2
-	SifExecModuleBuffer(sio2man_irx, size_sio2man_irx, 0, NULL, &ret);
-	if (ret < 0)
+	id = SifExecModuleBuffer(sio2man_irx, size_sio2man_irx, 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load SIO2MAN");
 		return 0;
 	}
 
-	SifExecModuleBuffer(padman_irx, size_padman_irx, 0, NULL, &ret);
-	if (ret < 0)
+	id = SifExecModuleBuffer(padman_irx, size_padman_irx, 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load PADMAN");
 		return 0;
 	}
 
-	SifExecModuleBuffer(mtapman_irx, size_mtapman_irx, 0, NULL, &ret);
-	if (ret < 0)
+	id = SifExecModuleBuffer(mtapman_irx, size_mtapman_irx, 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load MTAPMAN");
 		return 0;
 	}
 #else
-	ret = SifLoadModule("rom0:XSIO2MAN", 0, NULL);
-	if (ret < 0)
+	id = SifLoadStartModule("rom0:XSIO2MAN", 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load XSIO2MAN");
 		return 0;
 	}
 
-	ret = SifLoadModule("rom0:XPADMAN", 0, NULL);
-	if (ret < 0)
+	id = SifLoadStartModule("rom0:XPADMAN", 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load XPADMAN");
 		return 0;
 	}
 
-	ret = SifLoadModule("rom0:XMTAPMAN", 0, NULL);
-	if (ret < 0)
+	id = SifLoadStartModule("rom0:XMTAPMAN", 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load XMTAPMAN");
 		return 0;
 	}
 #endif
 #else
-	ret = SifLoadModule("rom0:SIO2MAN", 0, NULL);
-	if (ret < 0)
+	ret = SifLoadStartModule("rom0:SIO2MAN", 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load SIO2MAN");
 		return 0;
 	}
 
-	ret = SifLoadModule("rom0:PADMAN", 0, NULL);
-	if (ret < 0)
+	ret = SifLoadStartModule("rom0:PADMAN", 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("Failed to load PADMAN");
 		return 0;
