@@ -18,6 +18,10 @@ USE_FREESD=1
 # Enable FREESIO2 instead of XSIO2MAN
 USE_FREESIO2=1
 
+# surrender all IOP handling to the program using this library. granting full control of the IOP, and not forcing usage of specific modules
+# Very useful for special cases, like Supporting arcade PS2s, or... just trying to do things right
+NO_IOP_HANDLING=0
+
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
 EE_CFLAGS += -DENABLE_PS2SDK
 
