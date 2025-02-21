@@ -88,7 +88,7 @@ int PS2_InitMouse(_THIS)
 	int ret;
 
 	printf("[PS2] Init USB Mouse\n");
-
+#ifndef NO_IOP_HANDLING
 	// the mouse driver is embedded in the library....
 	SifExecModuleBuffer(ps2mouse_irx, size_ps2mouse_irx, 0, NULL, &ret);
 	if (ret < 0)
@@ -107,6 +107,7 @@ int PS2_InitMouse(_THIS)
 		return -1;
 	}
 	else
+#endif
 	{
 		// Initialize the mouse
 		if(PS2MouseInit() < 0) 

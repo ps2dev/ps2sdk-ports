@@ -55,7 +55,7 @@ static int spu2_init()
 	int error;
 
 	SifInitRpc(0);
-
+#ifndef NO_IOP_HANDLING
 #ifdef USE_FREESD
 	// load freesd (libsd replacement)
 	SifExecModuleBuffer(&freesd_irx, size_freesd_irx, 0, NULL, &error);
@@ -77,7 +77,7 @@ static int spu2_init()
 		SDL_SetError("Failed to load audsrv module");
 		return -1;
 	}
-
+#endif
 	/* init audsrv */
 	audsrv_init();
 

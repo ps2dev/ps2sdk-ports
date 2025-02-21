@@ -152,7 +152,7 @@ int SDL_SYS_JoystickInit(void)
 	int port, slot;
 
 	printf("SDL_Joystick: JoystickInit begins\n");
-
+#ifndef NO_IOP_HANDLING
 #ifdef PS2SDL_ENABLE_MTAP
 #ifdef USE_FREESIO2
 	SifExecModuleBuffer(sio2man_irx, size_sio2man_irx, 0, NULL, &ret);
@@ -212,11 +212,12 @@ int SDL_SYS_JoystickInit(void)
 		return 0;
 	}
 #endif
+#endif
 
 	ret = padInit(0);
 	printf("SDL_Joystick: padInit: %d\n", ret);
 
-#ifdef PS2SDL_ENABLE_MTAP
+#if defined(PS2SDL_ENABLE_MTAP) && !defined(NO_IOP_HANDLING)
 	ret = mtapInit();
 	printf("SDL_Joystick: mtapInit: %d\n", ret);
 #endif
