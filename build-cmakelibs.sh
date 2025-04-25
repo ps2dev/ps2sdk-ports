@@ -178,7 +178,7 @@ build_ee opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLE
 build_ee libmodplug
 build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
-build_ee theora
+CFLAGS="-Wno-implicit-function-declaration" build_ee theora -DHAVE_STRING_H=ON
 
 # libtiff and libtiff_ps2_addons is mandatory for gsKit
 CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF
