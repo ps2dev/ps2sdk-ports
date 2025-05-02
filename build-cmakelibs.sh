@@ -70,7 +70,7 @@ function build_irx {
 # Try to solve windows linking issues
 $FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib &
 $FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
-$FETCH v1.9.4 https://github.com/lz4/lz4.git &
+$FETCH c99038d1bb46d9621f0c9e3ac6f0004a109eb67a https://github.com/lz4/lz4.git &
 $FETCH v1.9.2 https://github.com/nih-at/libzip.git &
 $FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
 $FETCH v1.6.43 https://github.com/glennrp/libpng &
