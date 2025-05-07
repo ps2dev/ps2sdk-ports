@@ -12,10 +12,7 @@ EE_OBJS    += romfs.o romfs_io.o
 EE_OBJS    := $(EE_OBJS:%=$(EE_OBJS_DIR)%)
 
 all: $(EE_OBJS_DIR) $(EE_LIB_DIR) $(EE_LIB)
-
-tools: tools/genromfs
 	$(MAKE) -C tools/genromfs all
-	cp -f tools/genromfs/genromfs $(DESTDIR)$(PS2SDK)/bin/
 
 $(EE_OBJS_DIR):
 	mkdir -p $(EE_OBJS_DIR)
@@ -32,6 +29,7 @@ install: all
 	mkdir -p $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f $(EE_LIB) $(DESTDIR)$(PS2SDK)/ports/lib
 	cp -f include/*.h $(DESTDIR)$(PS2SDK)/ports/include/
+	cp -f tools/genromfs/genromfs $(DESTDIR)$(PS2SDK)/bin/
 
 clean:
 	rm -f -r $(EE_OBJS_DIR) $(EE_LIB_DIR)

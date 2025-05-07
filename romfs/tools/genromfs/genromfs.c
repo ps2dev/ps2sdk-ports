@@ -57,21 +57,31 @@
  * Sorry about that.  Feel free to contact me if you have problems.
  */
 
+#ifdef __CYGWIN__
+#define _WIN32
+#endif
+
 #include <stdio.h>  /* Userland pieces of the ANSI C standard I/O package  */
 #include <stdlib.h> /* Userland prototypes of the ANSI C std lib functions */
+#include <stdint.h>
 #include <string.h> /* Userland prototypes of the string handling funcs    */
 #include <unistd.h> /* Userland prototypes of the Unix std system calls    */
 #include <fcntl.h>  /* Flag value for file handling functions              */
 #include <time.h>
+#if defined (_WIN32) && !defined(__CYGWIN__)
+#include <getopt.h>
+#include <winsock2.h>
+#include <shlwapi.h>
+#define lstat stat
+#else
+#include <netinet/in.h>	/* Consts & structs defined by the internet system */
 #include <fnmatch.h>
+#endif /* _WIN32 */
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include <netinet/in.h>	/* Consts & structs defined by the internet system */
-
-/* good old times without autoconf... */
-#if defined(__linux__) || defined(__sun__) || defined(__CYGWIN__)
+#include <inttypes.h>
+#if defined(__linux__) || defined(__sun__)
 #include <sys/sysmacros.h>
 #endif
 
@@ -193,7 +203,11 @@ int nodematch(char *pattern, struct filenode *node)
 	char *start = node->name;
 	/* XXX: ugly realbase is global */
 	if (pattern[0] == '/') start = node->realname + realbase;
+#if defined(_WIN32) && !defined(__CYGWIN__)
+	return !PathMatchSpec(start, pattern);
+#else
 	return fnmatch(pattern,start,FNM_PATHNAME|FNM_PERIOD);
+#endif
 }
 
 int findalign(struct filenode *node)
@@ -284,7 +298,7 @@ void dumpri(struct romfh *ri, struct filenode *n, FILE *f)
 {
 	int len;
 
-	len = strlen(n->name)+1;
+	len = strlen(n->name) + 1;
 	memcpy(bigbuf, ri, sizeof(*ri));
 	memcpy(bigbuf+16, n->name, len);
 	if (len&15) {
@@ -299,13 +313,13 @@ void dumpri(struct romfh *ri, struct filenode *n, FILE *f)
 #if 0
 	fprintf(stderr, "RI: [at %06x] %08lx, %08lx, %08lx, %08lx [%s]\n",
 		n->offset,
-		ntohl(ri->nextfh), ntohl(ri->spec),
-		ntohl(ri->size), ntohl(ri->checksum),
+		(long unsigned int)ntohl(ri->nextfh), (long unsigned int)ntohl(ri->spec),
+		(long unsigned int)ntohl(ri->size), (long unsigned int)ntohl(ri->checksum),
 		n->name);
 #endif
 }
 
-void dumpnode(struct filenode *node, FILE *f)
+int dumpnode(struct filenode *node, FILE *f)
 {
 	struct romfh ri;
 	struct filenode *p;
@@ -336,13 +350,19 @@ void dumpnode(struct filenode *node, FILE *f)
 			ri.spec = htonl(node->dirlist.head->offset);
 		}
 		dumpri(&ri, node, f);
-	} else if (S_ISLNK(node->modes)) {
+	}
+#if !defined(_WIN32) || defined(__CYGWIN__)
+	else if (S_ISLNK(node->modes)) {
 		ri.nextfh |= htonl(ROMFH_LNK);
 		dumpri(&ri, node, f);
 		memset(bigbuf, 0, sizeof(bigbuf));
-		readlink(node->realname, bigbuf, node->size);
+		if (readlink(node->realname, bigbuf, node->size) < 0) {
+			return 1;
+		}
 		dumpdataa(bigbuf, node->size, f);
-	} else if (S_ISREG(node->modes)) {
+	} 
+#endif
+	else if (S_ISREG(node->modes)) {
 		int offset, len, fd, max, avail;
 		ri.nextfh |= htonl(ROMFH_REG);
 		dumpri(&ri, node, f);
@@ -372,7 +392,9 @@ void dumpnode(struct filenode *node, FILE *f)
 			dumpdata(bigbuf, avail, f);
 			offset+=avail;
 		}
-	} else if (S_ISCHR(node->modes)) {
+	} 
+#if !defined(_WIN32) || defined(__CYGWIN__)
+	else if (S_ISCHR(node->modes)) {
 		ri.nextfh |= htonl(ROMFH_CHR);
 		ri.spec = htonl(major(node->devnode)<<16|minor(node->devnode));
 		dumpri(&ri, node, f);
@@ -387,16 +409,19 @@ void dumpnode(struct filenode *node, FILE *f)
 		ri.nextfh |= htonl(ROMFH_SCK);
 		dumpri(&ri, node, f);
 	}
+#endif
 
 	p = node->dirlist.head;
 	while (p->next) {
-		dumpnode(p, f);
+		if(dumpnode(p, f)) {
+            return 1;
+        }
 		p = p->next;
 	}
+	return 0;
 }
 
-void dumpall(struct filenode *node, int lastoff, FILE *f)
-{
+int dumpall(struct filenode *node, int lastoff, FILE *f) {
 	struct romfh ri;
 	struct filenode *p;
 
@@ -407,12 +432,16 @@ void dumpall(struct filenode *node, int lastoff, FILE *f)
 	dumpri(&ri, node, f);
 	p = node->dirlist.head;
 	while (p->next) {
-		dumpnode(p, f);
+		if(dumpnode(p, f)) {
+			return 1;
+		}
 		p = p->next;
 	}
 	/* Align the whole bunch to ROMBSIZE boundary */
 	if (lastoff&1023)
 		dumpzero(1024-(lastoff&1023), f);
+	
+	return 0;
 }
 
 /* Node manipulating functions */
@@ -495,7 +524,11 @@ struct filenode *findnode(struct filenode *node, dev_t dev, ino_t ino)
 	while (p->next) {
 		found = findnode(p, dev, ino);
 		if (found)
+#if defined(_WIN32) && !defined (__CYGWIN__)
+			return NULL;
+#else
 			return found;
+#endif
 		p = p->next;
 	}
 	return NULL;
@@ -579,14 +612,16 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 			fprintf(stderr, "ignoring '%s' (lstat failed)\n", n->realname);
 			freenode(n); continue;
 		}
-
+#if !defined(_WIN32) || defined(__CYGWIN__)
 		/* Handle special names */
 		if ( n->name[0] == '@' ) {
 			if (S_ISLNK(sb->st_mode)) {
 				/* this is a link to follow at build time */
 				n->name = n->name + 1; /* strip off the leading @ */
 				memset(bigbuf, 0, sizeof(bigbuf));
-				readlink(n->realname, bigbuf, sizeof(bigbuf));
+				if (readlink(n->realname, bigbuf, sizeof(bigbuf))) {
+					return -1;
+				}
 				n->realname = strdup(bigbuf);
 
 				if (lstat(n->realname, sb)) {
@@ -628,13 +663,17 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 				}
 			}
 		}
+#endif
 
 		setnode(n, sb->st_dev, sb->st_ino, sb->st_mode);
+
+#if !defined(_WIN32) || defined(__CYGWIN__)
 		/* Skip unreadable files/dirs */
 		if (!S_ISLNK(n->modes) && access(n->realname, R_OK)) {
 			fprintf(stderr, "ignoring '%s' (access failed)\n", n->realname);
 			freenode(n); continue;
 		}
+#endif
 
 		/* Look up old links */
 		if ( strcmp(n->name, ".") == 0 ) {
@@ -658,9 +697,12 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 			n->size = sb->st_size;
 		} else
 			curroffset = alignnode(n, curroffset, 0);
+
+#if !defined(_WIN32) || defined(__CYGWIN__)
 		if (S_ISLNK(sb->st_mode)) {
 			n->size = sb->st_size;
 		}
+#endif
 		curroffset += spaceneeded(n);
 		if (S_ISCHR(sb->st_mode) || S_ISBLK(sb->st_mode)) {
 			n->devnode = sb->st_rdev;
@@ -674,6 +716,9 @@ int processdir(int level, const char *base, const char *dirname, struct stat *sb
 				curroffset = processdir(level+1, n->realname, dp->d_name,
 							sb, n, root, curroffset);
 			}
+			
+			if(curroffset < 0)
+				return -1;
 		}
 	}
 	if (dirfd) closedir(dirfd);
@@ -780,7 +825,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (!volname) {
-		sprintf(buf, "rom %08lx", time(NULL));
+		sprintf(buf, "rom %" PRId64, (int64_t)time(NULL));
 		volname = buf;
 	}
 	if (!outf) {
@@ -802,9 +847,16 @@ int main(int argc, char *argv[])
 	root = newnode(dir, volname, 0);
 	root->parent = root;
 	lastoff = processdir (1, dir, dir, &sb, root, root, spaceneeded(root));
+	if(lastoff < 0) {
+		fprintf(stderr, "Error while processing directory.\n");
+        return 1;
+	}
 	if (verbose)
 		shownode(0, root, stderr);
-	dumpall(root, lastoff, f);
+	if(dumpall(root, lastoff, f)) {
+		fprintf(stderr, "Error while dumping!\n");
+        return 1;
+	}
 
-	exit(0);
+	return 0;
 }
