@@ -18,7 +18,7 @@ int SDL_HasMMX()
 #undef main
 int main(int argc, char *argv[])
 {
-#ifdef PS2SDL_ENABLE_MTAP
+#if defined(PS2SDL_ENABLE_MTAP) && !defined(NO_IOP_HANDLING)
 	SifInitRpc(0);
 
 	smod_mod_info_t info;
