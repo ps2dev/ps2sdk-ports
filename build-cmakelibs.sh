@@ -68,23 +68,23 @@ function build_irx {
 ## Clone repos
 ##
 # Try to solve windows linking issues
-$FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib &
-$FETCH v5.4.0 https://github.com/xz-mirror/xz.git &
-$FETCH c99038d1bb46d9621f0c9e3ac6f0004a109eb67a https://github.com/lz4/lz4.git &
-$FETCH v1.9.2 https://github.com/nih-at/libzip.git &
+$FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib.git &
+$FETCH v5.8.1 https://github.com/tukaani-project/xz.git &
+$FETCH v1.10.0 https://github.com/lz4/lz4.git &
+$FETCH v1.11.3 https://github.com/nih-at/libzip.git &
 $FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
-$FETCH v1.6.43 https://github.com/glennrp/libpng &
-$FETCH VER-2-10-4 https://github.com/freetype/freetype &
-$FETCH v1.14.0 https://github.com/google/googletest &
-$FETCH 0.2.5 https://github.com/yaml/libyaml &
-$FETCH 3.0.3 https://github.com/libjpeg-turbo/libjpeg-turbo &
+$FETCH v1.6.47 https://github.com/pnggroup/libpng.git &
+$FETCH VER-2-13-3 https://github.com/freetype/freetype.git &
+$FETCH v1.16.0 https://github.com/google/googletest.git &
+$FETCH 0.2.5 https://github.com/yaml/libyaml.git &
+$FETCH 3.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo.git &
 $FETCH v1.3.5 https://github.com/xiph/ogg.git &
 $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
-$FETCH v5.7.0-stable https://github.com/wolfSSL/wolfssl.git &
-$FETCH curl-8_7_1 https://github.com/curl/curl.git &
-$FETCH 1.9.5 https://github.com/open-source-parsers/jsoncpp.git &
-$FETCH libxmp-4.6.0 https://github.com/libxmp/libxmp.git &
-$FETCH v1.4 https://github.com/xiph/opus.git &
+$FETCH v5.8.0-stable https://github.com/wolfSSL/wolfssl.git &
+$FETCH curl-8_13_0 https://github.com/curl/curl.git &
+$FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
+$FETCH libxmp-4.6.2 https://github.com/libxmp/libxmp.git &
+$FETCH v1.5.2 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 # we need to clone whole repo because it uses `git describe --tags` for version info
@@ -92,27 +92,23 @@ $FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 $FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
-# We need to clone the whole repo and point to the specific hash for now,
-# till they release a new version with cmake compatibility
-$FETCH 096d0711ca3e294564a5c6ec18f5bbc3a2aac016 https://github.com/sezero/mikmod.git &
+$FETCH libmikmod-3.3.13 https://github.com/sezero/mikmod.git &
 # We need to clone a fork, this is a PR opened for ading cmake support
 # https://github.com/xiph/theora/pull/14
 $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 
 # gsKit requires libtiff
-$FETCH v4.6.0 https://gitlab.com/libtiff/libtiff.git &
+$FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
 
 # SDL requires to have gsKit
-$FETCH v1.4.0 https://github.com/ps2dev/gsKit &
+$FETCH v1.4.0 https://github.com/ps2dev/gsKit.git &
 
-# We need to clone the whole repo and point to the specific hash for now,
-# till a new version is released after this commit
-$FETCH 10c14e78b650e626293aa18155efec54cdee7098 https://github.com/libsdl-org/SDL.git &
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_mixer.git &
-$FETCH release-2.6.3 https://github.com/libsdl-org/SDL_image.git &
-$FETCH release-2.20.2 https://github.com/libsdl-org/SDL_ttf.git &
+$FETCH release-2.32.4 https://github.com/libsdl-org/SDL.git &
+$FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
+$FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
+$FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
 
-$FETCH libsmb2-6.1 https://github.com/sahlberg/libsmb2.git &
+$FETCH libsmb2-6.2 https://github.com/sahlberg/libsmb2.git &
 
 # We need to clone the whole repo and point to the specific hash for now,
 # till a new version is released after this commit
@@ -124,9 +120,9 @@ $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
 
 $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
 
-$FETCH R_2_6_2 https://github.com/libexpat/libexpat.git &
+$FETCH R_2_7_1 https://github.com/libexpat/libexpat.git &
 
-$FETCH v3.7.7 https://github.com/libarchive/libarchive.git &
+$FETCH v3.7.9 https://github.com/libarchive/libarchive.git &
 
 # wait for fetch jobs to finish
 wait
@@ -140,14 +136,18 @@ pushd build/jsoncpp
 sed -i -e 's/std::snprintf/snprintf/' include/json/config.h
 popd
 
+# NOTE: xz
+# flockfile and funlockfile should be made no-ops
+pushd build/xz
+sed -i -e 's/defined _WIN32/1/' lib/getopt.c
+popd
+
 # NOTE: libarchive
 pushd build/libarchive
 # _timezone used for newlib
 sed -i -e 's/defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)/1 || \0/' libarchive/archive_write_set_format_iso9660.c
 # 32-bit integer "unsigned long int" prototype not compatible with "unsigned int"
 sed -i -e 's/defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L/0 \&\& \0/' libarchive/xxhash.c
-# "getline" fallback polyfill not defined (patch already upstream)
-sed -i -e 's/getline(path, &alen, stdin)/0/' unzip/bsdunzip.c
 popd
 
 ###
@@ -159,55 +159,55 @@ cd build
 ## Build cmake projects
 ##
 build_ee zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF -DZLIB_BUILD_SHARED=OFF -DINSTALL_PKGCONFIG_DIR="${PS2SDK}/ports/lib/pkgconfig"
-build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF
-build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF
+build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF -DXZ_TOOL_XZ=OFF
+build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
-build_ee libimagequant -DLIB_INSTALL_DIR=lib -DBUILD_WITH_SSE=OFF
+build_ee libimagequant -DLIB_INSTALL_DIR=lib -DBUILD_WITH_SSE=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
 build_ee freetype
 build_ee googletest -DCMAKE_CXX_FLAGS='-DGTEST_HAS_POSIX_RE=0'
-build_ee libyaml
+build_ee libyaml -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee libjpeg-turbo -DENABLE_SHARED=FALSE -DWITH_SIMD=0
-build_ee ogg
-build_ee vorbis
-CFLAGS="-DWOLFSSL_GETRANDOM -DNO_WRITEV" build_ee wolfssl -DWOLFSSL_CRYPT_TESTS=OFF -DWOLFSSL_EXAMPLES=OFF -DWOLFSSL_CURL=ON -DWARNING_C_FLAGS=-w
+build_ee ogg -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+build_ee vorbis -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+CFLAGS="-DWOLFSSL_GETRANDOM -DNO_WRITEV -DXINET_PTON\(...\)=0" build_ee wolfssl -DWOLFSSL_CRYPT_TESTS=OFF -DWOLFSSL_EXAMPLES=OFF -DWOLFSSL_CURL=ON -DWARNING_C_FLAGS=-w
 CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build_ee curl -DENABLE_THREADED_RESOLVER=OFF -DCURL_USE_OPENSSL=OFF -DCURL_USE_WOLFSSL=ON -DCURL_DISABLE_SOCKETPAIR=ON -DHAVE_BASENAME=NO -DHAVE_ATOMIC=NO -DENABLE_WEBSOCKETS=ON -DENABLE_IPV6=OFF -DCURL_USE_LIBPSL=OFF -DCURL_USE_LIBSSH2=OFF
 build_ee libxmp -DBUILD_SHARED=OFF
 build_ee opus
 build_ee opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
-build_ee libmodplug
+build_ee libmodplug -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
-build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF
+build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 CFLAGS="-Wno-implicit-function-declaration" build_ee theora -DHAVE_STRING_H=ON
 
 # libtiff and libtiff_ps2_addons is mandatory for gsKit
-CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF
+CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 # gsKit is mandatory for SDL
-build_ee gsKit
+build_ee gsKit -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
-build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
-build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF
+build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
+build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2IMAGE_TIF=OFF
 build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
 build_ee enet
 
 # Build argtable2
-CFLAGS="-Wno-implicit-function-declaration" build_ee argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON
+CFLAGS="-Wno-implicit-function-declaration" build_ee argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 # Copy manually the argtable2.h header
 install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 
-build_ee argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF
+build_ee argtable3 -DARGTABLE3_INSTALL_CMAKEDIR="${PS2SDK}/ports/lib/cmake/" -DARGTABLE3_REPLACE_GETOPT=OFF -DARGTABLE3_ENABLE_EXAMPLES=OFF -DARGTABLE3_ENABLE_TESTS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
-build_ee libsmb2
-build_ee libsmb2 -DPS2RPC=1
-build_iop libsmb2
+build_ee libsmb2 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+build_ee libsmb2 -DPS2RPC=1 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+build_iop libsmb2 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 # Disabling for now, as it has some issues with the IRX build in CPU with several cores
-# build_irx libsmb2 -DBUILD_IRX=1
+# build_irx libsmb2 -DBUILD_IRX=1 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
-CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
+CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
-CFLAGS="-Darc4random_buf=random -DHAVE_GETRANDOM" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
+CFLAGS="-D_BSD_SOURCE" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
 build_ee libarchive -DBUILD_SHARED_LIBS=OFF -DENABLE_WERROR=OFF
 
 # Finish
