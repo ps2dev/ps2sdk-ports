@@ -101,9 +101,10 @@ $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 $FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
 
 # SDL requires to have gsKit
-$FETCH v1.4.0 https://github.com/ps2dev/gsKit.git &
+$FETCH v1.4.1 https://github.com/ps2dev/gsKit.git &
 
-$FETCH release-2.32.4 https://github.com/libsdl-org/SDL.git &
+# Point to a concrete hash for now, till the SDL team releases a new version
+$FETCH d0c2d8bc40a90cc1a763f6cf5397e8c9958a33d8 https://github.com/libsdl-org/SDL.git &
 $FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
 $FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
 $FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
@@ -142,6 +143,11 @@ pushd build/xz
 sed -i -e 's/defined _WIN32/1/' lib/getopt.c
 popd
 
+# NOTE: ARGTABLE2
+pushd build/argtable2-13
+sed -i -e 's/defined __GNU_LIBRARY__/1/' src/getopt.h
+popd
+
 # NOTE: libarchive
 pushd build/libarchive
 # _timezone used for newlib
@@ -178,7 +184,7 @@ build_ee opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLE
 build_ee libmodplug -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-CFLAGS="-Wno-implicit-function-declaration" build_ee theora -DHAVE_STRING_H=ON
+CFLAGS="-Wno-implicit-function-declaration" build_ee theora -DHAVE_STRING_H=ON -DBUILD_EXAMPLES=OFF
 
 # libtiff and libtiff_ps2_addons is mandatory for gsKit
 CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
@@ -193,7 +199,7 @@ build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 build_ee enet
 
 # Build argtable2
-CFLAGS="-Wno-implicit-function-declaration" build_ee argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+CFLAGS="-Wno-implicit-function-declaration -D__GNU_LIBRARY__" build_ee argtable2-13 -DHAVE_STRINGS_H=ON -DHAVE_STDC_HEADERS=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 # Copy manually the argtable2.h header
 install -m644 argtable2-13/src/argtable2.h $PS2SDK/ports/include/
 
