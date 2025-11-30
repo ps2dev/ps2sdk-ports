@@ -11,7 +11,6 @@ LIBS := \
 	madplay\
 	ps2stuff\
 	ps2gl\
-	ps2_drivers\
 	romfs\
 	sdl\
 	sdlgfx\
@@ -52,7 +51,7 @@ aalib:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 
-cmakelibs: ps2_drivers libtiff
+cmakelibs: libtiff
 	./build-cmakelibs.sh
 
 clean-cmakelibs:
@@ -106,11 +105,6 @@ madplay: cmakelibs libid3tag libmad
 ode:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
-
-ps2_drivers:
-	./fetch.sh 1.6.4 https://github.com/fjtrujy/ps2_drivers
-	$(MAKE) -C build/$@ all
-	$(MAKE) -C build/$@ install
 
 ps2stuff:
 	./fetch.sh master https://github.com/ps2dev/ps2stuff
