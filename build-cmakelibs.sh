@@ -103,8 +103,11 @@ $FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
 # SDL requires to have gsKit
 $FETCH v1.4.1 https://github.com/ps2dev/gsKit.git &
 
+# SDL requires ps2_drivers
+$FETCH 1.7.0 https://github.com/fjtrujy/ps2_drivers &
+
 # Point to a concrete hash for now, till the SDL team releases a new version
-$FETCH d0c2d8bc40a90cc1a763f6cf5397e8c9958a33d8 https://github.com/libsdl-org/SDL.git &
+$FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
 $FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
 $FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
 $FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
@@ -191,6 +194,8 @@ CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF -DCM
 
 # gsKit is mandatory for SDL
 build_ee gsKit -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+# ps2_drivers is mandatory for SDL
+build_ee ps2_drivers -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DBUILD_SAMPLES=OFF
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
 build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2IMAGE_TIF=OFF
