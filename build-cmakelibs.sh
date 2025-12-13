@@ -104,7 +104,7 @@ $FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
 $FETCH v1.4.1 https://github.com/ps2dev/gsKit.git &
 
 # SDL requires ps2_drivers
-$FETCH 1.7.0 https://github.com/fjtrujy/ps2_drivers &
+$FETCH 1.7.1 https://github.com/fjtrujy/ps2_drivers &
 
 # Point to a concrete hash for now, till the SDL team releases a new version
 $FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
@@ -126,7 +126,7 @@ $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
 
 $FETCH R_2_7_1 https://github.com/libexpat/libexpat.git &
 
-$FETCH v3.7.9 https://github.com/libarchive/libarchive.git &
+$FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
 
 # wait for fetch jobs to finish
 wait
