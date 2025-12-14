@@ -6,6 +6,7 @@ LIBS := \
 	libjpeg_ps2_addons\
 	libmad\
 	libtap\
+	imgui\
 	libtiff\
 	lua\
 	madplay\
@@ -80,6 +81,11 @@ libtap:
 	./fetch.sh master https://github.com/ps2dev/libtap
 	$(MAKE) -C build/$@ -f Makefile.PS2 all
 	$(MAKE) -C build/$@ -f Makefile.PS2 install
+
+imgui:
+	./fetch.sh v1.91.2 https://github.com/ocornut/imgui.git
+	$(MAKE) -C imgui all
+	$(MAKE) -C imgui install
 
 clean-libtap:
 	$(MAKE) -C libtap -f Makefile.PS2 clean
