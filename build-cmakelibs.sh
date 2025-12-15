@@ -89,6 +89,7 @@ $FETCH v1.5.2 https://github.com/xiph/opus.git &
 # till they release a new version with cmake compatibility
 # we need to clone whole repo because it uses `git describe --tags` for version info
 $FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
+$FETCH 1.5.0 https://github.com/xiph/flac.git true &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
 $FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
@@ -184,6 +185,7 @@ CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build_ee curl -DENABLE
 build_ee libxmp -DBUILD_SHARED=OFF
 build_ee opus
 build_ee opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
+build_ee flac -DCMAKE_BUILD_TYPE=Release -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DINSTALL_MANPAGES=OFF -DCMAKE_C_FLAGS='-Wno-incompatible-pointer-types'
 build_ee libmodplug -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
