@@ -130,11 +130,14 @@ $FETCH R_2_7_1 https://github.com/libexpat/libexpat.git &
 $FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
 
 $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
+
 # wait for fetch jobs to finish
 wait
 
 # extract argtable2
 tar -xzf build/argtable2-13.tar.gz -C build
+
+git apply --directory build/pcre2 pcre2-ps2.patch
 
 # NOTE: jsoncpp
 # "snprintf" not found in "std" namespace error may occur, so patch that out here.

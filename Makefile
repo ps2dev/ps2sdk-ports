@@ -19,7 +19,6 @@ LIBS := \
 	sdlttf\
 	SIOCookie\
 	unzip\
-	pcre2\
 
 LIBS_SAMPLES := \
 	aalib\
