@@ -68,65 +68,66 @@ function build_irx {
 ## Clone repos
 ##
 # Try to solve windows linking issues
-# $FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib.git &
-# $FETCH v5.8.1 https://github.com/tukaani-project/xz.git &
-# $FETCH v1.10.0 https://github.com/lz4/lz4.git &
-# $FETCH v1.11.3 https://github.com/nih-at/libzip.git &
-# $FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
-# $FETCH v1.6.47 https://github.com/pnggroup/libpng.git &
-# $FETCH VER-2-13-3 https://github.com/freetype/freetype.git &
-# $FETCH v1.16.0 https://github.com/google/googletest.git &
-# $FETCH 0.2.5 https://github.com/yaml/libyaml.git &
-# $FETCH 3.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo.git &
-# $FETCH v1.3.5 https://github.com/xiph/ogg.git &
-# $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
-# $FETCH v5.8.0-stable https://github.com/wolfSSL/wolfssl.git &
-# $FETCH curl-8_13_0 https://github.com/curl/curl.git &
-# $FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
-# $FETCH libxmp-4.6.2 https://github.com/libxmp/libxmp.git &
-# $FETCH v1.5.2 https://github.com/xiph/opus.git &
-# # We need to clone the whole repo and point to the specific hash for now,
-# # till they release a new version with cmake compatibility
-# # we need to clone whole repo because it uses `git describe --tags` for version info
-# $FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
-# # We need to clone the whole repo and point to the specific hash for now,
-# # till they release a new version with cmake compatibility
-# $FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
-# $FETCH libmikmod-3.3.13 https://github.com/sezero/mikmod.git &
-# # We need to clone a fork, this is a PR opened for ading cmake support
-# # https://github.com/xiph/theora/pull/14
-# $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
-#
-# # gsKit requires libtiff
-# $FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
-#
-# # SDL requires to have gsKit
-# $FETCH v1.4.1 https://github.com/ps2dev/gsKit.git &
-#
-# # SDL requires ps2_drivers
-# $FETCH 1.7.1 https://github.com/fjtrujy/ps2_drivers &
-#
-# # Point to a concrete hash for now, till the SDL team releases a new version
-# $FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
-# $FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
-# $FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
-# $FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
-#
-# $FETCH libsmb2-6.2 https://github.com/sahlberg/libsmb2.git &
-#
-# # We need to clone the whole repo and point to the specific hash for now,
-# # till a new version is released after this commit
-# $FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git &
-#
-# # Use wget to download argtable2
-# wget -c --directory-prefix=build  http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz &
-# $FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
-#
-# $FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
-#
-# $FETCH R_2_7_1 https://github.com/libexpat/libexpat.git &
-#
-# $FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
+$FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib.git &
+$FETCH v5.8.1 https://github.com/tukaani-project/xz.git &
+$FETCH v1.10.0 https://github.com/lz4/lz4.git &
+$FETCH v1.11.3 https://github.com/nih-at/libzip.git &
+$FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
+$FETCH v1.6.47 https://github.com/pnggroup/libpng.git &
+$FETCH VER-2-13-3 https://github.com/freetype/freetype.git &
+$FETCH v1.16.0 https://github.com/google/googletest.git &
+$FETCH 0.2.5 https://github.com/yaml/libyaml.git &
+$FETCH 3.1.0 https://github.com/libjpeg-turbo/libjpeg-turbo.git &
+$FETCH v1.3.5 https://github.com/xiph/ogg.git &
+$FETCH v1.3.7 https://github.com/xiph/vorbis.git &
+$FETCH v5.8.0-stable https://github.com/wolfSSL/wolfssl.git &
+$FETCH curl-8_13_0 https://github.com/curl/curl.git &
+$FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
+$FETCH libxmp-4.6.2 https://github.com/libxmp/libxmp.git &
+$FETCH v1.5.2 https://github.com/xiph/opus.git &
+# We need to clone the whole repo and point to the specific hash for now,
+# till they release a new version with cmake compatibility
+# we need to clone whole repo because it uses `git describe --tags` for version info
+$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
+$FETCH 1.5.0 https://github.com/xiph/flac.git true &
+# We need to clone the whole repo and point to the specific hash for now,
+# till they release a new version with cmake compatibility
+$FETCH d1b97ed0020bc620a059d3675d1854b40bd2608d https://github.com/Konstanty/libmodplug.git &
+$FETCH libmikmod-3.3.13 https://github.com/sezero/mikmod.git &
+# We need to clone a fork, this is a PR opened for ading cmake support
+# https://github.com/xiph/theora/pull/14
+$FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
+
+# gsKit requires libtiff
+$FETCH v4.7.0 https://gitlab.com/libtiff/libtiff.git &
+
+# SDL requires to have gsKit
+$FETCH v1.4.1 https://github.com/ps2dev/gsKit.git &
+
+# SDL requires ps2_drivers
+$FETCH 1.7.1 https://github.com/fjtrujy/ps2_drivers &
+
+# Point to a concrete hash for now, till the SDL team releases a new version
+$FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
+$FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
+$FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
+$FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
+
+$FETCH libsmb2-6.2 https://github.com/sahlberg/libsmb2.git &
+
+# We need to clone the whole repo and point to the specific hash for now,
+# till a new version is released after this commit
+$FETCH 7083138fd401faa391c4f829a86b50fdb9c5c727 https://github.com/lsalzman/enet.git &
+
+# Use wget to download argtable2
+wget -c --directory-prefix=build  http://prdownloads.sourceforge.net/argtable/argtable2-13.tar.gz &
+$FETCH v3.2.2.f25c624 https://github.com/argtable/argtable3.git &
+
+$FETCH v1.7.3 https://github.com/hyperrealm/libconfig.git &
+
+$FETCH R_2_7_1 https://github.com/libexpat/libexpat.git &
+
+$FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
 
 $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
 # wait for fetch jobs to finish
@@ -187,6 +188,7 @@ CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build_ee curl -DENABLE
 build_ee libxmp -DBUILD_SHARED=OFF
 build_ee opus
 build_ee opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
+build_ee flac -DCMAKE_BUILD_TYPE=Release -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DINSTALL_MANPAGES=OFF -DCMAKE_C_FLAGS='-Wno-incompatible-pointer-types'
 build_ee libmodplug -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
