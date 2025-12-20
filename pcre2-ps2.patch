@@ -1,0 +1,40 @@
+From 324d0029ed5ddc9d5a4e1e4c3b4d7e3d2633a158 Mon Sep 17 00:00:00 2001
+From: Korbo <korbin.m.marshall@gmail.com>
+Date: Sat, 13 Dec 2025 11:54:22 -0600
+Subject: [PATCH] fix pointer issue for ps2 port
+
+---
+ src/pcre2_compile.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/pcre2_compile.c b/src/pcre2_compile.c
+index f126e41..960452f 100644
+--- a/src/pcre2_compile.c
++++ b/src/pcre2_compile.c
+@@ -1399,12 +1399,12 @@ too big. If *errorcodeptr is returned as zero it means no number was found. */
+ /* Deal with {,m} or n too big. If we successfully read m there is no need to
+ check m >= n because n defaults to zero. */
+ 
+-if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &min, errorcodeptr))
++if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, (int *)&min, errorcodeptr))
+   {
+   if (*errorcodeptr != 0) goto EXIT;    /* n too big */
+   p++;  /* Skip comma and subsequent spaces */
+   while (p < ptrend && (*p == CHAR_SPACE || *p == CHAR_HT)) p++;
+-  if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &max, errorcodeptr))
++  if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, (int *)&max, errorcodeptr))
+     {
+     if (*errorcodeptr != 0) goto EXIT;  /* m too big */
+     }
+@@ -1423,7 +1423,7 @@ else
+     {
+     p++;    /* Skip comma and subsequent spaces */
+     while (p < ptrend && (*p == CHAR_SPACE || *p == CHAR_HT)) p++;
+-    if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, &max, errorcodeptr))
++    if (!read_number(&p, ptrend, -1, MAX_REPEAT_COUNT, ERR5, (int *)&max, errorcodeptr))
+       {
+       if (*errorcodeptr != 0) goto EXIT;   /* m too big */
+       }
+-- 
+2.51.1
+
