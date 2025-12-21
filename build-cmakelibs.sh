@@ -129,6 +129,8 @@ $FETCH R_2_7_1 https://github.com/libexpat/libexpat.git &
 
 $FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
 
+$FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
+
 # wait for fetch jobs to finish
 wait
 
@@ -168,6 +170,7 @@ cd build
 ##
 ## Build cmake projects
 ##
+
 build_ee zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF -DZLIB_BUILD_SHARED=OFF -DINSTALL_PKGCONFIG_DIR="${PS2SDK}/ports/lib/pkgconfig"
 build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF -DXZ_TOOL_XZ=OFF
 build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
@@ -222,6 +225,8 @@ CFLAGS="-DHAVE_NEWLOCALE -DHAVE_USELOCALE -DHAVE_FREELOCALE" build_ee libconfig 
 
 CFLAGS="-D_BSD_SOURCE" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_SHARED_LIBS=OFF -DEXPAT_BUILD_TOOLS=OFF
 build_ee libarchive -DBUILD_SHARED_LIBS=OFF -DENABLE_WERROR=OFF -DENABLE_TEST=OFF
+
+CFLAGS="-Wno-incompatible-pointer-types -G0 -O2 -gdwarf-2 -gz " build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF
 
 # Finish
 cd ..
