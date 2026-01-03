@@ -67,12 +67,11 @@ function build_irx {
 ##
 ## Clone repos
 ##
-# Try to solve windows linking issues
-$FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib.git &
+$FETCH v1.3.1.2 https://github.com/madler/zlib.git &
 $FETCH v5.8.2 https://github.com/tukaani-project/xz.git &
 $FETCH v1.10.0 https://github.com/lz4/lz4.git &
 $FETCH v1.11.4 https://github.com/nih-at/libzip.git &
-$FETCH 2.18.0 https://github.com/ImageOptim/libimagequant.git &
+$FETCH 4.4.1 https://github.com/ImageOptim/libimagequant.git &
 $FETCH v1.6.53 https://github.com/pnggroup/libpng.git &
 $FETCH VER-2-14-1 https://github.com/freetype/freetype.git &
 $FETCH v1.17.0 https://github.com/google/googletest.git &
@@ -83,7 +82,7 @@ $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
 $FETCH v5.8.2-stable https://github.com/wolfSSL/wolfssl.git &
 $FETCH curl-8_17_0 https://github.com/curl/curl.git &
 $FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
-$FETCH libxmp-4.6.2 https://github.com/libxmp/libxmp.git &
+$FETCH libxmp-4.6.3 https://github.com/libxmp/libxmp.git &
 $FETCH v1.6 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
