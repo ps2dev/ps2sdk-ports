@@ -111,6 +111,7 @@ $FETCH 1.7.1 https://github.com/fjtrujy/ps2_drivers &
 $FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
 $FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
 $FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
+$FETCH release-2.2.0 https://github.com/libsdl-org/SDL_net.git 
 $FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
 
 $FETCH libsmb2-6.2 https://github.com/sahlberg/libsmb2.git &
@@ -160,6 +161,10 @@ sed -i -e 's/defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__
 sed -i -e 's/defined (__STDC_VERSION__) && __STDC_VERSION__ >= 199901L/0 \&\& \0/' libarchive/xxhash.c
 popd
 
+pushd build/SDL_net
+sed -i -e 's|#include <net/if.h>||' SDLnetsys.h
+popd
+
 ###
 ### Change to the build folder
 ###
@@ -200,6 +205,7 @@ build_ee gsKit -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee ps2_drivers -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DBUILD_SAMPLES=OFF
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
 build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
+build_ee SDL_net -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2NET_SAMPLES=OFF
 build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2IMAGE_TIF=OFF
 build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
 
