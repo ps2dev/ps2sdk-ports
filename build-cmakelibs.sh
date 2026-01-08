@@ -83,7 +83,7 @@ $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
 $FETCH v5.8.2-stable https://github.com/wolfSSL/wolfssl.git &
 $FETCH curl-8_17_0 https://github.com/curl/curl.git &
 $FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
-$FETCH libxmp-4.6.2 https://github.com/libxmp/libxmp.git &
+$FETCH libxmp-4.6.3 https://github.com/libxmp/libxmp.git &
 $FETCH v1.6 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
