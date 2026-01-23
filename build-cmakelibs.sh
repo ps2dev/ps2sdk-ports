@@ -132,6 +132,7 @@ $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
 
 $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 
+$FETCH ee-sans_glib https://github.com/ps2dev/fluidsynth &
 # wait for fetch jobs to finish
 wait
 
@@ -236,5 +237,6 @@ CFLAGS="-Wno-incompatible-pointer-types" build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=
 
 build_ee tinyxml2 -DBUILD_TESTS=OFF
 
+build_ee LIBFLUID_CPPFLAGS="-DFLUIDSYNTH_NOT_A_DLL -DFLUID_MUTEX_INIT" fluidsynth -Denable=aufile=OFF -DBUILD_SHARED_LIBS=OFF -Denable-dbus=OFF -Denable-ipv6=OFF -Denable-jack=OFF -Denable-libinstpatch=OFF -Denable-libsndfile=OFF -Denable-midishare=OFF -Denable-network=OFF -Denable-oss=OFF -Denable-oss=OFF -Denable-dsound=OFF -Denable-wasapi=OFF -Denable-waveout=OFF -Denable-winmidi=OFF -Denable-pulseaudio=OFF -Denable-pipewire=OFF -Denable-readline=OFF -Denable-threads=OFF -Denable-openmp=OFF
 # Finish
 cd ..
