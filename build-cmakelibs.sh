@@ -130,6 +130,8 @@ $FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
 
 $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
 
+$FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
+
 # wait for fetch jobs to finish
 wait
 
@@ -231,6 +233,8 @@ CFLAGS="-D_BSD_SOURCE" build_ee libexpat/expat -DEXPAT_BUILD_EXAMPLES=OFF -DEXPA
 build_ee libarchive -DBUILD_SHARED_LIBS=OFF -DENABLE_WERROR=OFF -DENABLE_TEST=OFF
 
 CFLAGS="-Wno-incompatible-pointer-types" build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF
+
+build_ee tinyxml2 -DBUILD_TESTS=OFF
 
 # Finish
 cd ..
