@@ -132,6 +132,8 @@ $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
 
 $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 
+# NOTE: We need to clone this commit until a version is released.
+
 $FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git
 
 # wait for fetch jobs to finish
