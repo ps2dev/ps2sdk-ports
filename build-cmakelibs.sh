@@ -132,6 +132,10 @@ $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
 
 $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 
+# NOTE: We need to clone this commit until a version is released.
+
+$FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git
+
 # wait for fetch jobs to finish
 wait
 
@@ -235,6 +239,8 @@ build_ee libarchive -DBUILD_SHARED_LIBS=OFF -DENABLE_WERROR=OFF -DENABLE_TEST=OF
 CFLAGS="-Wno-incompatible-pointer-types" build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF
 
 build_ee tinyxml2 -DBUILD_TESTS=OFF
+
+build_ee bzip2 -DENABLE_LIBRARY=ON -DENABLE_STATIC_LIB=ON -DENABLE_SHARED_LIB=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 # Finish
 cd ..
