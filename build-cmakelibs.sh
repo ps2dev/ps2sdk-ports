@@ -134,7 +134,7 @@ $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 
 # NOTE: We need to clone this commit until a version is released.
 
-$FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git
+$FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git &
 
 $FETCH 184dac64cd556f435c309bb83ed4a31fe14e1cc5 https://github.com/libgme/game-music-emu.git
 
