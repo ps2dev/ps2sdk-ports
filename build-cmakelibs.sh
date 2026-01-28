@@ -136,6 +136,8 @@ $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 
 $FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git
 
+$FETCH 184dac64cd556f435c309bb83ed4a31fe14e1cc5 https://github.com/libgme/game-music-emu.git
+
 # wait for fetch jobs to finish
 wait
 
@@ -241,6 +243,8 @@ CFLAGS="-Wno-incompatible-pointer-types" build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=
 build_ee tinyxml2 -DBUILD_TESTS=OFF
 
 build_ee bzip2 -DENABLE_LIBRARY=ON -DENABLE_STATIC_LIB=ON -DENABLE_SHARED_LIB=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+build_ee game-music-emu -DGME_BUILD_SHARED=OFF -DGME_ENABLE_UBSAN=OFF -DGME_BUILD_TESTING=OFF -DGME_BUILD_EXAMPLES=OFF
 
 # Finish
 cd ..
