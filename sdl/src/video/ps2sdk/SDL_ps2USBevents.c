@@ -44,14 +44,14 @@ int PS2_InitUSB(_THIS)
 	int ret;
     
 	printf("[PS2] Init USB driver\n");
-
-	SifExecModuleBuffer(ps2usbd_irx, size_ps2usbd_irx, 0, NULL, &ret);
-	if (ret < 0) 
+#ifndef NO_IOP_HANDLING
+	id = SifExecModuleBuffer(ps2usbd_irx, size_ps2usbd_irx, 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
 	{
 		SDL_SetError("[PS2] Failed to load module: usbd_irx\n");
 		return -1;
 	}  
-    
+#endif 
 	usbState = USB_AVAILABLE;
     
 	printf("[PS2] Init USB driver done\n");
