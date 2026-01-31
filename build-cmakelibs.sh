@@ -137,6 +137,7 @@ $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 $FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git
 
 $FETCH v3.0.0 https://github.com/Tehreer/SheenBidi.git
+$FETCH 26.01 https://github.com/FNA-XNA/FAudio.git
 
 # wait for fetch jobs to finish
 wait
@@ -245,6 +246,7 @@ build_ee tinyxml2 -DBUILD_TESTS=OFF
 build_ee bzip2 -DENABLE_LIBRARY=ON -DENABLE_STATIC_LIB=ON -DENABLE_SHARED_LIB=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
 build_ee SheenBidi 
+CFLAGS="-Wno-incompatible-pointer-types" build_ee FAudio -DBUILD_SDL3=OFF
 
 # Finish
 cd ..
