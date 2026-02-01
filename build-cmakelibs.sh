@@ -140,6 +140,7 @@ $FETCH 184dac64cd556f435c309bb83ed4a31fe14e1cc5 https://github.com/libgme/game-m
 
 $FETCH 26.01 https://github.com/FNA-XNA/FAudio.git
 
+$FETCH ee-sans_glib https://github.com/ps2dev/fluidsynth &
 # wait for fetch jobs to finish
 wait
 
@@ -250,5 +251,6 @@ CFLAGS="-Wno-incompatible-pointer-types" build_ee FAudio -DBUILD_SDL3=OFF
 
 build_ee game-music-emu -DGME_BUILD_SHARED=OFF -DGME_ENABLE_UBSAN=OFF -DGME_BUILD_TESTING=OFF -DGME_BUILD_EXAMPLES=OFF
 
+build_ee LIBFLUID_CPPFLAGS="-DFLUIDSYNTH_NOT_A_DLL -DFLUID_MUTEX_INIT" fluidsynth -Denable=aufile=OFF -DBUILD_SHARED_LIBS=OFF -Denable-dbus=OFF -Denable-ipv6=OFF -Denable-jack=OFF -Denable-libinstpatch=OFF -Denable-libsndfile=OFF -Denable-midishare=OFF -Denable-network=OFF -Denable-oss=OFF -Denable-oss=OFF -Denable-dsound=OFF -Denable-wasapi=OFF -Denable-waveout=OFF -Denable-winmidi=OFF -Denable-pulseaudio=OFF -Denable-pipewire=OFF -Denable-readline=OFF -Denable-threads=OFF -Denable-openmp=OFF
 # Finish
 cd ..
