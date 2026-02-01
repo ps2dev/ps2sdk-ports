@@ -135,6 +135,13 @@ $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
 # Concrete hash for indicating the version of libmpg used 
 $FETCH 2eb4320e161247a15f991a30e7919902a3629f19 https://github.com/libsdl-org/mpg123.git &
 
+# NOTE: We need to clone this commit until a version is released.
+$FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git &
+
+$FETCH 184dac64cd556f435c309bb83ed4a31fe14e1cc5 https://github.com/libgme/game-music-emu.git &
+
+$FETCH 26.01 https://github.com/FNA-XNA/FAudio.git
+
 # wait for fetch jobs to finish
 wait
 
@@ -240,6 +247,12 @@ CFLAGS="-Wno-incompatible-pointer-types" build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=
 build_ee tinyxml2 -DBUILD_TESTS=OFF
 
 build_ee mpg123/ports/cmake -DBUILD_PROGRAM=OFF
+
+build_ee bzip2 -DENABLE_LIBRARY=ON -DENABLE_STATIC_LIB=ON -DENABLE_SHARED_LIB=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+CFLAGS="-Wno-incompatible-pointer-types" build_ee FAudio -DBUILD_SDL3=OFF
+
+build_ee game-music-emu -DGME_BUILD_SHARED=OFF -DGME_ENABLE_UBSAN=OFF -DGME_BUILD_TESTING=OFF -DGME_BUILD_EXAMPLES=OFF
 
 # Finish
 cd ..
