@@ -102,7 +102,7 @@ $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 $FETCH v4.7.1 https://gitlab.com/libtiff/libtiff.git &
 
 # SDL requires to have gsKit
-$FETCH v1.4.2 https://github.com/ps2dev/gsKit.git &
+$FETCH v1.5.0 https://github.com/ps2dev/gsKit.git &
 
 # SDL requires ps2_drivers
 $FETCH 1.7.1 https://github.com/fjtrujy/ps2_drivers &
