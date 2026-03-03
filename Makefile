@@ -9,6 +9,7 @@ LIBS := \
 	libtiff\
 	lua\
 	madplay\
+	mmceman\
 	ps2stuff\
 	ps2gl\
 	romfs\
@@ -51,7 +52,7 @@ aalib:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 
-cmakelibs: libtiff
+cmakelibs: libtiff mmceman
 	./build-cmakelibs.sh
 
 clean-cmakelibs:
@@ -99,6 +100,13 @@ sample-lua:
 madplay: cmakelibs libid3tag libmad
 	$(MAKE) -C $@ all
 	$(MAKE) -C $@ install
+
+mmceman:
+	./fetch.sh popstarter https://github.com/ps2-mmce/mmceman
+	$(MAKE) -C build/$@ all
+	cp build/$@/mmceman/irx/mmceman.irx $(PS2SDK)/iop/irx/
+	cp build/$@/mmcedrv/irx/mmcedrv.irx $(PS2SDK)/iop/irx/
+	cp build/$@/mmceigr/irx/mmceigr.irx $(PS2SDK)/iop/irx/
 
 # depends on dream2gl and ps2Perf
 # Broken
