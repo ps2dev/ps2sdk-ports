@@ -102,7 +102,7 @@ madplay: cmakelibs libid3tag libmad
 	$(MAKE) -C $@ install
 
 mmceman:
-	./fetch.sh popstarter https://github.com/ps2-mmce/mmceman
+	./fetch.sh v2.1 https://github.com/ps2-mmce/mmceman
 	$(MAKE) -C build/$@ all
 	cp build/$@/mmceman/irx/mmceman.irx $(PS2SDK)/iop/irx/
 	cp build/$@/mmcedrv/irx/mmcedrv.irx $(PS2SDK)/iop/irx/
