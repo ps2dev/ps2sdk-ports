@@ -1,6 +1,7 @@
 LIBS := \
 	aalib\
 	cmakelibs\
+	hash-library\
 	libconfuse\
 	libid3tag\
 	libjpeg_ps2_addons\
@@ -39,7 +40,7 @@ all: libraries
 libraries: $(LIBS)
 
 $(addprefix clean-, $(LIBS)):
-	-$(MAKE) -C $(@:clean-%=%) clean
+	$(MAKE) -C $(@:clean-%=%) clean
 
 $(addprefix sample-, $(LIBS_SAMPLES)): $(@:sample-%=%)
 	$(MAKE) -C $(@:sample-%=%) sample
@@ -57,6 +58,10 @@ cmakelibs: libtiff mmceman
 
 clean-cmakelibs:
 	rm -rf ./build
+
+hash-library:
+	$(MAKE) -C $@ all
+	$(MAKE) -C $@ install
 
 libconfuse:
 	./fetch.sh v3.3 https://github.com/libconfuse/libconfuse
