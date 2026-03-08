@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: hash-library
+Description: Portable C++ hashing library
+Version: 8
+Libs: -L${libdir} -lhash_library
+Cflags: -I${includedir}/hash-library

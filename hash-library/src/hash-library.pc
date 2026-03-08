@@ -1,0 +1,10 @@
+prefix=/usr/local/ps2dev/ps2sdk/ports
+exec_prefix=/usr/local/ps2dev/ps2sdk/ports
+libdir=/usr/local/ps2dev/ps2sdk/ports/lib
+includedir=/usr/local/ps2dev/ps2sdk/include
+
+Name: hash-library
+Description: Portable C++ hashing library
+Version: 8
+Libs: -L${libdir} -lhash_library
+Cflags: -I${includedir}/hash-library
