@@ -114,6 +114,10 @@ $FETCH release-2.8.8 https://github.com/libsdl-org/SDL_image.git &
 $FETCH release-2.2.0 https://github.com/libsdl-org/SDL_net.git 
 $FETCH release-2.24.0 https://github.com/libsdl-org/SDL_ttf.git &
 
+$FETCH release-3.4.2 https://github.com/libsdl-org/SDL.git 0 SDL3 &
+$FETCH release-3.2.0 https://github.com/libsdl-org/SDL_mixer.git 0 SDL3_mixer &
+$FETCH release-3.2.0 https://github.com/libsdl-org/SDL_ttf.git 0 SDL3_ttf &
+
 $FETCH libsmb2-6.2 https://github.com/sahlberg/libsmb2.git &
 
 $FETCH v1.3.18 https://github.com/lsalzman/enet.git &
@@ -222,6 +226,10 @@ build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED
 build_ee SDL_net -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2NET_SAMPLES=OFF
 build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2IMAGE_TIF=OFF
 build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
+
+build_ee SDL3 -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
+build_ee SDL3_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDLMIXER_WAVPACK=OFF -DSDLMIXER_BUILD_SHARED_LIBS=OFF -DSDLMIXER_FLAC_LIBFLAC=OFF -DSDLMIXER_TESTS=OFF -DSDLMIXER_TESTS_INSTALL=OFF -DSDLMIXER_GME=OFF -DSDLMIXER_MOD_XMP=OFF -DSDLMIXER_MP3_DRMP3=OFF -DSDLMIXER_MP3_MPG123=OFF -DSDLMIXER_OPUS=OFF -DSDLMIXER_VORBIS_STB=OFF -DSDLMIXER_VORBIS_VORBISFILE=OFF
+build_ee SDL3_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDLTTF_SAMPLES=OFF
 
 build_ee enet
 
