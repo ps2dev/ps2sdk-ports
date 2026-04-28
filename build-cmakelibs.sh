@@ -140,8 +140,10 @@ $FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.g
 
 $FETCH 184dac64cd556f435c309bb83ed4a31fe14e1cc5 https://github.com/libgme/game-music-emu.git &
 
-$FETCH v3.0.0 https://github.com/Tehreer/SheenBidi.git
-$FETCH 26.01 https://github.com/FNA-XNA/FAudio.git
+$FETCH v3.0.0 https://github.com/Tehreer/SheenBidi.git &
+$FETCH 26.01 https://github.com/FNA-XNA/FAudio.git &
+
+$FETCH munt_2_7_0 https://github.com/munt/munt.git &
 
 # wait for fetch jobs to finish
 wait
@@ -255,6 +257,8 @@ build_ee SheenBidi
 CFLAGS="-Wno-incompatible-pointer-types" build_ee FAudio -DBUILD_SDL3=OFF
 
 build_ee game-music-emu -DGME_BUILD_SHARED=OFF -DGME_ENABLE_UBSAN=OFF -DGME_BUILD_TESTING=OFF -DGME_BUILD_EXAMPLES=OFF
+
+build_ee munt -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE
 
 # Finish
 cd ..
