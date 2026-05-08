@@ -105,7 +105,7 @@ $FETCH v4.7.1 https://gitlab.com/libtiff/libtiff.git &
 $FETCH v1.5.0 https://github.com/ps2dev/gsKit.git &
 
 # SDL requires ps2_drivers
-$FETCH 1.7.1 https://github.com/fjtrujy/ps2_drivers &
+$FETCH 1.8.0 https://github.com/fjtrujy/ps2_drivers &
 
 # Point to a concrete hash for now, till the SDL team releases a new version
 $FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
