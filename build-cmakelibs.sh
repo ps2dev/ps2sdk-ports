@@ -259,5 +259,9 @@ CFLAGS="-Wno-incompatible-pointer-types" build_ee FAudio -DBUILD_SDL3=OFF
 build_ee game-music-emu -DGME_BUILD_SHARED=OFF -DGME_ENABLE_UBSAN=OFF -DGME_BUILD_TESTING=OFF -DGME_BUILD_EXAMPLES=OFF
 
 build_ee munt -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+# Make paths in pkg-config files relative, so prefix can be relocated
+find ${PS2SDK}/ports/lib/pkgconfig -iname \*.pc -exec sed -i -e 's/'"$(sed 's/[^^]/[&]/g; s/\^/\\^/g' <<<"${PS2SDK}/ports")"'/${pcfiledir}\/..\/../g' {} \+
+
 # Finish
 cd ..
