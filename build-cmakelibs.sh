@@ -195,6 +195,8 @@ build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF 
 build_ee libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
 build_ee libimagequant -DLIB_INSTALL_DIR=lib -DBUILD_WITH_SSE=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee libpng -DPNG_SHARED=OFF -DPNG_STATIC=ON
+# Link libpng to filename with version number, as pkg-config depends on it
+(cd "${PS2SDK}/ports/lib" && ln -sf "libpng.a" "libpng16.a" && cd -)
 build_ee freetype
 build_ee googletest -DCMAKE_CXX_FLAGS='-D_BSD_SOURCE -DGTEST_HAS_POSIX_RE=0'
 build_ee libyaml -DCMAKE_POLICY_VERSION_MINIMUM=3.5
