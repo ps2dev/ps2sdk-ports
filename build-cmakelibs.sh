@@ -86,9 +86,10 @@ $FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
 $FETCH libxmp-4.6.3 https://github.com/libxmp/libxmp.git &
 $FETCH v1.6 https://github.com/xiph/opus.git &
 # We need to clone the whole repo and point to the specific hash for now,
-# till they release a new version with cmake compatibility
+# till they release a new version otherwise we are suffering this issue:
+# https://github.com/ps2dev/ps2sdk/issues/499
 # we need to clone whole repo because it uses `git describe --tags` for version info
-$FETCH cf218fb54929a1f54e30e2cb208a22d08b08c889 https://github.com/xiph/opusfile.git true &
+$FETCH 6dfd29e7adb87f2e193575fc3fa88cbf1a0b27df https://github.com/xiph/opusfile.git true &
 $FETCH 1.5.0 https://github.com/xiph/flac.git true &
 # We need to clone the whole repo and point to the specific hash for now,
 # till they release a new version with cmake compatibility
