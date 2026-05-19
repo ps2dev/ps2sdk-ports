@@ -108,6 +108,9 @@ $FETCH v1.5.0 https://github.com/ps2dev/gsKit.git &
 # SDL requires ps2_drivers
 $FETCH 1.8.0 https://github.com/fjtrujy/ps2_drivers &
 
+# ps2gl requires ps2stuff (Makefile target built before cmakelibs)
+$FETCH v1.0.0 https://github.com/ps2dev/ps2gl &
+
 # Point to a concrete hash for now, till the SDL team releases a new version
 $FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
 $FETCH release-2.8.1 https://github.com/libsdl-org/SDL_mixer.git &
@@ -262,6 +265,8 @@ CFLAGS="-Wno-incompatible-pointer-types" build_ee FAudio -DBUILD_SDL3=OFF
 build_ee game-music-emu -DGME_BUILD_SHARED=OFF -DGME_ENABLE_UBSAN=OFF -DGME_BUILD_TESTING=OFF -DGME_BUILD_EXAMPLES=OFF
 
 build_ee munt -Dmunt_WITH_MT32EMU_SMF2WAV=FALSE -Dmunt_WITH_MT32EMU_QT=FALSE -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+build_ee ps2gl -DBUILD_EXAMPLES=OFF
 
 # Make paths in pkg-config files relative, so prefix can be relocated
 find ${PS2SDK}/ports/lib/pkgconfig -iname \*.pc -exec sed -i -e 's/'"$(sed 's/[^^]/[&]/g; s/\^/\\^/g' <<<"${PS2SDK}/ports")"'/${pcfiledir}\/..\/../g' {} \+
