@@ -11,7 +11,6 @@ LIBS := \
 	lua\
 	madplay\
 	mmceman\
-	ps2stuff\
 	romfs\
 	sdl\
 	sdlgfx\
@@ -52,7 +51,7 @@ aalib:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
 
-cmakelibs: libtiff mmceman ps2stuff
+cmakelibs: libtiff mmceman
 	./build-cmakelibs.sh
 
 clean-cmakelibs:
@@ -117,10 +116,6 @@ mmceman:
 ode:
 	$(MAKE) -C $@
 	$(MAKE) -C $@ install
-
-ps2stuff:
-	./fetch.sh master https://github.com/ps2dev/ps2stuff
-	$(MAKE) -C build/$@ install
 
 romfs:
 	$(MAKE) -C $@
