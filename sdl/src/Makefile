@@ -18,11 +18,24 @@ USE_FREESD=1
 # Enable FREESIO2 instead of XSIO2MAN
 USE_FREESIO2=1
 
+# surrender all IOP handling to the program using this library. granting full control of the IOP, and not forcing usage of specific modules
+# Very useful for special cases, like Supporting arcade PS2s, or... just trying to do things right
+NO_IOP_HANDLING=0
+
 EE_CFLAGS  = -DNO_SIGNAL_H -DDEBUG_ERROR -DUSE_MATH_H
 EE_CFLAGS += -DENABLE_PS2SDK
 
-ifeq ($(ENABLE_MTAP), 1)
-EE_CFLAGS += -DPS2SDL_ENABLE_MTAP
+# surrender all IOP handling to the program using this library. granting full control of the IOP, and not forcing usage of specific modules
+# Very useful for special cases, like Supporting arcade PS2s, or... just trying to do things right
+ifeq ($(NO_IOP_HANDLING), 1)
+  EE_CFLAGS += -DNO_IOP_HANDLING
+  ifeq ($(ENABLE_MTAP), 1)
+  EE_CFLAGS += -DPS2SDL_ENABLE_MTAP
+  endif
+  
+  ifeq ($(USE_FREESIO2), 1)
+  EE_CFLAGS += -DUSE_FREESIO2
+  endif
 endif
 
 ifeq ($(HAVE_INPUT_DEVICES), 1)
@@ -31,10 +44,6 @@ endif
 
 ifeq ($(USE_FREESD), 1)
 EE_CFLAGS += -DUSE_FREESD
-endif
-
-ifeq ($(USE_FREESIO2), 1)
-EE_CFLAGS += -DUSE_FREESIO2
 endif
 
 ifeq ($(ENABLE_VSYNC_CB), 1)
@@ -150,24 +159,29 @@ video/ps2sdk/ps2usbd_irx.c: $(PS2SDK)/iop/irx/usbd.irx
 	$(PS2SDK)/bin/bin2c $< $@ ps2usbd_irx
 
 
-ifeq ($(ENABLE_MTAP), 1)
-EMBEDDED = \
-	$(PS2SDK)/ee/lib/libpadx.a           \
-	$(PS2SDK)/ee/lib/libmtap.a
-else
-EMBEDDED = \
-	$(PS2SDK)/ee/lib/libpad.a
+ifeq ($(NO_IOP_HANDLING), 1)
+  ifeq ($(ENABLE_MTAP), 1)
+  EMBEDDED = \
+  	$(PS2SDK)/ee/lib/libpadx.a \
+  	$(PS2SDK)/ee/lib/libmtap.a
+  else
+  EMBEDDED = \
+  	$(PS2SDK)/ee/lib/libpad.a
+  endif
 endif
 
 EMBEDDED += \
 	$(PS2SDK)/ee/lib/libcdvd.a	\
-	$(PS2SDK)/ee/lib/libpatches.a       \
-	$(PS2SDK)/ee/lib/libkbd.a       \
-	$(PS2SDK)/ee/lib/libmouse.a     \
-	$(PS2SDK)/ee/lib/libaudsrv.a    \
-	$(PS2SDK)/ports/lib/libjpeg.a    \
-	$(GSKIT)/lib/libdmakit.a	\
+	$(PS2SDK)/ee/lib/libpatches.a \
+	$(PS2SDK)/ee/lib/libaudsrv.a \
+	$(PS2SDK)/ports/lib/libjpeg.a \
+	$(GSKIT)/lib/libdmakit.a \
 	$(GSKIT)/lib/libgskit.a
+
+ifeq ($(HAVE_INPUT_DEVICES), 1)
+  EMBEDDED += $(PS2SDK)/ee/lib/libkbd.a \
+    $(PS2SDK)/ee/lib/libmouse.a
+endif
 
 $(LIB_SDL): $(SDL_OBJS)
 	# packing with all embedded libraries
