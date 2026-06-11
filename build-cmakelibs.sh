@@ -102,6 +102,13 @@ $FETCH feature/cmake https://github.com/mcmtroffaes/theora.git &
 # gsKit requires libtiff
 $FETCH v4.7.1 https://gitlab.com/libtiff/libtiff.git &
 
+# Concrete hash for indicating the version of libmpg used 
+$FETCH f7b492a94beba9ee2c826b463891f73e7e9d70e9 https://github.com/libsdl-org/mpg123.git &
+
+$FETCH 1.2.2 https://github.com/libsndfile/libsndfile.git &
+
+$FETCH v2.5.4 https://github.com/FluidSynth/fluidsynth.git &
+
 # SDL requires to have gsKit
 $FETCH v1.5.0 https://github.com/ps2dev/gsKit.git &
 
@@ -138,9 +145,6 @@ $FETCH v3.8.4 https://github.com/libarchive/libarchive.git &
 $FETCH pcre2-10.47 https://github.com/PCRE2Project/pcre2/ &
 
 $FETCH 11.0.0 https://github.com/leethomason/tinyxml2.git &
-
-# Concrete hash for indicating the version of libmpg used 
-$FETCH 2eb4320e161247a15f991a30e7919902a3629f19 https://github.com/libsdl-org/mpg123.git &
 
 # NOTE: We need to clone this commit until a version is released.
 $FETCH bf5f505d0156ad5c6635d05db06b1bb7593b45b7 https://gitlab.com/bzip2/bzip2.git &
@@ -215,7 +219,7 @@ CFLAGS="-DSIZEOF_LONG=4 -DSIZEOF_LONG_LONG=8 -DNO_WRITEV" build_ee curl -DENABLE
 build_ee libxmp -DBUILD_SHARED=OFF
 build_ee opus
 build_ee opusfile -DOP_DISABLE_HTTP=ON -DOP_DISABLE_DOCS=ON -DOP_DISABLE_EXAMPLES=ON
-build_ee flac -DCMAKE_BUILD_TYPE=Release -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DINSTALL_MANPAGES=OFF -DCMAKE_C_FLAGS='-Wno-incompatible-pointer-types'
+build_ee flac -DCMAKE_BUILD_TYPE=Release -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DBUILD_TESTING=OFF -DBUILD_DOCS=OFF -DINSTALL_MANPAGES=OFF -DENABLE_MULTITHREADING=OFF -DCMAKE_C_FLAGS='-Wno-incompatible-pointer-types'
 build_ee libmodplug -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee mikmod/libmikmod -DENABLE_SHARED=0 -DENABLE_DOC=OFF
 build_ee jsoncpp -DBUILD_OBJECT_LIBS=OFF -DJSONCPP_WITH_TESTS=OFF -DJSONCPP_WITH_POST_BUILD_UNITTEST=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
@@ -224,12 +228,24 @@ CFLAGS="-Wno-implicit-function-declaration" build_ee theora -DHAVE_STRING_H=ON -
 # libtiff and libtiff_ps2_addons is mandatory for gsKit
 CFLAGS="-Dlfind=bsearch" build_ee libtiff -Dtiff-tools=OFF -Dtiff-tests=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
+
 # gsKit is mandatory for SDL
 build_ee gsKit -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+# mpg123 Mandatory for SDL and libsndfile
+build_ee mpg123/ports/cmake -DBUILD_PROGRAM=OFF
+
+# libsndfile Mandatory for fluidsynth
+CFLAGS="-Wno-incompatible-pointer-types" build_ee libsndfile -DBUILD_PROGRAMS=OFF -DBUILD_EXAMPLES=OFF -DENABLE_EXTERNAL_LIBS=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+build_ee fluidsynth -Dosal=embedded -DLONG_LONG=0 -Denable-sdl3=off -Denable-threads=off
+
 # ps2_drivers is mandatory for SDL
 build_ee ps2_drivers -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DBUILD_SAMPLES=OFF
 build_ee SDL -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL_TESTS=OFF
-build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_OPUS=OFF -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_MIDI=OFF -DSDL2MIXER_FLAC=OFF -DSDL2MIXER_SAMPLES=OFF
+build_ee SDL_mixer -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2MIXER_DEPS_SHARED=OFF -DSDL2MIXER_VORBIS=VORBISFILE -DSDL2MIXER_VORBIS_VORBISFILE_SHARED=OFF \
+  -DSDL2MIXER_MOD=ON -DSDL2MIXER_MOD_MODPLUG=ON -DSDL2MIXER_MOD_MODPLUG_SHARED=OFF \
+  -DSDL2MIXER_MOD_XMP=OFF -DSDL2MIXER_MP3=ON -DSDL2MIXER_MP3_MINIMP3=OFF -DSDL2MIXER_MP3_MPG123=ON -DSDL2MIXER_WAVPACK=OFF -DSDL2MIXER_SAMPLES=OFF
 build_ee SDL_net -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2NET_SAMPLES=OFF
 build_ee SDL_image -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2IMAGE_TIF=OFF
 build_ee SDL_ttf -DCMAKE_POSITION_INDEPENDENT_CODE=OFF -DSDL2TTF_SAMPLES=OFF
@@ -257,8 +273,6 @@ build_ee libarchive -DBUILD_SHARED_LIBS=OFF -DENABLE_WERROR=OFF -DENABLE_TEST=OF
 CFLAGS="-Wno-incompatible-pointer-types" build_ee pcre2 -DPCRE2_BUILD_PCRE2GREP=OFF -DPCRE2_BUILD_TESTS=OFF
 
 build_ee tinyxml2 -DBUILD_TESTS=OFF
-
-build_ee mpg123/ports/cmake -DBUILD_PROGRAM=OFF
 
 build_ee bzip2 -DENABLE_LIBRARY=ON -DENABLE_STATIC_LIB=ON -DENABLE_SHARED_LIB=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
