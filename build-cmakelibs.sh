@@ -81,7 +81,7 @@ $FETCH 3.1.3 https://github.com/libjpeg-turbo/libjpeg-turbo.git &
 $FETCH v1.3.6 https://github.com/xiph/ogg.git &
 $FETCH v1.3.7 https://github.com/xiph/vorbis.git &
 $FETCH v5.8.2-stable https://github.com/wolfSSL/wolfssl.git &
-$FETCH curl-8_17_0 https://github.com/curl/curl.git &
+$FETCH curl-8_18_0 https://github.com/curl/curl.git &
 $FETCH 1.9.6 https://github.com/open-source-parsers/jsoncpp.git &
 $FETCH libxmp-4.6.3 https://github.com/libxmp/libxmp.git &
 $FETCH v1.6 https://github.com/xiph/opus.git &
