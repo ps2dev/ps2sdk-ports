@@ -69,6 +69,7 @@ function build_irx {
 ##
 # Try to solve windows linking issues
 $FETCH 5a82f71ed1dfc0bec044d9702463dbdf84ea3b71 https://github.com/madler/zlib.git &
+$FETCH 3.1.2 https://github.com/richgel999/miniz.git &
 $FETCH v5.8.2 https://github.com/tukaani-project/xz.git &
 $FETCH v1.10.0 https://github.com/lz4/lz4.git &
 $FETCH v1.11.4 https://github.com/nih-at/libzip.git &
@@ -201,6 +202,7 @@ cd build
 ##
 
 build_ee zlib -DUNIX:BOOL=ON -DZLIB_BUILD_EXAMPLES=OFF -DZLIB_BUILD_SHARED=OFF -DINSTALL_PKGCONFIG_DIR="${PS2SDK}/ports/lib/pkgconfig"
+build_ee miniz -DBUILD_EXAMPLES=OFF -DBUILD_TESTS=OFF
 build_ee xz -DTUKLIB_CPUCORES_FOUND=ON -DTUKLIB_PHYSMEM_FOUND=ON -DHAVE_GETOPT_LONG=OFF -DBUILD_TESTING=OFF -DXZ_TOOL_XZ=OFF
 build_ee lz4/build/cmake -DLZ4_POSITION_INDEPENDENT_LIB=OFF -DLZ4_BUILD_CLI=OFF -DLZ4_BUILD_LEGACY_LZ4C=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 build_ee libzip -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF
