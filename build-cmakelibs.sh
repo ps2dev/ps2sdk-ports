@@ -120,7 +120,7 @@ $FETCH v1.0.0 https://github.com/ps2dev/ps2stuff.git &
 $FETCH v1.0.0 https://github.com/ps2dev/ps2gl.git &
 
 # SDL requires ps2_drivers
-$FETCH 1.9.0 https://github.com/fjtrujy/ps2_drivers.git &
+$FETCH 2.0.0 https://github.com/fjtrujy/ps2_drivers.git &
 
 # Point to a concrete hash for now, till the SDL team releases a new version
 $FETCH release-2.32.10 https://github.com/libsdl-org/SDL.git &
