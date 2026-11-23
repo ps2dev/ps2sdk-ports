@@ -290,7 +290,7 @@ build_ee ps2stuff -DBUILD_TESTS=OFF
 build_ee ps2gl -DBUILD_EXAMPLES=OFF
 
 # Make paths in pkg-config files relative, so prefix can be relocated
-find ${PS2SDK}/ports/lib/pkgconfig -iname \*.pc -exec sed -i -e 's/'"$(sed 's/[^^]/[&]/g; s/\^/\\^/g' <<<"${PS2SDK}/ports")"'/${pcfiledir}\/..\/../g' {} \+
+find ${PS2SDK}/ports/lib/pkgconfig -iname \*.pc -type f -exec sed -i -e 's/'"$(sed 's/[^^]/[&]/g; s/\^/\\^/g' <<<"${PS2SDK}/ports")"'/${pcfiledir}\/..\/../g' {} \+
 
 # Finish
 cd ..
