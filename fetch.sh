@@ -3,7 +3,7 @@ set -e
 REPO_REF="$1"
 REPO_URL="$2"
 FETCH_ALL="$3"
-REPO_FOLDER=$(basename "$REPO_URL")
+REPO_FOLDER="${4:-$(basename "$REPO_URL")}"
 REPO_FOLDER=build/${REPO_FOLDER%.*}
 echo "Fetching '$REPO_FOLDER' version '$REPO_REF'..."
 if [ ! -d "$REPO_FOLDER" ]; then
