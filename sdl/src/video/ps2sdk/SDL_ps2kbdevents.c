@@ -352,18 +352,19 @@ void PS2_InitOSKeymap(_THIS)
  */
 int PS2_InitKeyboard(_THIS){
     
-    int ret;
+    int ret, id;
     
     printf("[PS2] Init USB Keyboard\n");
-    
+#ifndef NO_IOP_HANDLING
     // the keyboard driver is embedded in the library....
-    SifExecModuleBuffer(ps2kbd_irx, size_ps2kbd_irx, 0, NULL, &ret);
-    if (ret < 0) {
+    id = SifExecModuleBuffer(ps2kbd_irx, size_ps2kbd_irx, 0, NULL, &ret);
+	if (id < 0 || ((ret & 3) != 0))
            SDL_SetError("[PS2] Failed to load module: ps2kbd_irx\n");
            return -1;
     } 
-    else {
-    
+    else
+#endif
+	{
         if((PS2KbdInit()) == 0) {
             SDL_SetError("[PS2] PS2KbdInit failed\n");
             kbdState = KBD_NOT_AVAILABLE;
